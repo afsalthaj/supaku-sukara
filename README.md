@@ -15,6 +15,6 @@ Concepts Discussed:
 7. pattern matching
 8. traits
 9. abstract classes
-10.scala concurrency, scala Actors etc.
+10. scala concurrency, scala Actors etc.
 
 Going through the short descriptions (comments), and then learning each concept in detail will make it easier for you to develop in Scala later on.
