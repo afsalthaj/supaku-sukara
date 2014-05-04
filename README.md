@@ -1,7 +1,7 @@
 ScalaSample
 ===========
 This is a Sample Scala Project - a kick-start for those who are interested in Scala.
-The fundamentals are discussed using examples and scala concepts are segmented in different packages in this project.
+The fundamentals are discussed using examples and scala concepts are segmented in different packages.
 Short descriptions provided in all classes,traits etc explaining each concept.
 
 Concepts Discussed:
