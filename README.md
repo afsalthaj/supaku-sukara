@@ -18,3 +18,6 @@ Concepts Discussed:
 10. scala concurrency, scala Actors etc.
 
 Going through the short descriptions (comments), and then learning each concept in detail will make it easier for you to develop in Scala later on.
+Including scalaz operations also
+
+
