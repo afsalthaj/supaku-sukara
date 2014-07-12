@@ -1,4 +1,4 @@
-package com.tcs.scalabasics.scalaz
+package com.scalabasics.scalaz
 
 
 //sub typing for add function
