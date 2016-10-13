@@ -1,2 +1,6 @@
 .idea
 ScalaSampleProject.iml
+.classpath
+.project
+project/
+target/
