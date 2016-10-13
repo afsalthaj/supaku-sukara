@@ -1,7 +1,7 @@
 package com.thajaf.fp.example.right.fp
 
 // Wrapping the whole complexity of credit card and price to be charged as `Charge`
-case class Charge (creditCard: CreditCard, price: Int) extends AnyVal {
+case class Charge (creditCard: CreditCard, price: Int) {
   // combining credit card is the responsibility of Charge object
   def + (other: Charge) =
     if (this.creditCard == other.creditCard)
