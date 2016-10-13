@@ -6,10 +6,10 @@ package main.scala.com.thaj.functionalprogramming.example.exercises
 object HOF {
 
   // Exercise 2.3
-  //Let’s look at another example, currying,[9] which converts a function f
+  // Let’s look at another example, currying,[9] which converts a function f
   // of two arguments into a function of one argument that partially applies f.
   // Here again there’s only one implementation that compiles. Write this implementation.
-  //9 This is named after the mathematician Haskell Curry, who discovered the principle.
+  // This is named after the mathematician Haskell Curry, who discovered the principle.
   // It was independently discovered earlier by Moses Schoenfinkel, but Schoenfinkelization didn’t catch on.
 
   def curry[A,B,C](f: (A, B) => C): A => (B => C) =
@@ -30,11 +30,8 @@ object HOF {
   // or
   def compose[A, B, C](f: B => C, g: A => B): A => C = g andThen f
 
-
   //an example of andThen
-
   val f = (c: Double) => math.Pi/ 2 - c
 
   val cos : Double => Double = f andThen math.sin
-
 }

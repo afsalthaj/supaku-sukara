@@ -28,7 +28,3 @@ class HOFExamples {
     go(0)
   }
 }
-
-
-
-
