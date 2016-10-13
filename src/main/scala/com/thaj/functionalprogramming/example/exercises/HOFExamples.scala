@@ -5,7 +5,6 @@ import scala.annotation.tailrec
 /**
  * Created by afsalthaj on 10/10/16.
  */
-
 class HOFExamples {
   def findFirstIn(a: Array[Int], int: Int) = {
     @tailrec
