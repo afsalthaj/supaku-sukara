@@ -1,4 +1,4 @@
-package main.scala.com.thaj.functionalprogramming.example.exercises
+package com.thaj.functionalprogramming.example.exercises
 
 import scala.annotation.tailrec
 

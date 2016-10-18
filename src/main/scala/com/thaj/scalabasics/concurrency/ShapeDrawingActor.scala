@@ -1,4 +1,5 @@
 package com.scalabasics.concurrency
+/*
 
 import scala.actors.Actor
 
@@ -20,4 +21,4 @@ object ShapeDrawingActor extends Actor {
     }
   }
 
-}
+}*/

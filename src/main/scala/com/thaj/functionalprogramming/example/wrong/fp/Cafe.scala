@@ -10,11 +10,11 @@ private case class CreditCard (cNumber: String) {
   def charge(price: Int) = println(s"credit card $cNumber charged Rs.$price")
 }
 
-private sealed trait Beverage {
+sealed trait Beverage {
   def price: Int
 }
 
-private class Coffee extends Beverage {
+class Coffee extends Beverage {
   val price = 25
 }
 
@@ -22,7 +22,7 @@ class Tea extends Beverage {
   val price = 10
 }
 
-private class Cafe {
+class Cafe {
 
   def buyCofee (cc: CreditCard): Coffee = {
 

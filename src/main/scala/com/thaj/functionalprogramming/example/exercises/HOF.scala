@@ -1,4 +1,4 @@
-package main.scala.com.thaj.functionalprogramming.example.exercises
+package com.thaj.functionalprogramming.example.exercises
 
 /**
  * Created by afsalthaj on 10/10/16.
@@ -11,8 +11,8 @@ object HOF {
   // Here again there’s only one implementation that compiles. Write this implementation.
   // This is named after the mathematician Haskell Curry, who discovered the principle.
   // It was independently discovered earlier by Moses Schoenfinkel, but Schoenfinkelization didn’t catch on.
-
-  def curry[A,B,C](f: (A, B) => C): A => (B => C) =
+  // We’ll often group and order our function arguments into multiple argument lists to maximize type inference.
+ def curry[A,B,C](f: (A, B) => C): A => (B => C) =
     (a: A) => f(a, _)
 
  // Exercise 2.4
@@ -23,12 +23,12 @@ object HOF {
   // Let’s look at a final example, function composition, which feeds the output of one function to the input of another function.
   // Again, the implementation of this function is fully determined by its type signature.
 
-  def compose[A,B,C](f: B => C, g: A => B): A => C = (a: A) => f(g(a))
+  def compose1[A,B,C](f: B => C, g: A => B): A => C = (a: A) => f(g(a))
   // or
-  def compose[A,B,C](f: B => C, g: A => B): A => C = f compose g
+  def compose2[A,B,C](f: B => C, g: A => B): A => C = f compose g
 
   // or
-  def compose[A, B, C](f: B => C, g: A => B): A => C = g andThen f
+  def compose3[A, B, C](f: B => C, g: A => B): A => C = g andThen f
 
   //an example of andThen
   val f = (c: Double) => math.Pi/ 2 - c

@@ -1,3 +1,4 @@
+/*
 package com.scalabasics.scalaz.day1
 
 // a trait that consist of foldLeft function that accepts any CollectionType[AnyType]
@@ -50,6 +51,7 @@ object RealFunctions {
 
   
   
-/**In the above example, the traits SampleMonoidIntImpl1 and 
- FoldLeftSampleLevel2 correspond to Haskell’s typeclass. Scalaz provides many typeclasses. 
+/**In the above example, the traits SampleMonoidIntImpl1 and
+ FoldLeftSampleLevel2 correspond to Haskellï¿½s typeclass. Scalaz provides many typeclasses. 
   */
+*/
