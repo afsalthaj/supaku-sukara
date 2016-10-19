@@ -39,11 +39,12 @@ object JsonParser {
   import FeatureType._
 
   implicit def ConfigDecodeJson: DecodeJson[(FeatureName, FeatureInfo)] =
-    DecodeJson(c => for {
-      featureName <- (c --\ "featureName").as[FeatureName]
-      freshness <- (c --\ "freshness").as[Freshness]
-      valueType <- (c --\ "valueType").as[Primitives]
-    } yield (featureName, FeatureInfo(decodeValueType(valueType), freshness))
+    DecodeJson(
+      c => for {
+        featureName <- (c --\ "featureName").as[FeatureName]
+        freshness <- (c --\ "freshness").as[Freshness]
+        valueType <- (c --\ "valueType").as[Primitives]
+      } yield (featureName, FeatureInfo(decodeValueType(valueType), freshness))
     )
 
   // Decode ignoring error messages
