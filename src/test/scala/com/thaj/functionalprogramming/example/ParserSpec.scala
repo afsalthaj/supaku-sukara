@@ -1,14 +1,14 @@
 package com.thaj.functionalprogramming.example
 
-import com.thaj.functionalprogramming.example.parsercombinators.Config.FeatureInfo
+import com.thaj.functionalprogramming.example.jsonparsing.Config.FeatureInfo
 import org.specs2.Specification
 
 import scalaz._, Scalaz._
 
 class ParserSpec extends Specification {
-  import com.thaj.functionalprogramming.example.parsercombinators.FeatureType
-  import com.thaj.functionalprogramming.example.parsercombinators.Config
-  import com.thaj.functionalprogramming.example.parsercombinators.JsonParser._
+  import com.thaj.functionalprogramming.example.jsonparsing.FeatureType
+  import com.thaj.functionalprogramming.example.jsonparsing.Config
+  import com.thaj.functionalprogramming.example.jsonparsing.JsonParser._
 
   def is =
     s"""
