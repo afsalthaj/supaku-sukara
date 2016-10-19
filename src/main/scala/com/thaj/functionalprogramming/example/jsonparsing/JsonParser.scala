@@ -40,9 +40,9 @@ object JsonParser {
 
   implicit def ConfigDecodeJson: DecodeJson[(FeatureName, FeatureInfo)] =
     DecodeJson(c => for {
-      featureName <- (c --\ "featureName").as[String]
-      freshness <- (c --\ "freshness").as[Int]
-      valueType <- (c --\ "valueType").as[String]
+      featureName <- (c --\ "featureName").as[FeatureName]
+      freshness <- (c --\ "freshness").as[Freshness]
+      valueType <- (c --\ "valueType").as[Primitives]
     } yield (featureName, FeatureInfo(decodeValueType(valueType), freshness))
     )
 
