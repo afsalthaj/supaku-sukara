@@ -1,33 +1,32 @@
 package com.thaj.functionalprogramming.example
 
-import com.thaj.functionalprogramming.example.jsonparsing.Config.FeatureInfo
 import org.specs2.Specification
+
+import com.thaj.functionalprogramming.example.jsonparsing.FeatureType
+import com.thaj.functionalprogramming.example.jsonparsing.Config
+import com.thaj.functionalprogramming.example.jsonparsing.JsonParser._
+import com.thaj.functionalprogramming.example.jsonparsing.Config.FeatureInfo
 
 import scalaz._, Scalaz._
 
 class ParserSpec extends Specification {
-  import com.thaj.functionalprogramming.example.jsonparsing.FeatureType
-  import com.thaj.functionalprogramming.example.jsonparsing.Config
-  import com.thaj.functionalprogramming.example.jsonparsing.JsonParser._
-
   def is =
     s"""
-      |test readParseandMapToConfig $testArganautParser
+      |test readParseandMapToConfig $testFeatureParser
     """.stripMargin
 
-  def testArganautParser = {
-
+  def testFeatureParser = {
     val rawJson =
       """
-        |      [{
-        |      	"featureName": "ah..some..feature",
-        |      	"freshness": 2,
-        |      	"valueType": "int"
-        |      }, {
-        |      	"featureName": "hi",
-        |      	"freshness": 3,
-        |      	"valueType": "string"
-        |      }]
+        | [{
+        | 	"featureName": "ah..some..feature",
+        | 	"freshness": 2,
+        | 	"valueType": "int"
+        | }, {
+        | 	"featureName": "some other",
+        | 	"freshness": 3,
+        | 	"valueType": "string"
+        | }]
       """.stripMargin
 
 
@@ -39,7 +38,7 @@ class ParserSpec extends Specification {
     config == Config(
       Map(
         "ah..some..feature" -> FeatureInfo(FeatureType.Int,2),
-        "hi" -> FeatureInfo(FeatureType.String,3)
+        "some other" -> FeatureInfo(FeatureType.String,3)
       )
     )
   }
