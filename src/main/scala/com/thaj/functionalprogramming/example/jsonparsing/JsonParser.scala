@@ -46,8 +46,7 @@ object JsonParser {
         valueType <- (c --\ "valueType").as[Primitives]
       } yield (featureName, FeatureInfo(decodeValueType(valueType), freshness))
     )
-
-  // Decode ignoring error messages
+  
   def getConfigFromJson(rawJson: JsonString): Validation[String, Config] =
-  Parse.decodeValidation[List[(FeatureName, FeatureInfo)]](rawJson).map(_.toMap).map(Config(_))
+    Parse.decodeValidation[List[(FeatureName, FeatureInfo)]](rawJson).map(_.toMap).map(Config(_))
 }
