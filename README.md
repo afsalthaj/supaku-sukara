@@ -6,6 +6,8 @@ Short descriptions provided in all classes,traits etc explaining each concept.
 
 Also, covers the solutions for exercises in functional programming.
 
+https://rawgit.com/afsalthaj/ScalaSample/master/functional_programming/assets/player/KeynoteDHTMLPlayer.html#0
+
 Concepts Discussed:
 
 1. basic scala language,
