@@ -1,6 +1,6 @@
 package com.thaj.functionalprogramming.example
 
-import com.thaj.functionalprogramming.example.exercises.Exercise
+import com.thaj.functionalprogramming.example.exercises.{EitherExamples, Error, Exercise}
 import org.scalatest.WordSpec
 import org.scalatest.prop.{Checkers, PropertyChecks}
 import org.scalatest.MustMatchers._
@@ -33,4 +33,37 @@ object OptionSpec extends Specification {
       |${val f = Exercise.lift((c: Int) => c + 1); f(Some(1)) == Some(2)}
       |${Exercise.map2(Some(1), Some(2))((a, b) => a + b) == Some(3)}
     """.stripMargin
+}
+
+object ValidationSpec extends Specification {
+  import com.thaj.functionalprogramming.example.exercises.Validation, Validation._
+  import com.thaj.functionalprogramming.example.exercises._, EitherOperations._
+
+  def is =
+    s"""
+      |${assert(convertListOfValidationToValidation ==
+        Error(List("For input string: \"b\"",
+          "For input string: \"a\"")
+        ))
+       }
+      |${assert(converListOFEitherToEither must_==
+         Left("For input string: \"a\""))
+       }
+    """.stripMargin
+
+  def convertStringToInt: List[Validation[String, Int]] = {
+    val list = List("1", "2", "3", "a", "b")
+    list.map(t => { Validation.Try(t.toInt) } )
+  }
+
+  def convertListOfValidationToValidation: Validation[String, List[Int]] =
+    Validation.sequence(convertStringToInt)
+
+  def convertStringToIntThroughEither: List[Either[String, Int]] = {
+    val list = List("1", "2", "3", "a", "b")
+    list.map(t => Either.Try(t.toInt))
+  }
+
+  def converListOFEitherToEither: Either[String, List[Int]] =
+    Either.sequence(convertStringToIntThroughEither)
 }
