@@ -1,28 +1,15 @@
-ScalaSample
-===========
-This is a Sample Scala Project - a kick-start for those who are interested in Scala.
-The fundamentals are discussed using examples and scala concepts are segmented in different packages.
-Short descriptions provided in all classes,traits etc explaining each concept.
+### Scala Basics, Functional Programming in Scala and Spark
+===========================================================
 
-Also, covers the solutions for exercises in functional programming.
-
-https://rawgit.com/afsalthaj/ScalaSample/master/functional_programming/assets/player/KeynoteDHTMLPlayer.html#0
+#### Functional Programming in scala
+Project covers answers for the exercises in "Functional Programming in Scala" with conceptual explanation. 
 https://github.com/afsalthaj/ScalaSample/tree/master/src/main/scala/com/thaj/functionalprogramming/example
 
-Concepts Discussed:
 
-1. basic scala language,
-2. list
-3. map
-4. loops
-5. if-else statements
-6. exception handling
-7. pattern matching
-8. traits
-9. abstract classes
-10. scala concurrency, scala Actors etc.
+#### Keynote on Functional Programming in scala - for those who want to revise!
+A WIP keynote on Functional Programming in scala.
+https://rawgit.com/afsalthaj/ScalaSample/master/functional_programming/assets/player/KeynoteDHTMLPlayer.html#0
 
-Going through the short descriptions (comments), and then learning each concept in detail will make it easier for you to develop in Scala later on.
-Including scalaz operations also
-
-
+#### Keynote on Spark - based on O'Reilly - a quick tour for those who want to revise!
+A WIP keynote on spark, based on O'Reilly
+https://rawgit.com/afsalthaj/ScalaSample/master/spark/assets/player/KeynoteDHTMLPlayer.html#0
