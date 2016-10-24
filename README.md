@@ -13,7 +13,7 @@ The greatest advantage of keeping your code aligned with functional program para
 While Scala can be a handy language for us to develop pure functional code, Spark provides us with a fast and reliable cluster computing platform (with APIs written in Scala) that runs our pure functional logic (or even as standalone or pseudo) to handle big data. 
 
 #### Why to start with Functional Programming?
-If you have got a sense of Functional Programming in Scala, it is fairly easy for you to undersand the fundamental concepts behind the explanations in O'Reilly Spark with in a few days of time.
+If you have got a sense of Functional Programming in Scala (or any language) you are all set to dive into the various other programming languages, FP libraries and emerging containerisation processes (eg: docker) out there in the industry. For instance, it is then fairly easy for you to undersand the fundamental concepts behind the explanations in O'Reilly Spark with in a few days of time.
 ### Sukara, Kansūkei puroguramingu and Supaku
 ===============================================================
 #### Functional Programming in Scala
