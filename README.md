@@ -2,7 +2,7 @@
 I love Japan and the Japanese language - interestingly, its vowels are pure and simple, just like functional programming in Scala should be! In Japanese, Sukara is Scala and Supaku is Spark.
 
 ### Why Supaku-Sukara
-Supaku-Sukara explains Scala (from a functional programming perspective, and not syntax) and Spark. I started this project for personal purpose, and with an intend to share it with my friends in future.
+Supaku-Sukara explains Scala (from a functional programming perspective, and not syntax) and Spark. I am developing the project for personal purpose of learning, and with an intend to share it with my friends in future.
 
 #### Why Functional Program in Scala? (Sukara, Kansūkei puroguramingu)
 The greatest advantage of keeping your code aligned with functional program paradigm is to enable stable, consistent, performant, and reliable parallelism with no chance of any state mutation even with multi-thread processes. One of the prominent use cases of parallelism is in Big Data platforms, where the program runs on big chunks of data distributed across different computing nodes. 
