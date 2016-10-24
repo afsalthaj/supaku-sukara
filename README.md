@@ -1,5 +1,6 @@
 ## supaku-sukara
-I love Japan and the Japanese language - interestingly, its pure and simple enough, just like functional programming in Scala should be! In Japanese, Sukara is Scala and Supaku is Spark.
+I love Japan and the Japanese language - interestingly, its pure and simple enough, just like functional programming in Scala should be! In Japanese, Sukara is Scala and Supaku is Spark. </br>
+
 The project doesn't help you in learning any language syntax. It details just concepts!
 
 ### Why Supaku-Sukara
