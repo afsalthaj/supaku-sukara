@@ -1,3 +1,6 @@
+## supaku-sukara
+I love Japan and the Japanese language - interestingly, its vowels are pure and simple, just like functional programming in Scala should be! In Japanese, Sukara means Scala and Supaku means Spark which is built on Sukara.
+
 ### Scala Basics, Functional Programming in Scala and Spark
 ===========================================================
 #### Functional Programming in Scala
