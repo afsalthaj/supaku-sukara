@@ -12,7 +12,7 @@ While Scala can be a handy language for us to develop pure functional code, Spar
 
 #### Why to start with Functional Programming?
 If you have got a sense of Functional Programming in Scala, it is fairly easy for you to undersand the fundamental concepts behind the explanations in O'Reilly Spark with in a few days of time.
-### Sukara,Kansūkei puroguramingu and Supaku
+### Sukara, Kansūkei puroguramingu and Supaku
 ===============================================================
 #### Functional Programming in Scala
 Project covers answers for the exercises in "Functional Programming in Scala" with conceptual explanation. 
