@@ -15,7 +15,6 @@ import com.thaj.functionalprogramming.example.jsonparsing.Config._
 case class Config(map: Map[FeatureName, FeatureInfo])
 
 object Config {
-  type JsonFilePath = String
   type FeatureName = String
   type Freshness = Int
   case class FeatureInfo(valueType: FeatureType, freshness: Freshness)
