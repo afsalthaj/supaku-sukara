@@ -31,3 +31,10 @@ https://rawgit.com/afsalthaj/ScalaSample/master/functor_applicative_monad/assets
 #### Keynote on Spark - Based on O'Reilly - A Quick Revision!
 A WIP keynote on spark, based on O'Reilly
 https://rawgit.com/afsalthaj/ScalaSample/master/spark/assets/player/KeynoteDHTMLPlayer.html#0
+
+#### Other examples for those who have covered FP concepts!
+A sample json parser using argonaut
+https://github.com/afsalthaj/ScalaSample/tree/master/src/main/scala/com/thaj/functionalprogramming/example/jsonparsing
+
+A better way to play with type classes
+https://github.com/afsalthaj/ScalaSample/tree/master/src/main/scala/com/thaj/functionalprogramming/example/jsonparsing
