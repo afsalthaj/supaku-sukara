@@ -23,4 +23,16 @@ class StreamSpec extends FlatSpec with Matchers {
       val stream = Stream("a", "b", "c")
       assert (stream.take(1).toList == Stream("a").toList)
   }
+
+  "A forall over stream" should
+    "terminate if the condition is met for any string" in {
+     val stream = Stream("a", "b", "c")
+    assert (stream.exists(_ != "d"))
+  }
+
+  "A forall over stream" should
+    "terminate if the condition is not met for any string" in {
+    val stream = Stream("a", "b", "c")
+    assert (stream.exists(_ != "d"))
+  }
 }

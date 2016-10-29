@@ -38,8 +38,6 @@ object SemigroupSimple {
 //sample client pgm
 object Sample {
   import SemigroupSimple.ops._
-
   def sum(a: Int, b: Int): Int = a |+| b
-
   def sum(a: String, b: String) = a |+| b
 }
