@@ -93,6 +93,72 @@ sealed trait Stream[+A] {
   // def forAll(p: A => Boolean): Boolean
   def forAll(p: A => Boolean): Boolean = this.foldRight(true)((a, b) => p(a) && b)
 
+  //Exercise 5.5
+  // takeWhile in terms of foldRigh
+  def takeWhile_1 (f: A => Boolean): Stream[A] = this.foldRight(Empty: Stream[A])((a, b) =>
+    if(f(a))
+      cons(a, b)
+    else
+      empty
+  )
+
+  // Exercise 5.8
+  /**Hard: Implement headOption using foldRight.
+    {{{
+    def headOption(a: Stream[A]): Option[A] = a match {
+      case Cons(h, t) => Some(h())
+      case Empty => None
+    }
+    }}}
+
+    {{{
+      def foldRight[B](init: => B)(f: (A, => B) => B): B = this match {
+       case Empty => init
+      case Cons(h, t) => f(h(), t().foldRight(init)(f))
+    }
+    But it seems, it traverses the whole elements in the stream to calculate the second
+    element of the function, which is irrelevant here. Thats not good either
+    */
+
+  def headOption_1: Option[A] = this.foldRight(None: Option[A])((a, _) => Some(a))
+
+  def append[B >: A](s: => Stream[B]): Stream[B] = foldRight(s)((a, b) => cons(a, b))
+  // Exercise 5.7
+  // Implement map, filter, append, and flatMap
+  // using foldRight. The append method should be non-strict in its argument.
+   def map[B](f: A => B): Stream[B] = foldRight(Empty: Stream[B])((a, b) => cons(f(a), b))
+   def filter(f: A => Boolean): Stream[A] = foldRight(Empty: Stream[A])((a, b) => if(f(a)) cons(a, b) else b)
+   def flatMap[B](f: A => Stream[B]): Stream[B] = foldRight(Empty: Stream[B])((a, b) => f(a) append b)
+
+  // To assert a few things into your brain, have a look at the below function
+  def mapUnfold[B](f: A => B): Stream[B]= this match {
+    case Cons(h, t) => cons(f(h()), t().mapUnfold(f))
+    case Empty => Empty
+  }
+  /**
+    * Theory:
+    *  Example used for explanation: Stream(1,2,3,4).map(_ + 10).filter(_ % 2 == 0)
+    * The concept here is, be it any function which is part of the stream , `b` is never evaluated until
+    * it is needed. You can forget about rest of the complexities. You know how stream is implemented, especially
+    * using the smart constructor cons. It takes unevaluated A, and unevaluated B, and returns Cons(a, b) both being
+    * unevaluated. Hence it is a stream. Now assume that you are using map function.
+    *  What is happening with map. It is just a short description, or just a start of the stream which is
+    *  represented here. Nothing is computed here, since cons by name parameters. that is the lazy head and tail
+    *  are still lazy, and noone has called it yet. So you now are now applying a filter to it. The condition for filter
+    *  is f(a), and obviously lazy val is executed but only for the head, and you may get a filtered stream now.
+    *  Again, it tries to filter so that if(f(a)) is evaluated, and a being the second element now, and you get a filtered
+    *  stream. This means the operation between map and filter is inter-leaved. the computation alternates between generating a
+    *  single element of the output of map, and testing with filter to see if that element is
+    *  divisible by 2 (adding it to the output list if it is). Note that we don’t fully instantiate the
+    *  intermediate stream that results from the map. It’s exactly as if we had interleaved the logic using a
+    *  special-purpose loop. For this reason, people sometimes describe streams as “first-class loops”
+    *  whose logic can be combined using higher-order functions like map and filter.
+    *  Since intermediate streams aren’t instantiated, it’s easy to reuse existing combinators in novel ways without having to worry that we’re doing more processing of the stream than necessary. For example, we can reuse filter to define find, a method to return just the first element that matches if it exists. Even though filter transforms the whole stream, that transformation is done lazily, so find terminates as soon as a match is found:
+       {{{
+       def find(p: A => Boolean): Option[A] =
+        filter(p).headOption
+       }}}
+    */
 }
 
 case object Empty extends Stream[Nothing]
@@ -109,6 +175,12 @@ object Stream {
     // this will ensure that head and tail are evaluated just once.. yes only when the very first time
     // it is called.
     // We cache the head and tail as lazy values to avoid repeated evaluation
+    // We typically want to cache the values of a Cons node,
+    // once they are forced. If we use the Cons data constructor directly,
+    // for instance, this code will actually compute expensive(x) twice:
+    // val x = Cons(() => expensive(x), tl)
+    // val h1 = x.headOption
+    // val h2 = x.headOption
     lazy val head = a
     lazy val tail = t
 
@@ -131,5 +203,6 @@ object Stream {
     // demanded (we don’t evaluate the tail of the Cons) is useful, as we’ll see.
     case Cons(h, t) => Some(h())
   }
+
 
 }

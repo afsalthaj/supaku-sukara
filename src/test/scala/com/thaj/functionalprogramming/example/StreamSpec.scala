@@ -35,4 +35,17 @@ class StreamSpec extends FlatSpec with Matchers {
     val stream = Stream("a", "b", "c")
     assert (stream.exists(_ != "d"))
   }
+
+  "A forall over stream" should
+    "should take all the elements until the given condition becomes false" in {
+    val stream = Stream("a", "b", "c")
+    assert (stream.takeWhile(_ != "b").toList == Stream("a").toList)
+  }
+
+
+  "A headoption using foldRight for stream" should
+    "should optional head value" in {
+    val stream = Stream("a", "b", "c")
+    assert (stream.headOption_1.contains("a"))
+  }
 }
