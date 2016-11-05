@@ -34,7 +34,7 @@ object FeatureType {
     case "Double" => Double.right[String]
     case "Date" => Date.right[String]
     case "String" => String.right[String]
-    case _ => s"unknown typ $x".left[FeatureType]
+    case _ => s"unknown type $x".left[FeatureType]
   }
 }
 
