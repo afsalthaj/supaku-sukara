@@ -81,4 +81,4 @@ object PureStatefulAPI {
     val (d3, r3) = double(r2)
     ((d1, d2, d3), r3)
   }
- }
+}
