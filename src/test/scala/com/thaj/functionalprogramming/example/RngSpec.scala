@@ -1,10 +1,7 @@
 package com.thaj.functionalprogramming.example
 
-import com.thaj.functionalprogramming.example.exercises._
-import PureStatefulAPI._
 import org.scalatest.WordSpec
 import org.scalatest.prop.{Checkers, PropertyChecks}
-import org.specs2.Specification
 
 class RngSpec extends WordSpec with PropertyChecks with Checkers {
   import com.thaj.functionalprogramming.example.exercises.PureStatefulAPI._
@@ -26,6 +23,28 @@ class RngSpec extends WordSpec with PropertyChecks with Checkers {
         assert(s._1 >=0  && s._2 < 1.0)
       }
       }
+    }
+  }
+
+ "The advanced rng function nonNegativeInt" must {
+   import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIAdvanced._
+   "have passed" in  {
+     forAll { (n: (Long)) => {
+       val s = nonNegativeInt(SimpleRng(n))
+      assert(s._1 >= 0)
+     }}
+   }
+ }
+
+  "The advanced rng function nonNegativeLessThan" must {
+    import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIAdvanced._
+    "have passed" in  {
+      forAll { (n: (Long)) => {
+        // the reason behind the skewness is explained here.
+        val s = nonNegativeLessThanSkewed(100)(SimpleRng(n))
+        println(s._1)
+        assert(s._1 <= 100)
+      }}
     }
   }
 }
