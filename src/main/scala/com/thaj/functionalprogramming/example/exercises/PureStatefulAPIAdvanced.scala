@@ -8,10 +8,9 @@ import com.thaj.functionalprogramming.example.exercises.PureStatefulAPI._
   * The concept to be taken away from this sesion
   * is `state Actions` and it can behave in the same way
   * as any other types (or boxes) such as `Option`, `List`
-  * etc. Hence sequence, traverse, map, map2, flatMap are valid here.
-  * For easy composition of state actions.
+  * etc. Hence sequence, traverse, map, map2, flatMap are valid here for easy composition of state actions.
   * hence, for simplicity a state action RNG => (A, RNG) is then represented
-  * as Rand[A]... To have programmatical resemblence with other types
+  * as Rand[A]... To have programmatic resemblance with other types
   */
 object PureStatefulAPIAdvanced {
 

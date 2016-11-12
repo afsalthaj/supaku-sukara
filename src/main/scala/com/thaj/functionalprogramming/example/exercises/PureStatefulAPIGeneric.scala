@@ -1,11 +1,11 @@
 package com.thaj.functionalprogramming.example.exercises
 
-import com.thaj.functionalprogramming.example.exercises.PureStatefulAPI.RNG
 
 /**
   * Created by afsalthaj on 8/11/2016.
   */
 object PureStatefulAPIGeneric {
+  import com.thaj.functionalprogramming.example.exercises.PureStatefulAPI.RNG
 
   // From the understanding of RNG state actions, maps, flatmaps, sequence etc, we can infer that
   // anything in fucntional programming can be composed, even the stateful results. This is seen to
@@ -16,20 +16,20 @@ object PureStatefulAPIGeneric {
   // def map[S, A, B] (action: S => (A, S) (f: A => B):  S => (B, s)
 
   // Instead of Rand[A], let us define a generic state
-  // +A and hence even `Nothing` can take part in your state actions
-  // type State[S, +A] = S => (A, S) === type Rand[+A] = RNG => (A, RNG)
-  //
+  /** {{{
+          type State[S, +A] = S => (A, S) === type Rand[+A] = RNG => (A, RNG)
+      }}}
+    */
+  // it is +A instead of A so that even `Nothing` can take part in your state actions
   // Here State is short for computation that carries some state along,
   // or state action, state transition, or even statement
   // (see the next section). We might want to write it as its own class, wrapping the underlying function like this:
 
-  // Till now, we have _.nextInt as our state action. Let us define a case class for State
-  // with a run method that represents a generic state action function
-
-
   /** Instead of a type State, and state action somewhere in the class,
     * let us have a state class that wraps the state action
     */
+
+  // Exercise 6.10
   case class State[S, +A] (run: S =>  (A, S)) {
     def map[B] (f: A => B): State[S, B] = flatMap(a => State.unit(f(a)))
 
@@ -54,13 +54,12 @@ object PureStatefulAPIGeneric {
 
     // Reimplementing RNG using Generic State Action
     type Rand[A] = State[RNG, A]
-    //if the above action f is generatiing a pair, then we can define a new function
     def both[A, B] (a: Rand[A], b: Rand[B]): Rand[(A, B)] =
     // map2(a, b)((a,b) => (a,b))
     a.map2(b)((_,_))
 
 
-    val int: Rand[Int] = State(_.nextInt)
+    val int: Rand[Int] = State(t => t.nextInt)
     def nonNegativeInt: Rand[Int] = int.map(t => if (t < 0) -t-1 else t)
     def double:Rand[Double] = nonNegativeInt.map(a => a/Int.MaxValue.toDouble+1)
 
@@ -69,3 +68,26 @@ object PureStatefulAPIGeneric {
     def intDouble: Rand[(Int, Double)] = both(int, double)
   }
 }
+
+// Another straight forward implementation, that covers end to end
+// Difference is only in map implementation
+/***
+   * {{{
+     case class State[S, +A] (run: S => (A, S)) {
+       def map[B](f: A => B): State[S, B] = State(state => {
+       val (a, r) = run(state)
+       (f(a), r)
+     })
+
+     def flatMap[B] (f: A => State[S, B]) = State(state => {
+       val (a, s) = run(state)
+       f(a).run(s)
+     })
+
+     def map2[B, C](state: State[S, B])(f: (A, B) => C): State[S, C] =
+       flatMap(aa => state.map(cc => f(aa, cc)))
+     }
+
+   *
+   * }}}
+   */
