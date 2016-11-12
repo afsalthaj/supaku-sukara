@@ -76,3 +76,16 @@ import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.S
     xs <- ints(x)
   } yield xs.map(_ % y)
 }
+
+//Exercise 6.11 TODO
+// We are deliberately skipping this for the time being
+
+// Take away from Chapter 6:
+// You can define stateful APIs in FP
+// Always return the new state along with the desired value, instead of mutating a given state
+// A state action is always S => (S, A)
+// Wrap it in a box called State which is State(run: S => (S,A))
+// Define sequence, map, flatMap etc for this box
+// Represent RNG state actions in terms of State
+// And then you are discovering the fact that all your RNG state actions can be chained, composed, or combined
+// easily through the functions of the box `State`
