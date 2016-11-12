@@ -26,7 +26,7 @@ package com.thaj.functionalprogramming.example.exercises
   *        }
   *   }}}
   *
-  * Now you RNG make use of the above state representation to define its composed state actions
+  * Now let RNG make use of the above state representation to define its composed state actions
   * For example:
   * {{{
   *     type Rand[A] = State[RNG, A]
