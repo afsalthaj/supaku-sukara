@@ -81,4 +81,16 @@ object PureStatefulAPI {
     val (d3, r3) = double(r2)
     ((d1, d2, d3), r3)
   }
+
+  // Exercise 6.4
+  // Write a function to generate a list of random integers.
+   def ints(count: Int)(rng: RNG):(List[Int], RNG) = {
+    if (count == 0)
+      (Nil, rng)
+    else {
+      val (value, r) = rng.nextInt
+      val (newValue, newR) = ints(count - 1)(r)
+      (value :: newValue, newR)
+    }
+  }
 }

@@ -56,4 +56,7 @@ package com.thaj.functionalprogramming.example.exercises
   */
 object PurelyFunctionalImperativeProgramming {
 
+import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.State._
+
+
 }
