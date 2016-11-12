@@ -66,6 +66,8 @@ object PureStatefulAPIGeneric {
     //reimplementing double
     def doubleInt: Rand[(Double, Int)] = both(double, int)
     def intDouble: Rand[(Int, Double)] = both(int, double)
+
+    def ints(count: Int): Rand[List[Int]] = sequence(List.fill(count)(int))
   }
 }
 

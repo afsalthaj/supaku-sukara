@@ -58,5 +58,21 @@ object PurelyFunctionalImperativeProgramming {
 
 import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.State._
 
+  // Please try to understand what is happening here; a complex representation
+  val ns: Rand[List[Int]]= int.flatMap( someCount => int.flatMap(value => ints(someCount).map(xs => xs.map(_ % value))))
 
+  // Please try understand the same operation using for comprehension
+
+  /**
+    * This code is much easier to read (and write),
+    * and it looks like what it is—an imperative program that maintains some state.
+    * But it’s the same code. We get the next Int and assign it to x, get the next Int after that
+    * and assign it to y, then generate a list of length x, and finally return the list with all of its
+    * elements modulo y elements modulo y.
+    */
+  val nsSimple: Rand[List[Int]] = for {
+    x <- int
+    y <- int
+    xs <- ints(x)
+  } yield xs.map(_ % y)
 }
