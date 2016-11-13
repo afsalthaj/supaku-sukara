@@ -9,7 +9,7 @@ class StateSpec extends FunSuite {
   import com.thaj.functionalprogramming.example.exercises.PureStatefulAPI.SimpleRng
   import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.State._
 
-  test("intsRand") {
+  test("ints") {
     // Yes, to make sure all these follows substitutional model with referential transparency
     assert(ints(3).run(SimpleRng(42L)) === ints(3).run(SimpleRng(42L)))
   }
