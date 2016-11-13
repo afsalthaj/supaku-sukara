@@ -38,3 +38,9 @@ https://github.com/afsalthaj/ScalaSample/tree/master/src/main/scala/com/thaj/fun
 
 A better way to play with type classes
 https://github.com/afsalthaj/ScalaSample/tree/master/src/main/scala/com/thaj/functionalprogramming/example/jsonparsing
+
+PS:
+
+#### Keen to know Big Data Infrastructure? Platform ? Here is something for you in progress
+https://github.com/afsalthaj/biggudeta-kyukyoku
+
