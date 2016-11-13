@@ -128,7 +128,7 @@ import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.S
     state <- { val s: State[Machine, List[Unit]] = sequence(inputs.map(input => modifyS[Machine](_.operateOnMachine(input)))); s }
     machine <- get
   } yield (machine.coins, machine.candies)
-  
+
 
   //Example usage
   val lockedMachine = Machine(true, 10, 20)

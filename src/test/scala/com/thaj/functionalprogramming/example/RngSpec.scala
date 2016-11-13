@@ -4,6 +4,8 @@ import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.S
 import org.scalatest.WordSpec
 import org.scalatest.prop.{Checkers, PropertyChecks}
 
+
+
 class RngSpec extends WordSpec with PropertyChecks with Checkers {
   import com.thaj.functionalprogramming.example.exercises.PureStatefulAPI._
 
@@ -59,7 +61,7 @@ class RngSpec extends WordSpec with PropertyChecks with Checkers {
     }
   }
 
-  // Property function doesnt suit
+  // Property function doesnt sui\
   "The rng function created using generic state action flatMap" must {
     import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.State._
     "have passed" in  {
