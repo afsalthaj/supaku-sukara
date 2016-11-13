@@ -56,7 +56,7 @@ package com.thaj.functionalprogramming.example.exercises
   */
 object PurelyFunctionalImperativeProgramming {
 
-import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.State._
+import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.State, State._
 
   // Please try to understand what is happening here; a complex representation
   val ns: Rand[List[Int]]= int.flatMap( someCount => int.flatMap(value => ints(someCount).map(xs => xs.map(_ % value))))
@@ -75,10 +75,88 @@ import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.S
     y <- int
     xs <- ints(x)
   } yield xs.map(_ % y)
+
+  /**
+    *  If we imagine that we have a combinator get for getting the current state, and a combinator
+    *  set for setting a new state, we could implement a combinator that can modify the state in arbitrary ways:
+    */
+// Personally, I didn't like this concept
+
+ def modifyS[S](f: S => S): State[S, Unit]= for {
+    s <- get
+    _ <- set(f(s))
+ } yield ()
+
+
+  //Exercise 6.11
+  sealed trait Input
+  case object Coin extends Input
+  case object Turn extends Input
+  case class Machine(locked: Boolean, candies: Int, coins: Int) {
+    def operateOnMachine(input: Input) = input match {
+      case _ if candies == 0 => this
+      case Coin if locked => Machine(false, candies, coins + 1)
+      case Turn if !locked => Machine(true, candies-1, coins)
+      case _ => this
+    }
+  }
+
+  /**
+    * The rules of the machine are as follows:
+    * Inserting a coin into a locked machine will cause it to unlock if there’s any candy left.
+    * Turning the knob on an unlocked machine will cause it to dispense candy and become locked.
+    * Turning the knob on a locked machine or inserting a coin into an unlocked machine does nothing.
+    * A machine that’s out of candy ignores all inputs.
+    */
+
+  type MachineState = State[Machine, (Int, Int)]
+
+  /**
+    * The method simulateMachine should operate the machine based on the list of inputs
+    * and return the number of coins and candies left in the machine at the end. For example,
+    * if the input Machine has 10 coins and 5 candies,
+    * and a total of 4 candies are successfully bought, the output should be (14, 1).
+    *
+    * {{{
+    *       def get[S]: State[S, S] = State(s => (s, s))
+            //The set action is constructed with a new state s. The resulting action ignores the incoming state,
+           // replaces it with the new state, and returns () instead of a meaningful value:
+           def set[S](s: S): State[S, Unit] = State(_ => ((), s))
+    * }}}
+    */
+  def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = for {
+    state <- { val s: State[Machine, List[Unit]] = sequence(inputs.map(input => modifyS[Machine](_.operateOnMachine(input)))); s }
+    machine <- get
+  } yield (machine.coins, machine.candies)
+  
+
+  //Example usage
+  val lockedMachine = Machine(true, 10, 20)
+  val unlockedMachine = Machine(false, 10, 20)
+  val emptyLockedMachine = Machine(true, 0, 20)
+  val emptyUnlockedMachine = Machine(false, 0, 20)
+
+  def assertions = {
+    // Inserting a coin into a locked machine will cause it to unlock if there’s any candy left.
+    assert(simulateMachine(List(Coin)).run(lockedMachine)._2.locked == false)
+
+    // Turning the knob on an unlocked machine will cause it to dispense candy and become locked.
+    assert(simulateMachine(List(Turn)).run(unlockedMachine)._2.locked == true)
+    assert(simulateMachine(List(Turn)).run(unlockedMachine)._2.candies == 9)
+
+    // Turning the knob on a locked machine or inserting a coin into an unlocked machine does nothing.
+    assert(simulateMachine(List(Turn)).run(lockedMachine)._2 == lockedMachine)
+    assert(simulateMachine(List(Coin)).run(unlockedMachine)._2 == unlockedMachine)
+
+    // A machine that’s out of candy ignores all inputs.
+    assert(simulateMachine(List(Turn)).run(emptyLockedMachine)._2 == emptyLockedMachine)
+    assert(simulateMachine(List(Turn)).run(emptyUnlockedMachine)._2 == emptyUnlockedMachine)
+    assert(simulateMachine(List(Coin)).run(emptyLockedMachine)._2 == emptyLockedMachine)
+    assert(simulateMachine(List(Coin)).run(emptyUnlockedMachine)._2 == emptyUnlockedMachine)
+
+  }
 }
 
-//Exercise 6.11 TODO
-// We are deliberately skipping this for the time being
 
 // Take away from Chapter 6:
 // You can define stateful APIs in FP
