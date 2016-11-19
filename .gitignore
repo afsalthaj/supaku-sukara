@@ -1,3 +1,4 @@
+.ensime_cache
 .idea
 ScalaSampleProject.iml
 .classpath
