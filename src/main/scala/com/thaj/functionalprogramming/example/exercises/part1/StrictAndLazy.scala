@@ -166,7 +166,7 @@ case object Empty extends Stream[Nothing]
 // A non empty stream consist of a head and a tail, which are both non-strict.
 // Due to technical limitations, these are thunks that must be explicitly forced,
 // rather than by-name parameters.
-case class Cons[+A] private (head: () => A, tail: () => Stream[A]) extends Stream[A]
+case class Cons[+A] (head: () => A, tail: () => Stream[A]) extends Stream[A]
 
 object Stream {
   // smart Constructors
@@ -191,7 +191,7 @@ object Stream {
   def empty[A]: Stream[A] = Empty
 
   def apply[A](as: A*): Stream[A] = {
-    if(as.isEmpty) Empty else Cons(() => as.head, () => apply(as.tail: _*))
+    if(as.isEmpty) Empty else cons(as.head, apply(as.tail: _*))
   }
 
   def headOption[A](a: Stream[A]): Option[A]= a match {

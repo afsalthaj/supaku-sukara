@@ -31,22 +31,21 @@ package com.thaj.functionalprogramming.example.exercises
 // a type A and a new state S. That is, given a state S, it gives you A and the new state of S.
 //  Below example S and A are predefined and they are
 // `Int` and `BankAccount`.
-case class BankAccount(balance: Int) {
+case class BankAccounts(balance: Int) {
   def deposit(amount: Int) = {
     require(amount > 0)
     val newBalance = this.balance + amount
-    BankAccount(newBalance)
+    BankAccounts(newBalance)
   }
 
   def withDraw(amount: Int) = {
     require(amount > 0)
     val newBalance = this.balance - amount
-    BankAccount(newBalance)
+    BankAccounts(newBalance)
   }
 
   // To add a chain of changes to bank account
   // The stateful API is simple enough and composition of state actions is simpler too
-  val bankAccount = BankAccount(10)
-  val stateFulCompositions = bankAccount.deposit(10).deposit(100).withDraw(5).deposit(100)
+  //val bankAccount = BankAccounts(10)
+  //val stateFulCompositions = bankAccount.deposit(10).deposit(100).withDraw(5).deposit(100)
 }
-

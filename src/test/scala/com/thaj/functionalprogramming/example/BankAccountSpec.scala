@@ -1,6 +1,6 @@
 package com.thaj.functionalprogramming.example
 
-import com.thaj.functionalprogramming.example.exercises.BankAccount
+import com.thaj.functionalprogramming.example.exercises.BankAccounts
 import org.specs2.Specification
 
 /**
@@ -13,8 +13,8 @@ object BankAccountSpec extends Specification {
    """.stripMargin
 
   def checkMutabilityOfBankAccount = {
-    val s = BankAccount(1)
-    s.deposit(1)
-    assert(s.balance == 1)
+     val s = BankAccounts(1)
+     s.deposit(1)
+     assert(s.balance == 1)
   }
 }
