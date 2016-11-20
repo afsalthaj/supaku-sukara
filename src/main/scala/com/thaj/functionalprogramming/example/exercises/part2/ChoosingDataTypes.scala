@@ -83,14 +83,13 @@ object DesignAspects {
   Function arguments in Scala are strictly evaluated from left to right, so if unit delays execution until get is
   called, we will both spawn the parallel computation and wait for it to finish before spawning the second parallel
   computation. This means the computation is effectively sequential!
-
   If unit starts evaluating its argument right away, the next thing to happen is that get
-will wait for that evaluation to complete. So the two sides of the + sign won’t run in
-parallel if we simply inline the sumL and sumR variables. We can see that unit has a definite
-side effect, but only with regard to get. That is, unit simply returns a Par[Int] in
-this case, representing an asynchronous computation. But as soon as we pass that Par
-to get, we explicitly wait for it, exposing the side effect. So it seems that we want to
-avoid calling get, or at least delay calling it until the very end. We want to be able to
-combine asynchronous computations without waiting for them to finish.
+  will wait for that evaluation to complete. So the two sides of the + sign won’t run in
+  parallel if we simply inline the sumL and sumR variables. We can see that unit has a definite
+  side effect, but only with regard to get. That is, unit simply returns a Par[Int] in
+  this case, representing an asynchronous computation. But as soon as we pass that Par
+  to get, we explicitly wait for it, exposing the side effect. So it seems that we want to
+  avoid calling get, or at least delay calling it until the very end. We want to be able to
+  combine asynchronous computations without waiting for them to finish.
   */
 }
