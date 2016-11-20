@@ -1,6 +1,6 @@
 package com.thaj.functionalprogramming.example
 
-import com.thaj.functionalprogramming.example.exercises.{EitherExamples, Error, Exercise}
+import com.thaj.functionalprogramming.example.exercises.{Exercise}
 import org.scalatest.WordSpec
 import org.scalatest.prop.{Checkers, PropertyChecks}
 import org.scalatest.MustMatchers._
@@ -36,7 +36,6 @@ object OptionSpec extends Specification {
 }
 
 object ValidationSpec extends Specification {
-  import com.thaj.functionalprogramming.example.exercises.Validation, Validation._
   import com.thaj.functionalprogramming.example.exercises._, EitherOperations._
 
   def is =

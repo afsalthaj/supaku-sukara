@@ -9,5 +9,4 @@ def is =
     |${("afsal" |+| "hi") == "afsalhi"}
     |${(1 |+| 2) == 12}
   """.stripMargin
-
 }
