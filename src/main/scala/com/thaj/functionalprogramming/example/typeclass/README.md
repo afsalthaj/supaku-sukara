@@ -8,4 +8,4 @@ Order of Reading:
 * [SemigroupSimple.scala](simulacrum/SemigroupSimple.scala)
 * [Semigroup.scala](simulacrum/Semigroup.scala)
 * [FunctorBasics.scala](functor/FunctorBasics.scala)
-* [FunctorSpec.scala]()
+* [FunctorSpec.scala](https://github.com/afsalthaj/supaku-sukara/blob/master/src/test/scala/com/thaj/functionalprogramming/example/typeclass/FunctorSpec.scala)
