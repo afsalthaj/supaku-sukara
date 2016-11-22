@@ -21,7 +21,7 @@ If you have got a sense of Functional Programming in Scala (or any language) you
 ===============================================================
 #### Functional Programming in Scala
 Project covers answers for the exercises in "Functional Programming in Scala" with conceptual explanation.
-https://github.com/afsalthaj/ScalaSample/tree/master/src/main/scala/com/thaj/functionalprogramming/example
+https://github.com/afsalthaj/supaku-sukara/tree/master/src/main/scala/com/thaj/functionalprogramming/example/exercises
 
 #### Keynote on Functional Programming in Scala - A Quick Revision!
 A WIP keynote on Functional Programming in scala.
