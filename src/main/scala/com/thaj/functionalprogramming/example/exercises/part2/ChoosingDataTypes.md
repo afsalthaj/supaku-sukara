@@ -185,3 +185,14 @@ def run[A](a: Par[A]): A
 
 ```
 
+Ok, now you know we need these functionalities. A Par to represent parallel computation.
+A unit promotes a constant value to a parallel computation,
+A map2 combining the results of two parallel computations with a binary function.
+A fork marking􏰀 lazyUnit wraps its unevaluated argument in a Par and marks it for concurrent
+evaluation. a computation for concurrent evaluation. The evaluation won’t
+actually occur until forced by run.
+􏰀A lazyUnit wraps its unevaluated argument in a Par and marks it for concurrent
+evaluation.
+A run extracts a value from a Par by actually performing the computation.
+
+
