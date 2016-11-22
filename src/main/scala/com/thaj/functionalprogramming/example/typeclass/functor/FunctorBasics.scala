@@ -19,6 +19,7 @@ import simulacrum._
 
   def void[A](fa: F[A]): F[Unit] = as(fa)(())
 
+  // Lambda is from kind projector compiler plugin.. you might see it as an error in some jetbrain IDE version.
   def compose[G[_]](implicit F: Functor[G]): Functor[Lambda[X => F[G[X]]]] = new Functor[Lambda[X => F[G[X]]]] {
     def map[A, B] (fga: F[G[A]])(f: A => B): F[G[B]] =
       self.map(fga)(ga => F.map(ga)(f))
@@ -34,8 +35,7 @@ trait FunctorLaws {
 
 
 object Functor {
-  type L[A] = Function1[Int, A]
-  // Doesnt make much sense there is already map defined for the type List in Scala
+  // Doesnt make much sense as there is already map defined for the type List in Scala
   // This is just for pedagogical purpose
   implicit val listFunctor: Functor[List] = new Functor[List] {
     def map[A, B](fa: List[A])(f: A => B): List[B] = fa.map(f)
