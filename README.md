@@ -20,6 +20,8 @@ If you have got a sense of Functional Programming in Scala (or any language) you
 ### Sukara, Kansūkei puroguramingu and Supaku
 ===============================================================
 #### Functional Programming in Scala
+https://github.com/afsalthaj/supaku-sukara/tree/master/src/main/scala/com/thaj/functionalprogramming
+
 Project covers answers for the exercises in "Functional Programming in Scala" with conceptual explanation.
 https://github.com/afsalthaj/supaku-sukara/tree/master/src/main/scala/com/thaj/functionalprogramming/exercises
 
