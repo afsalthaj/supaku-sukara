@@ -31,6 +31,8 @@ object FunctorSpec extends Specification {
   }
 
   val testCompose = {
+
+    // Please note Functor[List] is basically implicitly[Functor[List]]... We got rid of implicitly using Functor.ops._
     val composedFunctor = Functor[List] compose Functor[Option]
     assert(composedFunctor.map(List(Some(1), None, Some(2)))(_ + 1) == List(Some(2), None, Some(3)))
   }
