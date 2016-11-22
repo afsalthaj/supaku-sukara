@@ -18,7 +18,8 @@ object OptionOperation {
 
 
     def flatMap[B](f: A => Option[B]): Option[B] =
-      if (isEmpty) None else f(this.get)
+      //if (isEmpty) None else f(this.get)
+      map[Option[B]](f).getOrElse(None)
 
     // We know Nothing is a subtype of everthing.
     // this is why val s: List[String] = Nil works.
@@ -31,7 +32,9 @@ object OptionOperation {
     def getOrElse[B >: A](default: => B): B = if (isEmpty) default else this.get
 
     // If the option is empty then I need another option (this is not getOrElse).. It is orElse
-    def orElse[B >: A](ob: => Option[B]): Option[B] = if (isEmpty) ob else this
+    def orElse[B >: A](ob: => Option[B]): Option[B] =
+      //flatMap[Option[B]](ob)
+      if (isEmpty) ob else this
 
     //filter
     def filter(f: A => Boolean): Option[A] = if (isEmpty || f(this.get)) this else None
@@ -106,7 +109,7 @@ object Exercise {
   // A Try function that converts exeception throwing operations to Option
   // Remember it has argument which is non strict and lazy, this means the potentially
   // exception throwing operation `a` executes only inside Try
-  def Try[A] (a: => A) = try Some(a) catch {case e: Exception => None }
+  def Try[A] (a: => A) = try Some(a) catch { case e: Exception => None }
 
   // another example of using lift
   def getMathAbs(x: Option[Int]) = lift (math.abs)(x)

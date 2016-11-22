@@ -92,4 +92,34 @@ object DesignAspects {
   avoid calling get, or at least delay calling it until the very end. We want to be able to
   combine asynchronous computations without waiting for them to finish.
   */
+  /*
+  Let’s see if we can avoid the aforementioned pitfall of combining unit and get. If we
+  don’t call get, that implies that our sum function must return a Par[Int]. What consequences
+  does this change reveal? Again, let’s just invent functions with the required
+  signatures:
+  */
+
+  /*  def sum(ints: IndexedSeq[Int]): Par[Int]  = {
+   if (ints.length <= 1)
+     Par.unit( ints.headOption.getOrElse(0))
+    else {
+       val(l, r) = ints.splitAt(ints.length/2)
+      Par.map2(sum(l), sum(r))(_ + _)
+    }
+  }*/
+
+
+
+  // Exercise 7.1
+  // Whenever you want to combine two parallel computation (two boxes) we go for map2
+  /* {{{ def map2[A, B, C] (a: Par[A], b: Par[B])(f: (A, B) => C) = {} }}}
+    It seems we should make map2 lazy and have it begin immediate execution of both sides in parallel.
+    This also addresses the problem of giving neither side priority over
+    the other
+    Something still doesn’t feel right about our latest choice. Is it always the case
+    that we want to evaluate the two arguments to
+    map2 in parallel? Probably not. Consider this simple hypothetical example:
+   */
+
+
 }
