@@ -123,3 +123,6 @@ object DesignAspects {
 
 
 }
+
+//Exercise 7.2
+

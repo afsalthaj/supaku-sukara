@@ -196,3 +196,7 @@ evaluation.
 A run extracts a value from a Par by actually performing the computation.
 
 
+```
+type Par[A] = ExecutorService => Future[A]
+def run[A](s: ExecutorService)(a: Par[A]): Future[A] = a(s)
+```
