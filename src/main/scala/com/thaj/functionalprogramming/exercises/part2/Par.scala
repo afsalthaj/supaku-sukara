@@ -1,4 +1,5 @@
 package com.thaj.functionalprogramming.example.exercises.part2
+
 import java.util.concurrent.{ ExecutorService, Future }
 import java.util.concurrent.TimeUnit
 
@@ -50,7 +51,7 @@ object Par {
     in accord with our design choice of having fork be the sole function in the API for controlling parallelism.
     We can always do fork(map2(a,b)(f)) if we want the evaluation of f to occur in a separate thread.
    */
-  def map2[A, B, C](a: Par[A], b: Par[B], c: Par[C])(f: (A, B) => C): Par[C] = {
+  def map2[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = {
     (es: ExecutorService) => {
       val af = a(es)
       val bf = b(es)
@@ -79,8 +80,10 @@ object Par {
      def call = a(es).get
    })
 
-   //Hard: Fix the implementation of map2 so that it respects the contract of timeouts on Future.
-   def map2Fixed[A, B, C](a: Par[A], b: Par[B], c: Par[C])(f: (A, B) => C): Par[C] = {
+   def lazyUnit[A](a: => A): Par[A] = fork(unit(a))
+    // Exercise 7.3
+    // Hard: Fix the implementation of map2 so that it respects the contract of timeouts on Future.
+   def map2Fixed[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = {
      (es: ExecutorService) => {
        val t1 = System.nanoTime()
        val af = a(es)
@@ -90,25 +93,48 @@ object Par {
           def isDone = af.isDone() && bf.isDone()
           def isCancelled = af.isCancelled() || bf.isCancelled()
           def get = f(af.get(), bf.get())
-          def get(timeOut: Long, timeUnit: TimeUnit) =f(af.get(aft1-t1, timeUnit), bf.get(timeOut-(aft1-t1), timeUnit))
-          def cancel(evenIfRunning: Boolean): Boolean = af.cancel(true) && bf.cancel(true)
+          def get(timeOut: Long, timeUnit: TimeUnit) =
+            f(af.get(aft1-t1, timeUnit), bf.get(timeOut-(aft1-t1), timeUnit))
+          def cancel(evenIfRunning: Boolean): Boolean =
+            af.cancel(true) && bf.cancel(true)
         }
      }
    }
+
+   // Exercise 7.4
+   // This API already enables a rich set of operations. Here’s a simple example: using lazyUnit,
+   // write a function to convert any function A => B to one that evaluates its result asynchronously.
+   def asyncF[A, B](f: A => B): A => Par[B] = (a: A) => lazyUnit(f(a))
+
+   /*
+     Par[List[Int]] representing a parallel computation that pro- duces a List[Int],
+     and we’d like to convert this to a Par[List[Int]] whose result is sorted:
+   */
+   def sortPar(parList: Par[List[Int]]): Par[List[Int]] = {
+    map2Fixed(parList, unit(()))((a, _) => a.sorted)
+   }
+
+   /* Lift a function. We can lift any function of type A => B to Par[A] => Par[B]
+      we can map any function over a Par:
+    */
+   def map[A,B](pa: Par[A])(f: A => B): Par[B] = map2(pa, unit(()))((a, _) => f(a))
+
+  /** One mistake that we did was, we did sortPar using map2. sortPar is in fact
+    * a problem of map
+    */
+   def sortParProper(a: Par[List[Int]]): Par[List[Int]] = map(a)(_.sorted)
+
+   // here we could see that map is implemented using map2. Both map and map2
+   // are being primitive functions, the latter is more powerful. Hence providing
+   // a bogus value unit(()) can't be cheating.
+
+   def parMap[A,B](ps: List[A])(f: A => B): Par[List[B]] = {
+     val list: List[Par[B]] = ps.map(asyncF(_))
+     sequence(list)
+   }
+
+   // Exercise 7.5
+   // Hard: Write this function, called sequence. No additional primitives are required. Do not call run.
+   def sequence[A](a: List[Par[A]]): Par[List[A]] =
+     list.foldRight(unit(List[A]()): Par[A])(map2(_, _)(_ :: _))
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
