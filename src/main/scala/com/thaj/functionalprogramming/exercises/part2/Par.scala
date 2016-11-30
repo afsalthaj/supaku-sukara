@@ -79,6 +79,7 @@ object Par {
     def call = a(es).get
   })
 
+  // fork(x) == x
   def lazyUnit[A](a: => A): Par[A] = fork(unit(a))
 
   // Exercise 7.3
@@ -171,7 +172,7 @@ object Par {
   // Exercise 7.7
   //  map(map(y)(g))(f) == map(y)(f compose g)
   // This is not solution to the exercise, but just reasoning
-  /* let y = par[Y]
+  /* let y = Par[Y]
      let fun g = Y => G
      let fun f = G => F
 
@@ -188,5 +189,18 @@ object Par {
      map(Par[Y])(Y => F)
      = Par[F]
   */
+
+  /**
+    * Issue with fork (<reference from fpinscala>)
+      Assume that ExecutorService represents a thread pool of size X.
+      Now if fork(x) will execute as far as X != 1; But if it fork(fork(x)). It now constitutes
+      2 thread pools. Now if fork(fork(fork(x)) will result in a state of complete lock; or None
+      of them not being able to use.
+
+      Now the second case is fork(map2(fork(x), fork(y)))
+      The outer task is submitted to a thread pool and occupies a thread waiting for
+      fork(x) and fork(y). This is because get function is called in map2. fork(x) and fork(y)
+      will execute in parallel, but there is only one thread available and it results in a deadlock.
+    */
 
 }
