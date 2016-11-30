@@ -16,3 +16,7 @@ libraryDependencies ++= Seq (
   "ml.sparkling" %% "sparkling-graph-operators" % "0.0.6",
   "com.github.mpilquist" %% "simulacrum" % "0.10.0"
 )
+
+shellPrompt := {_ =>
+  s"\033[1;36m\033[40m[fpscala-spark] ~\033[0m "
+}

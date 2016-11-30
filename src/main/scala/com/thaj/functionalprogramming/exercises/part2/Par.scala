@@ -84,6 +84,15 @@ object Par {
 
     // Exercise 7.3
     // Hard: Fix the implementation of map2 so that it respects the contract of timeouts on Future.
+    /** While map2Fixed fixes the problem of time outs, it is fixing another major problem with
+      * with map2. The problem with map2 is that the parallel computations passed into map2 are calling
+      * their respective get methods, for the final future to be completely defined. Or in other words,
+      * it is taking time to describe future. However, map2 is still valid to be exising as it returns
+      * only UnitFuture (a future that has to be executed then and there itself) and not an actual Future (that
+      * will execute as only a description). The below function is going to get executed quickly without any wait.
+      * Nevertheless, to make sure that the whole map2Fixed is executed in a separate thread pool, it has to be
+      * fork(map2Fixed(a, b)(f))
+      */
    def map2Fixed[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = {
      (es: ExecutorService) => {
        val af = a(es)
@@ -131,14 +140,29 @@ object Par {
    // here we could see that map is implemented using map2. Both map and map2
    // are being primitive functions, the latter is more powerful. Hence providing
    // a bogus value unit(()) can't be cheating.
-
-   def parMap[A,B](ps: List[A])(f: A => B): Par[List[B]] = {
-     val list: List[Par[B]] = ps.map(asyncF(_))
+   /**
+     * Note that we’ve wrapped our implementation in a
+       call to fork. With this implementa- tion, parMap will return immediately,
+       even for a huge input list. When we later call run, it will fork a single asynchronous
+       computation which itself spawns N parallel com- putations, and then waits for these
+       computations to finish, collecting their results into a list.
+     */
+   def parMap[A,B](ps: List[A])(f: A => B): Par[List[B]] = fork ({
+     val list: List[Par[B]] = ps.map(asyncF(f(_)))
      sequence(list)
-   }
+   })
 
    // Exercise 7.5
    // Hard: Write this function, called sequence. No additional primitives are required. Do not call run.
    def sequence[A](a: List[Par[A]]): Par[List[A]] =
-     list.foldRight(unit(List[A]()): Par[A])(map2(_, _)(_ :: _))
+     a.foldRight(unit(List[A]()): Par[List[A]])(map2(_, _)(_ :: _))
+
+   // Exercise 7.6
+   // Implement parFilter, which filters elements of a list in parallel.
+   def parFilter[A](as: List[A])(f: A => Boolean): Par[List[A]] = {
+     as.map(asyncF(a => (f(a),a))).foldRight(unit(List[A]()))(map2(_, _) {
+       case ((true, a), acc)  => a :: acc
+       case ((false, a), acc) => acc
+     })
+   }
 }
