@@ -81,22 +81,26 @@ object Par {
    })
 
    def lazyUnit[A](a: => A): Par[A] = fork(unit(a))
+
     // Exercise 7.3
     // Hard: Fix the implementation of map2 so that it respects the contract of timeouts on Future.
    def map2Fixed[A, B, C](a: Par[A], b: Par[B])(f: (A, B) => C): Par[C] = {
      (es: ExecutorService) => {
-       val t1 = System.nanoTime()
        val af = a(es)
-       val aft1 = System.nanoTime()
        val bf = b(es)
         new Future[C]{
           def isDone = af.isDone() && bf.isDone()
           def isCancelled = af.isCancelled() || bf.isCancelled()
           def get = f(af.get(), bf.get())
-          def get(timeOut: Long, timeUnit: TimeUnit) =
-            f(af.get(aft1-t1, timeUnit), bf.get(timeOut-(aft1-t1), timeUnit))
+          def get(timeOut: Long, timeUnit: TimeUnit) = {
+            val at1 = System.nanoTime
+            val aValue = af.get
+            val at2 = System.nanoTime
+            val bValue = bf.get(timeOut - (at2 - at1), timeUnit)
+            f(aValue, bValue)
+          }
           def cancel(evenIfRunning: Boolean): Boolean =
-            af.cancel(true) && bf.cancel(true)
+            af.cancel(true) || bf.cancel(true)
         }
      }
    }
