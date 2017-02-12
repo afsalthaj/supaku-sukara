@@ -294,4 +294,11 @@ object Par {
   def joinUsingFlatMap[A](a: Par[Par[A]]): Par[A] =  {
     chooser(a)(a => a)
   }
+
+
+  // Takeaway
+  // We described the API in terms of data types and primitive functions. That is merely description.
+  // Later the actual concern of running it was dealt as a `run` function.
+  // We also learned about combinators. And we implemented different functions in an algebraic passion.
+  // This is going to continue in the next few chapters
 }
