@@ -44,6 +44,7 @@ object Par {
     def get(timeout: Long, unit: TimeUnit) = get
   }
 
+  def run[A](s: ExecutorService)(a: Par[A]): Future[A] = a(s)
   /*
     map2 doesn’t evaluate the call to f in a separate logical thread,
     in accord with our design choice of having fork be the sole function in the API for controlling parallelism.
@@ -170,8 +171,13 @@ object Par {
   }
 
   // Exercise 7.7
-  //  map(map(y)(g))(f) == map(y)(f compose g)
-  // This is not solution to the exercise, but just reasoning
+  //  Hard: Given map(y)(id) == y, it’s a free theorem that map(map(y)(g))(f) ==
+  // map(y)(f compose g). (This is sometimes called map fusion, and it can be used as an
+  // optimization—rather than spawning a separate parallel computation to compute the
+  // second mapping, we can fold it into the first mapping.)13 Can you prove it? You may
+  // want to read the paper “Theorems for Free!” (http://mng.bz/Z9f1) to better understand
+  // the “trick” of free theore
+  // This is not solution to the exercise, but just reasoning the type equality
   /* let y = Par[Y]
      let fun g = Y => G
      let fun f = G => F
@@ -190,6 +196,18 @@ object Par {
      = Par[F]
   */
 
+
+   /**
+     *  def map[A, B](pa: Par[A])(f: A => B): Par[B] = map2(pa, unit(()))((a, _) => f(a))
+     *  map(unit(x))(id) == unit(id(x))
+     *  map(unit(x))(id) = unit(x)
+     *  map(y)(id) == y
+     */
+
+    // map(map(y)(g))(f) == map(y)(f compose g)
+    // let g = id
+    // map (map(y)(id))(f) = map (y) (f)
+    // map (y)(f) = map(y)(f)
   /**
     * Issue with fork (<reference from fpinscala>)
       Assume that ExecutorService represents a thread pool of size X.
@@ -203,4 +221,77 @@ object Par {
       will execute in parallel, but there is only one thread available and it results in a deadlock.
     */
 
+  // The rest of the chapter deals with the alternate of fork funtionality, and the obvious change in
+  // Future implementation. The main changes are as follows:
+  // sealed trait Future[A] {
+  // private[parallelism] def apply(k: A => Unit): Unit
+  //  }
+  // type Par[+A] = ExecutorService => Future[A]
+
+  // We will skip the session as we already covered the core of this chapter.
+
+
+  //def run(es: ExecutorService)(pr: Par[A]) = ???
+  def choice[A](cond: Par[Boolean])(f: Par[A], t: Par[A]): Par[A] = {
+    es => if (run(es)(cond).get) f(es) else t(es)
+  }
+
+  //Exercise 7.11
+  def choiceN[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = {
+    es => {
+      val n = run(es)(n).get
+      if(choices.size >= n)
+        choices(n)(es)
+      else
+        choices(choices.size)(es)
+    }
+  }
+
+  def choiceInTermsOfChoiceN[A](cond: Par[Boolean])(f: Par[A], t: Par[A]) =
+    choiceN[A](map(cond)(if(_) 0 else 1))(List(f, t))
+
+
+  // Exercise 7.12
+  // Please note that it differs from fpinscala. May be u can try to find out the differece. For me this makes more sense as of now
+  def choiceMap[K,V](key: Par[K])(choices: Map[K,Par[V]]): Par[V] = {
+    es => {
+      val k = run(es)(key).get
+      choices(k)(es)
+    }
+  }
+
+  // Exercise 7.13
+  def chooser[A,B](pa: Par[A])(choices: A => Par[B]): Par[B] = {
+    es => {
+      val k = run(es)(pa).get
+      val par = choices(k)
+      par(es)
+    }
+  }
+
+  def choiceUsingChoose[A](cond: Par[Boolean])(f: Par[A], t: Par[A]): Par[A] = {
+    chooser[Boolean, A](cond)(if(_) f else t)
+  }
+
+  def choiceNUsingChoose[A](n: Par[Int])(list: List[Par[A]]): Par[A] = {
+    chooser[Int, A](n)(list(_))
+  }
+
+
+  // join function
+  def join[A](a: Par[Par[A]]): Par[A] = es => {
+    val parA: Par[A] = a(es).get()
+    parA(es)
+  }
+
+  //bind or flatMap
+  def flatMapUsingJoin[A, B](a: Par[A])(f: A => Par[B]): Par[B] = {
+   val parOfpar:Par[Par[B]] = map(a)(f)
+    join(parOfpar)
+  }
+
+  // join function
+  def joinUsingFlatMap[A](a: Par[Par[A]]): Par[A] =  {
+    chooser(a)(a => a)
+  }
 }
