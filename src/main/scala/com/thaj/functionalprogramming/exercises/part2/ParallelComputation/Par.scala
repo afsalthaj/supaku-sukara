@@ -237,9 +237,9 @@ object Par {
   }
 
   //Exercise 7.11
-  def choiceN[A](n: Par[Int])(choices: List[Par[A]]): Par[A] = {
+  def choiceN[A](int: Par[Int])(choices: List[Par[A]]): Par[A] = {
     es => {
-      val n = run(es)(n).get
+      val n = run(es)(int).get
       if(choices.size >= n)
         choices(n)(es)
       else
