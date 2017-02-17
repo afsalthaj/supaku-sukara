@@ -68,7 +68,7 @@ import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.S
     * and it looks like what it is—an imperative program that maintains some state.
     * But it’s the same code. We get the next Int and assign it to x, get the next Int after that
     * and assign it to y, then generate a list of length x, and finally return the list with all of its
-    * elements modulo y elements modulo y.
+    * elements modulo y
     */
   val nsSimple: Rand[List[Int]] = for {
     x <- int
@@ -80,7 +80,6 @@ import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.S
     *  If we imagine that we have a combinator get for getting the current state, and a combinator
     *  set for setting a new state, we could implement a combinator that can modify the state in arbitrary ways:
     */
-// Personally, I didn't like this concept
 
  def modifyS[S](f: S => S): State[S, Unit]= for {
     s <- get
@@ -130,6 +129,15 @@ import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.S
   } yield (machine.coins, machine.candies)
 
 
+  // OR for better understanding
+  def simulateMachineAlternate(inputs: List[Input]):State[Machine, (Int, Int)]  = {
+     val s:  State[Machine, List[Unit]] =
+       sequence(inputs.map(input => State[Machine, Unit](a => ((), a.operateOnMachine(input)))))
+
+    s.flatMap[(Int, Int)](_ => State[Machine, (Int, Int)](t => ((t.coins, t.candies), t)))
+
+  }
+
   //Example usage
   val lockedMachine = Machine(true, 10, 20)
   val unlockedMachine = Machine(false, 10, 20)
@@ -167,3 +175,4 @@ import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.S
 // Represent RNG state actions in terms of State
 // And then you are discovering the fact that all your RNG state actions can be chained, composed, or combined
 // easily through the functions of the box `State`
+

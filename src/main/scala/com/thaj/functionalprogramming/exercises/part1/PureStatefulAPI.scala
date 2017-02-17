@@ -84,13 +84,16 @@ object PureStatefulAPI {
 
   // Exercise 6.4
   // Write a function to generate a list of random integers.
-   def ints(count: Int)(rng: RNG):(List[Int], RNG) = {
-    if (count == 0)
-      (Nil, rng)
-    else {
-      val (value, r) = rng.nextInt
-      val (newValue, newR) = ints(count - 1)(r)
-      (value :: newValue, newR)
+  def ints(count: Int)(rng: RNG):(List[Int], RNG) = {
+    def innerInts(values: List[Int], count: Int, newR: RNG): (List[Int], RNG) = {
+      if (count == 0)
+        (Nil, rng)
+      else {
+        val (value, r) = rng.nextInt
+        innerInts( value :: values, count - 1, r)
+      }
     }
+
+    innerInts(Nil, count, rng )
   }
 }
