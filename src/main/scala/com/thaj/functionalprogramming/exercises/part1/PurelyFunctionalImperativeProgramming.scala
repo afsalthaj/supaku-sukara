@@ -135,7 +135,6 @@ import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.S
        sequence(inputs.map(input => State[Machine, Unit](a => ((), a.operateOnMachine(input)))))
 
     s.flatMap[(Int, Int)](_ => State[Machine, (Int, Int)](t => ((t.coins, t.candies), t)))
-
   }
 
   //Example usage
