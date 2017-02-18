@@ -111,7 +111,12 @@ object Prop {
 // Consider gen as something dealing with random number generator, that in turn deals with state transitions.
 // Lets wrap State transition with respect to RNG in Gen case class
 
-case class Gen[A](sample: State[RNG, A])
+// Gen[RNG, Gen[A](State (rng => (genA, rng2))) : Gen[Gen[A]]
+case class Gen[A](sample: State[RNG, A]) {
+  def map [B](a: A => B): Gen[B] = Gen(this.sample.map(a))
+  def flatMap[B](a: A => Gen[B]): Gen[B] = Gen.join(this.map(a))
+
+}
 
 
 
@@ -129,4 +134,29 @@ object Gen {
   def unit[A](a: A): Gen[A] = Gen(State.unit(a))
   def boolean: Gen[Boolean] = Gen(State.boolean)
   def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] = Gen(State.sequence(List.fill(n)(g.sample)))
+
+  /**
+   * As we discussed in chapter 7, we’re interested in understanding what operations are
+   * primitive and what operations are derived, and in finding a small yet expressive set of primitives.
+   * A good way to explore what is expressible with a given set of primitives is to pick some
+   * concrete examples you’d like to express, and see if you can assemble the functionality you want.
+   * As you do so, look for patterns, try factoring out these patterns into combinators, and refine your set of primitives.
+   * We encourage you to stop reading here and simply play with the primitives and combinators we’ve written so far.
+   * If you want some concrete examples to inspire you, here are some ideas:
+   * If we can generate a single Int in some range, do we need a new primitive to generate an (Int,Int) pair in some range?
+   * Can we produce a Gen[Option[A]] from a Gen[A]? What about a Gen[A] from a Gen[Option[A]]?
+   * Can we generate strings somehow using our existing primitives?
+   *
+   * // Refer to map, flatMap, join etc
+   */
+
+  def join[B](a: Gen[Gen[B]]): Gen[B] = {
+    Gen(State(rng => {
+      val k: (Gen[B], RNG) = a.sample.run(rng)
+      val y: (B, RNG) = k._1.sample.run(k._2)
+      y
+    }))
+  }
+
+  //def sequence[A](a: List[Gen[A]] ): Gen[List[A]] = ???
 }
