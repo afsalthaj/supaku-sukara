@@ -3,7 +3,6 @@ package com.thaj.functionalprogramming.example.exercises.part2
 import com.thaj.functionalprogramming.example.exercises.PureStatefulAPI.RNG
 import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.State
 
-
 /**
  *  Although a library for testing has a very different purpose than a library for parallel computations,
  *  we’ll discover that these libraries
@@ -99,14 +98,15 @@ trait LegacyProp {
 
 
 // Design refinement
-trait Prop {
-  import Prop._
+trait PropRefinedV1 {
+  import PropRefinedV1._
   def check: Either[(FailedCase, SuccessCount), SuccessCount]
 }
-object Prop {
+object PropRefinedV1 {
   type FailedCase = String
   type SuccessCount = Int
 }
+
 
 // Consider gen as something dealing with random number generator, that in turn deals with state transitions.
 // Lets wrap State transition with respect to RNG in Gen case class
@@ -114,7 +114,10 @@ object Prop {
 // Gen[RNG, Gen[A](State (rng => (genA, rng2))) : Gen[Gen[A]]
 case class Gen[A](sample: State[RNG, A]) {
   def map [B](a: A => B): Gen[B] = Gen(this.sample.map(a))
+  // Exercise 8.6
   def flatMap[B](a: A => Gen[B]): Gen[B] = Gen.join(this.map(a))
+  def listOfN(size: Gen[Int]): Gen[List[A]] = size.flatMap(n => Gen.sequence(List.fill(n)(this)))
+  def map2[B, C](a: Gen[B])(f: (A, B) => C): Gen[C] = this.flatMap( t => a.map(aa => f(t, aa)))
 
 }
 
@@ -158,5 +161,74 @@ object Gen {
     }))
   }
 
-  //def sequence[A](a: List[Gen[A]] ): Gen[List[A]] = ???
+  def sequence[A](a: List[Gen[A]] ): Gen[List[A]] =
+    a.foldRight(unit(Nil: List[A]))((c, d) => c.map2(d)(_ :: _))
+
+
+  // Sample ones
+  def converToGenOptionA[A](a: Gen[A]): Gen[Option[A]] = a.map(Option(_))
+
+  //Tuple in some range
+  def GenForTuple(start: Int, end: Int): Gen[(Int, Int)] = Gen.choose(start, end).map2(Gen.choose(start, end))((_, _))
+
+  //generate string - May be wrong, but just for pedagogical purpose
+  def generateString = Gen.choose(1, 100).map(_.toString)
+
+  // Suppose we’d like a Gen[(String,String)] that generates pairs where the second string
+  // contains only characters from the first. Or that we had a Gen[Int] that chooses an integer
+  // between 0 and 11, and we’d like to make a Gen[List[Double]] that then generates
+  // lists of whatever length is chosen. In both of these cases there’s a dependency—we
+
+  def getIntegerBetween0and11(n: Int): Gen[List[Double]] = sequence(List.fill(n)(Gen.choose(0, 11).map(_.toDouble)))
+
+  // This might be wrong
+  def getStringPairWithSecondStringBeingSubStringOfFirst: Gen[(String, String)] = {
+    Gen.choose(0, 100).map(_.toString).map2(Gen.choose(0, 100).map(_.toString)) { (a, b) =>
+      if(a.contains(b))(a, b) else (a, a)
+    }
+  }
+
+  //Exercise 8.7
+  def union[A](g1: Gen[A], g2: Gen[A]): Gen[A] =
+    boolean.flatMap(b => if (b) g1 else g2)
+
+  // Exercise 8.8
+  // Implement weighted, a version of union that accepts a weight for each
+  // Gen and generates values from each Gen with probability proportional to its weight.
+  // Referred the answer here
+  def weighted[A](g1: (Gen[A],Double), g2: (Gen[A],Double)): Gen[A] = {
+    val g1Threshold = g1._2.abs / (g1._2.abs + g2._2.abs)
+
+    Gen(State.double).flatMap(d => if (d < g1Threshold) g1._1 else g2._1)
+  }
 }
+
+// Prop Refined - Final Version
+object Prop {
+  type FailedCase = String
+  type SuccessCount = Int
+  type TestCases = Int
+
+  sealed trait Result {
+    def isFalsified: Boolean
+  }
+
+  case object Passed extends Result {
+    def isFalsified: Boolean = false
+  }
+
+  case class Falsified(failedCase: FailedCase, successCount: SuccessCount) {
+    def isFalsisfied: Boolean = true
+  }
+
+  def something = {
+
+    Stream
+  }
+}
+import Prop._
+case class Prop(run: TestCases => Result)
+
+
+
+

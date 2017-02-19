@@ -204,5 +204,32 @@ object Stream {
     case Cons(h, t) => Some(h())
   }
 
+  val ones: Stream[Int] = Stream.cons(1, ones)
+
+  // Exercise 5.8
+  // Generalize ones slightly to the function constant, which returns an infinite Stream of a given value.
+  def constant[A](a: A): Stream[A] = Stream.cons(a, constant(a))
+
+  //constant more efficient
+  def constantEfficient[A](a: A): Stream[A]  = {
+    lazy val tail: Stream[A] = Cons(() => a, () => tail)
+    tail
+  }
+
+  // Exercise 5.9
+  // Write a function that generates an infinite stream of integers, starting from n, then n + 1, n + 2, and so on.[7]
+  def from(n: Int): Stream[Int] = {
+    Stream.cons(n, from(n+1))
+  }
+
+ // Write a function fibs that generates the infinite stream of Fibonacci numbers: 0, 1, 1, 2, 3, 5, 8, and so on.
+
+  def fib: Stream[Int] = {
+    def inner(acc: Int, prev: Int): Stream[Int] = {
+      Stream.cons(acc, inner(acc+prev, acc))
+    }
+    inner(0, 1)
+  }
+
 
 }
