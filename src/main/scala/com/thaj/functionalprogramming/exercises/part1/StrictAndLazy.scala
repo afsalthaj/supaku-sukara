@@ -135,6 +135,15 @@ sealed trait Stream[+A] {
     case Cons(h, t) => cons(f(h()), t().mapUnfold(f))
     case Empty => Empty
   }
+
+  // Important for Property Check library
+  def zip[B, C](stream: Stream[B]): Stream[(A, B)] = {
+     Stream.unfold((this, stream)) {
+       case (Cons(a, b), Cons(c, d)) => Some(((a(),c() ), (b(), d())))
+       case _ => None
+     }
+  }
+
   /**
     * Theory:
     *  Example used for explanation: Stream(1,2,3,4).map(_ + 10).filter(_ % 2 == 0)
@@ -208,9 +217,6 @@ object Stream {
 
   // Exercise 5.8
   // Generalize ones slightly to the function constant, which returns an infinite Stream of a given value.
-  def constant[A](a: A): Stream[A] = Stream.cons(a, constant(a))
-
-  //constant more efficient
   def constantEfficient[A](a: A): Stream[A]  = {
     lazy val tail: Stream[A] = Cons(() => a, () => tail)
     tail
@@ -223,7 +229,6 @@ object Stream {
   }
 
  // Write a function fibs that generates the infinite stream of Fibonacci numbers: 0, 1, 1, 2, 3, 5, 8, and so on.
-
   def fib: Stream[Int] = {
     def inner(acc: Int, prev: Int): Stream[Int] = {
       Stream.cons(acc, inner(acc+prev, acc))
@@ -231,5 +236,29 @@ object Stream {
     inner(0, 1)
   }
 
+ // Exercise 5.11
+ // Write a more general stream-building function called unfold. It takes an initial state, and a function for producing
+ // both the next state and the next value in the generated stream.
+  /**
+   * The unfold function is an example of what’s sometimes called a corecursive function.
+   * Whereas a recursive function consumes data, a corecursive function produces data.
+   * And whereas recursive functions terminate by recursing on smaller inputs, corecursive functions
+   * need not terminate so long as they remain productive, which just means that we can always evaluate
+   * more of the result in a finite amount of time. The unfold function is productive as long as f terminates,
+   * since we just need to run the function f one more time to generate the next element of the Stream.
+   * Corecursion is also sometimes called guarded recursion, and productivity is also sometimes called cotermination.
+   * These terms aren’t that important to our discussion, but you’ll hear them used sometimes in the context of
+   * functional programming.
+   */
+  // Important for property check library
+ def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] =
+    f(z) match {
+      case Some((a, s)) => Stream.cons(a, unfold(s)(f))
+      case None => Empty
+    }
 
+  // Exercise 5.12
+  // Write fibs, from, constant, and ones in terms of unfold.[8]
+
+  def constant[A](a: A) = unfold(a)( _ => Some(a, a))
 }

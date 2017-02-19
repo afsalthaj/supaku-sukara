@@ -203,12 +203,33 @@ object Gen {
   }
 }
 
+
+import Prop._
+case class Prop(run: TestCases => Result)
+
 // Prop Refined - Final Version
 object Prop {
   type FailedCase = String
   type SuccessCount = Int
   type TestCases = Int
 
+  /**
+   *
+   * type Result = Either[(FailedCase, SuccessCount), SuccessCount]
+   * case class Prop(run: TestCases => Result)
+   * Also, we’re recording the number of successful tests on both sides of that Either.
+   * But when a property passes, it’s implied that the number of passed tests will be equal to the argument to run.
+   * So the caller of run learns nothing new by being told the success count.
+   * Since we don’t currently need any information in the Right case of that Either, we can turn it into an Option:
+   * type Result = Option[(FailedCase, SuccessCount)]
+   * case class Prop(run: TestCases => Result)
+   * This seems a little weird, since None will mean that all tests succeeded
+   * and the property passed and Some will indicate a failure. Until now, we’ve only
+   * used the None case of Option to indicate failure. But in this case we’re using it
+   * to represent the absence of a failure.
+   * That’s a perfectly legitimate use for Option, but its intent isn’t very clear.
+   * So let’s make a new data type, equivalent to Option[(FailedCase, SuccessCount)], that shows our intent very clearly.
+   */
   sealed trait Result {
     def isFalsified: Boolean
   }
@@ -221,13 +242,13 @@ object Prop {
     def isFalsisfied: Boolean = true
   }
 
-  def something = {
-
-    Stream
+  import com.thaj.functionalprogramming.example.exercises.Stream
+  // Basically generates a stream of A by intuitively passing the changed state after each computation of stream.
+  def randomStream[A](g: Gen[A])(rng: RNG): Stream[A] = {
+    Stream.unfold(rng)(rng => Some(g.sample.run(rng)))
   }
 }
-import Prop._
-case class Prop(run: TestCases => Result)
+
 
 
 
