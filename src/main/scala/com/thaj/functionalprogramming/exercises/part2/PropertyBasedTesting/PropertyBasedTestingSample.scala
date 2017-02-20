@@ -205,7 +205,22 @@ object Gen {
 
 
 import Prop._
-case class Prop(run: TestCases => Result)
+case class Prop(run: (TestCases, RNG) => Result) {
+
+  // defect with this implementation it runs almost together, but that's fine. Not sure if only Prop has to be
+  // executed in case of failure.
+  def && (x: Prop): Prop = Prop({ (n, rng) => {
+    val result = this.run(n,rng)
+    val result2 = x.run(n,rng)
+    (result, result2) match {
+      case (Falsified(a, b), Falsified(c, d)) => Falsified(a.toString + c.toString, b + d)
+      case (Passed, Falsified(a, b)) => Falsified(a.toString, n + b )
+      case (Falsified(a, b), Passed) => Falsified(a.toString, n + b)
+      case _ =>  Passed
+    }
+  }
+  })
+}
 
 // Prop Refined - Final Version
 object Prop {
@@ -238,8 +253,8 @@ object Prop {
     def isFalsified: Boolean = false
   }
 
-  case class Falsified(failedCase: FailedCase, successCount: SuccessCount) {
-    def isFalsisfied: Boolean = true
+  case class Falsified(failedCase: FailedCase, successCount: SuccessCount) extends Result {
+    def isFalsified: Boolean = true
   }
 
   import com.thaj.functionalprogramming.example.exercises.Stream
@@ -247,6 +262,7 @@ object Prop {
   def randomStream[A](g: Gen[A])(rng: RNG): Stream[A] = {
     Stream.unfold(rng)(rng => Some(g.sample.run(rng)))
   }
+  //define forAll now, which takes a Gen[A] and a predicate..and it returns a Prop, and to `run` prop we need n (TestCases) and RNG
 }
 
 
