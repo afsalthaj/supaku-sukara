@@ -184,7 +184,7 @@ case class Cons[+A] (head: () => A, tail: () => Stream[A]) extends Stream[A]
 
 object Stream {
   // smart Constructors
-  def cons[A](a: => A, t: => Stream[A]): Stream[A]  = {
+  def cons[A](a: => A, t: => Stream[A]): Stream[A] = {
     // so, Cons is created through cons function, which is basically a smart constructor
     // this will ensure that head and tail are evaluated just once.. yes only when the very first time
     // it is called.
@@ -205,10 +205,10 @@ object Stream {
   def empty[A]: Stream[A] = Empty
 
   def apply[A](as: A*): Stream[A] = {
-    if(as.isEmpty) Empty else cons(as.head, apply(as.tail: _*))
+    if (as.isEmpty) Empty else cons(as.head, apply(as.tail: _*))
   }
 
-  def headOption[A](a: Stream[A]): Option[A]= a match {
+  def headOption[A](a: Stream[A]): Option[A] = a match {
     case Empty => None
     // Explicit forcing of the h thunk using h()
     // Note that we have to force h explicitly via h(), but other than that,
@@ -222,7 +222,7 @@ object Stream {
 
   // Exercise 5.8
   // Generalize ones slightly to the function constant, which returns an infinite Stream of a given value.
-  def constantEfficient[A](a: A): Stream[A]  = {
+  def constantEfficient[A](a: A): Stream[A] = {
     lazy val tail: Stream[A] = Cons(() => a, () => tail)
     tail
   }
@@ -230,20 +230,20 @@ object Stream {
   // Exercise 5.9
   // Write a function that generates an infinite stream of integers, starting from n, then n + 1, n + 2, and so on.[7]
   def from(n: Int): Stream[Int] = {
-    Stream.cons(n, from(n+1))
+    Stream.cons(n, from(n + 1))
   }
 
- // Write a function fibs that generates the infinite stream of Fibonacci numbers: 0, 1, 1, 2, 3, 5, 8, and so on.
+  // Write a function fibs that generates the infinite stream of Fibonacci numbers: 0, 1, 1, 2, 3, 5, 8, and so on.
   def fib: Stream[Int] = {
     def inner(acc: Int, prev: Int): Stream[Int] = {
-      Stream.cons(acc, inner(acc+prev, acc))
+      Stream.cons(acc, inner(acc + prev, acc))
     }
     inner(0, 1)
   }
 
- // Exercise 5.11
- // Write a more general stream-building function called unfold. It takes an initial state, and a function for producing
- // both the next state and the next value in the generated stream.
+  // Exercise 5.11
+  // Write a more general stream-building function called unfold. It takes an initial state, and a function for producing
+  // both the next state and the next value in the generated stream.
   /**
    * The unfold function is an example of what’s sometimes called a corecursive function.
    * Whereas a recursive function consumes data, a corecursive function produces data.
@@ -256,7 +256,7 @@ object Stream {
    * functional programming.
    */
   // Important for property check library
- def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] =
+  def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] =
     f(z) match {
       case Some((a, s)) => Stream.cons(a, unfold(s)(f))
       case None => Empty
@@ -265,5 +265,5 @@ object Stream {
   // Exercise 5.12
   // Write fibs, from, constant, and ones in terms of unfold.[8]
 
-  def constant[A](a: A) = unfold(a)( _ => Some(a, a))
+  def constant[A](a: A) = unfold(a)(_ => Some(a, a))
 }
