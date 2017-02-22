@@ -116,8 +116,11 @@ case class Gen[A](sample: State[RNG, A]) {
   def map [B](a: A => B): Gen[B] = Gen(this.sample.map(a))
   // Exercise 8.6
   def flatMap[B](a: A => Gen[B]): Gen[B] = Gen.join(this.map(a))
+  def listOfN(size: Int): Gen[List[A]] = listOfN(Gen.unit(size))
   def listOfN(size: Gen[Int]): Gen[List[A]] = size.flatMap(n => Gen.sequence(List.fill(n)(this)))
   def map2[B, C](a: Gen[B])(f: (A, B) => C): Gen[C] = this.flatMap( t => a.map(aa => f(t, aa)))
+  // Exercise 8.10
+  def unsized: SGen[A] = SGen(_ => this)
 
 }
 
@@ -130,12 +133,20 @@ object Gen {
 
   import State._
 
+  // defines a generator that can generate numbers between start and stopExclusive
+  // Please note that it could generate infinite numbers that range between start and stopExclusive
+  // From this we can somehow guess, we are moving towards
+  // using `Stream` in this API
   def choose(start: Int, stopExclusive: Int): Gen[Int] =
     Gen(nonNegativeInt.map(n => start + n % (stopExclusive-start)))
 
   // Exercise 8.5
+  // It can be considered as a continuation, where you got a number and an associated state which doesn't really matter
   def unit[A](a: A): Gen[A] = Gen(State.unit(a))
   def boolean: Gen[Boolean] = Gen(State.boolean)
+  // generates list of length n using generator g. This is pretty interesting concept going forward. Please note
+  // that it could generate infinite number of lists of length n. From this we can somehow guess, we are moving towards
+  // using `Stream` in this API
   def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] = Gen(State.sequence(List.fill(n)(g.sample)))
 
   /**
@@ -188,7 +199,7 @@ object Gen {
     }
   }
 
-  //Exercise 8.7
+  // Exercise 8.7
   def union[A](g1: Gen[A], g2: Gen[A]): Gen[A] =
     boolean.flatMap(b => if (b) g1 else g2)
 
@@ -196,7 +207,7 @@ object Gen {
   // Implement weighted, a version of union that accepts a weight for each
   // Gen and generates values from each Gen with probability proportional to its weight.
   // Referred the answer here
-  def weighted[A](g1: (Gen[A],Double), g2: (Gen[A],Double)): Gen[A] = {
+  def weighted[A](g1: (Gen[A], Double), g2: (Gen[A],Double)): Gen[A] = {
     val g1Threshold = g1._2.abs / (g1._2.abs + g2._2.abs)
 
     Gen(State.double).flatMap(d => if (d < g1Threshold) g1._1 else g2._1)
@@ -207,8 +218,11 @@ object Gen {
 import Prop._
 case class Prop(run: (TestCases, RNG) => Result) {
 
+  // Exercise 8.9
   // defect with this implementation it runs almost together, but that's fine. Not sure if only Prop has to be
   // executed in case of failure.
+  // this implementation as of now seems to be straight forward (than the one in fpinscala),
+  // and doesn't have the usual the boolean && behaviour
   def && (x: Prop): Prop = Prop({ (n, rng) => {
     val result = this.run(n,rng)
     val result2 = x.run(n,rng)
@@ -218,8 +232,19 @@ case class Prop(run: (TestCases, RNG) => Result) {
       case (Falsified(a, b), Passed) => Falsified(a.toString, n + b)
       case _ =>  Passed
     }
-  }
-  })
+  }})
+
+  // differs from the other solutions, but its simpler and readable and does the same thing.
+  def || (x: Prop): Prop = Prop ( { (n, rng) => {
+    val result1 = this.run(n, rng)
+    result1 match {
+      case Falsified(a, b) => x.run(n, rng) match {
+        case Passed => Passed
+        case Falsified(c, d ) => Falsified(a.toString + c.toString, b + d)
+      }
+      case _ => Passed
+    }
+  }})
 }
 
 // Prop Refined - Final Version
@@ -262,9 +287,54 @@ object Prop {
   def randomStream[A](g: Gen[A])(rng: RNG): Stream[A] = {
     Stream.unfold(rng)(rng => Some(g.sample.run(rng)))
   }
-  //define forAll now, which takes a Gen[A] and a predicate..and it returns a Prop, and to `run` prop we need n (TestCases) and RNG
+
+  // define forAll now, which takes a Gen[A] and a predicate..and it returns a Prop, and to `run` prop
+  // we need n (TestCases) and RNG
+  // So n here is the number of test cases basically.
+  // Ex: if A is `Int` then it generates n integer values and apply it to the
+  // predicate (which is possibly the function to be tested). Hence we are testing
+  // the function `n` times. Hence n refers to `TestCases`
+  def forAll[A](as: Gen[A])(f: A => Boolean): Prop = Prop {
+    (n,rng) => randomStream(as)(rng).zip(Stream.from(0)).take(n).map {
+      case (a, i) => try {
+        if (f(a)) Passed else Falsified(a.toString, i)
+      } catch { case e: Exception => Falsified(buildMsg(a, e), i) }
+    }.find(_.isFalsified).getOrElse(Passed)
+  }
+
+  def buildMsg[A](s: A, e: Exception): String =
+    s"test case: $s\n" +
+      s"generated an exception: ${e.getMessage}\n" +
+      s"stack trace:\n ${e.getStackTrace.mkString("\n")}"
 }
 
+
+// Test Case Minimisation
+// Instead of starting from a wide set of test cases and then `shrinking` it down to find the
+// test case that failed, we slowly generate test case and then widens up..(sized generation)
+// Instead of modifying our Gen data type, for which we’ve already written a number of useful combinators, let’s introduce sized generation as a separate layer in our library. A simple representation of a sized generator is just a function that takes a size and produces a generator:
+// Exercise 8.11
+case class SGen[+A](forSize: Int => Gen[A]) {
+  def map [B](a: A => B): SGen[B] = SGen(n => this.forSize(n).map(a))
+  // Exercise 8.6
+  def flatMap[B](a: A => SGen[B]): SGen[B] = SGen.join(this.map(a))
+  def listOfN(size: SGen[Int]): SGen[List[A]] = size.flatMap(n => SGen.sequence(List.fill(n)(this)))
+  def map2[B, C](a: SGen[B])(f: (A, B) => C): SGen[C] = this.flatMap( t => a.map(aa => f(t, aa)))
+}
+
+object SGen {
+  def unit[A](a: A): SGen[A] = SGen(n => Gen.unit(a))
+  def join[A](sgen: SGen[SGen[A]]): SGen[A] = SGen ({ n => {
+      val gen = sgen.forSize(n)
+      val genOfGen: Gen[Gen[A]] = gen.map(a => a.forSize(n))
+      Gen.join(genOfGen)
+    }})
+
+  def sequence[A](a: List[SGen[A]] ): SGen[List[A]] =
+    a.foldRight(unit(Nil: List[A]))((c, d) => c.map2(d)(_ :: _))
+
+  def listOf[A](g: Gen[A]): SGen[List[A]] = SGen(n => g.listOfN(n))
+}
 
 
 

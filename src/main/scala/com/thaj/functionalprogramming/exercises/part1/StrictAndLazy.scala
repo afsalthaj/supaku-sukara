@@ -13,7 +13,6 @@ sealed trait Stream[+A] {
   // which will force its evaluation and let you look at it in the REPL.
   // You can convert to the regular List type in the standard library.
   // You can place this and other functions that operate on a Stream inside the Stream trait.
-
   def toList: List[A] = {
     def go(stream: Stream[A], acc: List[A]): List[A] = {
       stream match {
@@ -60,6 +59,12 @@ sealed trait Stream[+A] {
   def exists(p: A => Boolean): Boolean = this match {
     case Cons(h, t) => p(h()) || t().exists(p)
     case Empty => false
+  }
+
+  // This is used in Property Based Testing Chapter
+  def find(p: A => Boolean): Option[A] = this match {
+    case Cons(h, t) => if (p(h())) Some(h()) else find(p)
+    case Empty => None
   }
 
   /**

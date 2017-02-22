@@ -123,6 +123,9 @@ import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.S
            def set[S](s: S): State[S, Unit] = State(_ => ((), s))
     * }}}
     */
+
+
+  // The author's implementation in fpinscala
   def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = for {
     state <- { val s: State[Machine, List[Unit]] = sequence(inputs.map(input => modifyS[Machine](_.operateOnMachine(input)))); s }
     machine <- get
@@ -138,17 +141,17 @@ import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.S
   }
 
   //Example usage
-  val lockedMachine = Machine(true, 10, 20)
-  val unlockedMachine = Machine(false, 10, 20)
-  val emptyLockedMachine = Machine(true, 0, 20)
-  val emptyUnlockedMachine = Machine(false, 0, 20)
+  val lockedMachine = Machine(locked = true, 10, 20)
+  val unlockedMachine = Machine(locked = false, 10, 20)
+  val emptyLockedMachine = Machine(locked = true, 0, 20)
+  val emptyUnlockedMachine = Machine(locked = false, 0, 20)
 
-  def assertions = {
+  val assertions = {
     // Inserting a coin into a locked machine will cause it to unlock if there’s any candy left.
-    assert(simulateMachine(List(Coin)).run(lockedMachine)._2.locked == false)
+    assert(!simulateMachine(List(Coin)).run(lockedMachine)._2.locked)
 
     // Turning the knob on an unlocked machine will cause it to dispense candy and become locked.
-    assert(simulateMachine(List(Turn)).run(unlockedMachine)._2.locked == true)
+    assert(simulateMachine(List(Turn)).run(unlockedMachine)._2.locked)
     assert(simulateMachine(List(Turn)).run(unlockedMachine)._2.candies == 9)
 
     // Turning the knob on a locked machine or inserting a coin into an unlocked machine does nothing.
