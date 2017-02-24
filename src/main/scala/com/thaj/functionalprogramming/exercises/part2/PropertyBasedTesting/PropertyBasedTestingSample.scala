@@ -1,6 +1,6 @@
 package com.thaj.functionalprogramming.example.exercises.part2
 
-import com.thaj.functionalprogramming.example.exercises.PureStatefulAPI.RNG
+import com.thaj.functionalprogramming.example.exercises.PureStatefulAPI.{SimpleRng, RNG}
 import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.State
 import scalaz._
 /**
@@ -320,6 +320,9 @@ object Prop {
   }
 
 
+  def forAll[A](g: SGen[A])(f: A => Boolean): Prop =
+    forAll(g.forSize)(f)
+
   // this is basically this much
   // You know have to run `max` number of test cases.
   // You provide an n, and it generates a Gen for that.
@@ -354,10 +357,23 @@ object Prop {
     }
   })
 
+  // building an error message - needn't get your head around this.
   def buildMsg[A](s: A, e: Exception): String =
     s"test case: $s\n" +
       s"generated an exception: ${e.getMessage}\n" +
       s"stack trace:\n ${e.getStackTrace.mkString("\n")}"
+
+  // A helper function to run the properties with default arguments
+  def run(p: Prop,
+          maxSize: Int = 100,
+          testCases: Int = 100,
+          rng: RNG = SimpleRng(System.currentTimeMillis)): Unit =
+    p.run(maxSize, testCases, rng) match {
+      case Falsified(msg, n) =>
+        println(s"! Falsified after $n passed tests:\n $msg")
+      case Passed =>
+        println(s"+ OK, passed $testCases tests.")
+    }
 }
 
 
@@ -387,4 +403,30 @@ object SGen {
     a.foldRight(unit(Nil: List[A]))((c, d) => c.map2(d)(_ :: _))
 
   def listOf[A](g: Gen[A]): SGen[List[A]] = SGen(n => g.listOfN(n))
+
+  // An example that results in a failure
+  def smallInt = Gen.choose(-10,10)
+  def maxProp = forAll(listOf(smallInt)) { ns =>
+    val max = ns.max
+    !ns.exists(_ > max)
+  }
+
+  // Exercise 8.13
+  // Define listOf1 for generating nonempty lists, and
+  // then update your specification of
+  // max to use this generator.
+  def listOfl[A](g: Gen[A]): SGen[List[A]] = SGen(n => g.listOfN(n max 1))
+
+  // Write a property to verify the behavior of List.sorted
+  // For instance,
+  /// List(2,1,3).sorted is equal to List(1,2,3).
+
+  // EXERCISE 8.14
+  // Something like this
+  def genInt = Gen.choose(0, 100)
+  def genListOfInt = listOf(genInt)
+  def propertyTestingSorting = forAll(genListOfInt) { list => {
+    val ls = list.sorted
+    list.isEmpty ||  list.tail.isEmpty || !(ls.head > ls.tail.reverse.head)
+  }}
 }
