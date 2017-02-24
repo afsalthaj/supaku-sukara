@@ -415,7 +415,7 @@ object SGen {
   // Define listOf1 for generating nonempty lists, and
   // then update your specification of
   // max to use this generator.
-  def listOfl[A](g: Gen[A]): SGen[List[A]] = SGen(n => g.listOfN(n max 1))
+  def listOf1[A](g: Gen[A]): SGen[List[A]] = SGen(n => g.listOfN(n max 1))
 
   // Write a property to verify the behavior of List.sorted
   // For instance,
@@ -424,7 +424,7 @@ object SGen {
   // EXERCISE 8.14
   // Something like this
   def genInt = Gen.choose(0, 100)
-  def genListOfInt = listOf(genInt)
+  def genListOfInt = listOf1(genInt)
   def propertyTestingSorting = forAll(genListOfInt) { list => {
     val ls = list.sorted
     list.isEmpty ||  list.tail.isEmpty || !(ls.head > ls.tail.reverse.head)
