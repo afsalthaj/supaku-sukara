@@ -1,9 +1,11 @@
 package com.thaj.functionalprogramming.example.exercises.part2
 
+import java.util.concurrent.{Executors, ExecutorService}
+
 import com.thaj.functionalprogramming.example.exercises.PureStatefulAPI.{SimpleRng, RNG}
 import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.State
-import scalaz._
-/**
+import com.thaj.functionalprogramming.example.exercises.part2.Par.Par
+ /**
  *  Although a library for testing has a very different purpose than a library for parallel computations,
  *  we’ll discover that these libraries
  *  have a lot of surprisingly similar combinators. This similarity is something we’ll return to in part 3.
@@ -24,7 +26,7 @@ object PropertyBasedTestingSample {
 
     The function forAll creates a property by combining a generator of type Gen[A] with some
     predicate of type A => Boolean. The property asserts that all values produced by the generator
-    should satisfy the predicate. Like generators, properties can also have a rich API.
+    should satisfy the predicxate. Like generators, properties can also have a rich API.
     In this simple example we’ve used && to combine two properties.
     The resulting property will hold only if neither property can be falsified by any of the generated test cases.
     Together, the two properties form a partial specification of the correct behavior of the reverse method.[1]
@@ -116,12 +118,11 @@ case class Gen[A](sample: State[RNG, A]) {
   def map [B](a: A => B): Gen[B] = Gen(this.sample.map(a))
   // Exercise 8.6
   def flatMap[B](a: A => Gen[B]): Gen[B] = Gen.join(this.map(a))
-  def listOfN(size: Int): Gen[List[A]] = listOfN(Gen.unit(size))
-  def listOfN(size: Gen[Int]): Gen[List[A]] = size.flatMap(n => Gen.sequence(List.fill(n)(this)))
+  def listOfN(size: Int): Gen[List[A]] = Gen.sequence(List.fill(size)(this))
   def map2[B, C](a: Gen[B])(f: (A, B) => C): Gen[C] = this.flatMap( t => a.map(aa => f(t, aa)))
   // Exercise 8.10
   def unsized: SGen[A] = SGen(_ => this)
-
+  def **[B](g: Gen[B]): Gen[(A, B)] = this.map2(g)((_, _))
 }
 
 
@@ -147,7 +148,7 @@ object Gen {
   // generates list of length n using generator g. This is pretty interesting concept going forward. Please note
   // that it could generate infinite number of lists of length n. From this we can somehow guess, we are moving towards
   // using `Stream` in this API
-  def listOfN[A](n: Int, g: Gen[A]): Gen[List[A]] = Gen(State.sequence(List.fill(n)(g.sample)))
+  def listOfN[A](g: Gen[A], n: Int): Gen[List[A]] = Gen(State.sequence(List.fill(n)(g.sample)))
 
   /**
    * As we discussed in chapter 7, we’re interested in understanding what operations are
@@ -174,7 +175,6 @@ object Gen {
 
   def sequence[A](a: List[Gen[A]] ): Gen[List[A]] =
     a.foldRight(unit(Nil: List[A]))((c, d) => c.map2(d)(_ :: _))
-
 
   // Sample ones
   def converToGenOptionA[A](a: Gen[A]): Gen[Option[A]] = a.map(Option(_))
@@ -230,9 +230,10 @@ case class Prop(run: (MaxSize, TestCases, RNG) => Result) {
     val result2 = x.run(max, n,rng)
     (result, result2) match {
       case (Falsified(a, b), Falsified(c, d)) => Falsified(a.toString + c.toString, b + d)
-      case (Passed, Falsified(a, b)) => Falsified(a.toString, n + b )
-      case (Falsified(a, b), Passed) => Falsified(a.toString, n + b)
-      case _ =>  Passed
+      case (Passed | Proved, Falsified(a, b)) => Falsified(a.toString, n + b )
+      case (Falsified(a, b), Passed | Proved) => Falsified(a.toString, n + b)
+      case (Proved, Proved) => Proved
+      case _ => Passed
     }
   }})
 
@@ -241,10 +242,7 @@ case class Prop(run: (MaxSize, TestCases, RNG) => Result) {
   // if the first property fails, the whole test case fails
   def sequentialAnd (x: Prop): Prop = Prop({ (max, n, rng) => {
     this.run(max, n,rng) match {
-      case Passed => x.run(max,n, rng) match {
-        case Falsified(a, b) => Falsified(a.toString, n + b)
-        case a => a
-      }
+      case Passed | Proved => x.run(max,n, rng)
       case a => a
     }
   }})
@@ -254,10 +252,10 @@ case class Prop(run: (MaxSize, TestCases, RNG) => Result) {
     val result1 = this.run(max, n, rng)
     result1 match {
       case Falsified(a, b) => x.run(max, n, rng) match {
-        case Passed => Passed
         case Falsified(c, d ) => Falsified(a.toString + c.toString, b + d)
+        case t => t
       }
-      case _ => Passed
+      case t => t
     }
   }})
 }
@@ -288,16 +286,16 @@ object Prop {
    * So let’s make a new data type, equivalent to Option[(FailedCase, SuccessCount)], that shows our intent very clearly.
    */
   sealed trait Result {
-    def isFalsified: Boolean
-  }
-
-  case object Passed extends Result {
     def isFalsified: Boolean = false
   }
 
+  case object Passed extends Result
+
   case class Falsified(failedCase: FailedCase, successCount: SuccessCount) extends Result {
-    def isFalsified: Boolean = true
+    override def isFalsified: Boolean = true
   }
+
+  case object Proved extends Result
 
   import com.thaj.functionalprogramming.example.exercises.Stream
   // Basically generates a stream of A by intuitively passing the changed state after each computation of stream.
@@ -373,7 +371,29 @@ object Prop {
         println(s"! Falsified after $n passed tests:\n $msg")
       case Passed =>
         println(s"+ OK, passed $testCases tests.")
+      // 8.4.2.
+      case Proved =>
+        println(s"+ OK, proved property.")
     }
+
+  // 8.4.2.
+  // A property that doesn't care the inputs/Gen/doesnt need multiple test cases
+  /**
+   * Even though we memoize the result so that it’s not evaluated more than once,
+   * the test runner will still generate multiple test cases and test the Boolean multiple times. For example,
+   * if we say run(check(true)), this will test the property 100 times and print “OK, passed 100 tests.”
+   * But checking a property that is always true 100 times is a terrible waste of effort. What we need is a new primitive.
+   */
+  def check(p: => Boolean): Prop = {
+    // result is memorised to avoid recomputation
+    lazy val result: Boolean = p
+    forAll(Gen.unit())(_ => result)
+  }
+
+  def checkCorrectImpl(p: => Boolean): Prop = Prop { (_, _, _) =>
+    if (p) Proved else Falsified("()", 0)
+  }
+
 }
 
 
@@ -430,3 +450,79 @@ object SGen {
     list.isEmpty ||  list.tail.isEmpty || !(ls.head > ls.tail.reverse.head)
   }}
 }
+
+// 8.4.2. Writing a test suite for parallel computations
+
+object ParallelComputationsTestLib {
+  // Recollecting Parallel Computation law
+  Par.map(Par.unit(1))(_ + 1) == Par.unit(2)
+
+  /**
+   * type Par[A] = ExecutorService => Future[A]
+   */
+
+  val ES: ExecutorService = Executors.newCachedThreadPool
+
+  val pl = Prop.forAll(Gen.unit(Par.unit(1)))(i => {
+    Par.map(i)(_ + 1)(ES).get() == Par.unit(2)(ES).get
+  })
+
+  // Exercise 8.15
+  // Hard: A check property is easy to prove conclusively because the test just involves
+  // evaluating the Boolean argument. But some forAll properties can be proved as well. For instance,
+  // if the domain of the property is Boolean, then there are really only two cases to test.
+  // If a property forAll(p) passes for both p(true) and p(false), then it is proved.
+  // Some domains (like Boolean and Byte) are so small that they can be exhaustively checked.
+  // And with sized generators, even infinite domains can be exhaustively checked up to the maximum size.
+  // Automated testing is very useful, but it’s even better if we can automatically prove our code correct.
+  // Modify our library to incorporate this kind of exhaustive checking of finite domains and sized generators.
+  // This is less of an exercise and more of an extensive, open-ended design project.
+  // We will get back to this later just as we did with streams.
+
+
+  // Using the new `checkCorrectImpl`
+
+  val plCorrect: Prop = Prop.checkCorrectImpl({
+    val p1 = Par.map(Par.unit(1))(_ + 1)
+    val p2 = Par.unit(2)
+    p1(ES).get == p2(ES).get
+  })
+
+  // To make it nicer
+  def equal[A, B](a: Par[A], b: Par[A]): Par[Boolean] = {
+    Par.map2(a, b)(_ == _)
+  }
+
+  val plCorrectNicer: Prop = Prop.checkCorrectImpl({
+    equal(Par.map(Par.unit(1))(_ + 1), Par.unit(2))(ES).get
+  })
+
+  // Much nicer
+  // This generator creates a fixed thread pool executor 75% of the time and an unbounded one 25% of the time.
+  val S: Gen[ExecutorService] =
+    Gen.weighted(Gen.choose(1, 4).map(Executors.newFixedThreadPool) -> .75, Gen.unit(Executors.newCachedThreadPool) -> .25)
+
+  def forAllPar[A](g: Gen[A])(f: A => Par[Boolean]): Prop = {
+     Prop.forAll(S.map2(g)((_, _))){ case (a, b) => f(b)(a).get()}
+  }
+  // Much more nicer
+  def forAllParNicer[A](g: Gen[A])(f: A => Par[Boolean]): Prop = {
+    Prop.forAll(S.map2(g)((_, _))){ case (a, b) => f(b)(a).get()}
+  }
+  // Much more more nicer
+  def forAllParNicerOh[A](g: Gen[A])(f: A => Par[Boolean]): Prop =
+    forAll(S ** g) { case (s,a) => f(a)(s).get }
+  // Higher order functions
+  val isEven = (i: Int) => i%2 == 0
+  val gen = Gen.choose(0, 100)
+  val takeWhileProp = Prop.forAll(Gen.listOfN(gen, 10))(_.takeWhile(isEven).forall(isEven))
+}
+
+// Laws of Generators is a pretty neat and straight forward concept
+// Take away:
+// Identify the data types, you wanted a generator, that is basically wrapping a state responsible to generate values
+// You created combinators for this Gen. Your result is not A but Gen[A]
+// Then you defined property. A property is nothing but a caseclass that takes the `required` inputs and gives you
+// a result
+// You have factory/helper methods forAll, that takes in a predicate and Gen and gives you a Property
+// You can combine, compose all these properties together..and then finally you call run with the required inputs.
