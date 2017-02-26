@@ -1,6 +1,8 @@
 package com.thaj.functionalprogramming.exercises.part3
 
-import com.thaj.functionalprogramming.example.exercises.part2.{Prop, Gen}
+import com.thaj.functionalprogramming.example.exercises.part2.Par.Par
+import com.thaj.functionalprogramming.example.exercises.part2.Par.Par
+import com.thaj.functionalprogramming.example.exercises.part2.{Par, Prop, Gen}
 
 /**
  * Created by afsalthaj on 25/02/17.
@@ -151,4 +153,42 @@ object MonoidBasics {
   // Then we have to also "flip" the monoid so that it operates from left to right.
   def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B =
     foldMap(as, dual(endoMonoid[B]))(a => b => f(b, a))(z)
+
+
+  /**
+   * As an example, suppose we have a sequence a, b, c, d that we’d
+   * like to reduce using some monoid. Folding to the right, the combination of a, b, c, and d would look like this:
+   * op(a, op(b, op(c, d)))
+   * Folding to the left would look like this:
+   * op(op(op(a, b), c), d)
+   * But a balanced fold looks like this:
+   * op(op(a, b), op(c, d))
+   */
+  // Exercise 10.7
+  // Implement a foldMap for IndexedSeq.[4] Your implementation should use the strategy of
+  // splitting the sequence in two, recursively processing each half, and then adding the answers together with the monoid.
+  // 4 Recall that IndexedSeq is the interface for immutable data structures supporting efficient random access.
+  // It also has efficient splitAt and length methods.
+
+  def foldMapV[A,B](as: IndexedSeq[A], m: Monoid[B])(f: A => B): B = {
+     if(as.isEmpty)
+       m.zero
+       else if(as.size == 1)
+       f(as.head)
+     else {
+       val (l, r) = as.splitAt(as.size/2)
+       m.op(foldMapV(l, m)(f), foldMapV(r, m)(f))
+     }
+  }
+
+
+  // Exercise 10.8
+  // HARD: Lifting Monoid[A] to Monoid[Par[A]]
+  def par[A](m: Monoid[A]): Monoid[Par[A]] = new Monoid[Par[A]]{
+    def op(a: Par[A], b: Par[A]): Par[A] = Par.map2Fixed(a, b)(m.op)
+    val zero: Par[A] = Par.unit(m.zero)
+  }
+
+  def parFoldMap[A,B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] = ???
+
 }
