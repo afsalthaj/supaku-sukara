@@ -1,5 +1,7 @@
 package com.thaj.functionalprogramming.exercises.part3
 
+import java.util.concurrent.{Future, Executors, ExecutorService}
+
 import com.thaj.functionalprogramming.example.exercises.part2.Par.Par
 import com.thaj.functionalprogramming.example.exercises.part2.Par.Par
 import com.thaj.functionalprogramming.example.exercises.part2.{Par, Prop, Gen}
@@ -189,6 +191,12 @@ object MonoidBasics {
     val zero: Par[A] = Par.unit(m.zero)
   }
 
-  def parFoldMap[A,B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] = ???
-
+  def parFoldMap[A,B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] = {
+    val parallelMonoid: Monoid[Par[B]] = par(m)
+    val parOfListOfB: Par[List[B]] = Par.parMap(v.toList)(f)
+      Par.flatMapUsingJoin(parOfListOfB){ listOfB => {
+        listOfB.foldLeft(parallelMonoid.zero)((a, b) => parallelMonoid.op(a, Par.lazyUnit(b)))
+      }
+    }
+  }
 }
