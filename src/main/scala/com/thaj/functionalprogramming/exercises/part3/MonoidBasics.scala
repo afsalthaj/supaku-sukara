@@ -206,7 +206,7 @@ object MonoidBasics {
   // to come up with a creative Monoid.
   val intMaxMonoid = new Monoid[(Int, Boolean)] {
     def op(a: (Int, Boolean), b: (Int, Boolean)): (Int, Boolean) = if(b._1 >= a._1) (b._1, a._2 && b._2) else (a._1, false)
-    val zero: (Int, Boolean) = (0, true)
+    val zero: (Int, Boolean) = (Int.MinValue, true)
   }
 
   // this solution is significantly different from fpinscala, but it is tested for basic scenarios
