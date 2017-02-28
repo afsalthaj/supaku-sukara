@@ -1,8 +1,5 @@
 package com.thaj.functionalprogramming.exercises.part3
 
-import java.util.concurrent.{Future, Executors, ExecutorService}
-
-import com.thaj.functionalprogramming.example.exercises.part2.Par.Par
 import com.thaj.functionalprogramming.example.exercises.part2.Par.Par
 import com.thaj.functionalprogramming.example.exercises.part2.{Par, Prop, Gen}
 
@@ -106,9 +103,10 @@ object MonoidBasics {
 
   def monoidLaws[A](m: Monoid[A], gen: Gen[A]): Prop = {
     val p: Gen[(A, A, A)] = gen.flatMap( b => gen.flatMap(c => gen.map(d => (b, c, d))))
-    Prop.forAll(p){case (x, y, z) => {
+
+    Prop.forAll(p){case (x, y, z) =>
       m.op(m.op(x,y), z) == m.op(x, m.op(y,z)) && m.op(x, m.zero) == x && m.op(m.zero, x) == x
-    }}
+    }
   }
 
   /**
@@ -141,7 +139,7 @@ object MonoidBasics {
    */
   // Exercise 10.5
   def foldMap[A,B](as: List[A], m: Monoid[B])(f: A => B): B =
-    as.foldLeft(m.zero)((b, a) => m.op(f(a), b))
+    as.foldLeft(m.zero)((b, a) => m.op(b, f(a)))
 
   // Hard: The foldMap function can be implemented using either
   // foldLeft or fold-Right. But you can also write foldLeft and foldRight using foldMap! Try it.
@@ -195,8 +193,18 @@ object MonoidBasics {
     val parallelMonoid: Monoid[Par[B]] = par(m)
     val parOfListOfB: Par[List[B]] = Par.parMap(v.toList)(f)
       Par.flatMapUsingJoin(parOfListOfB){ listOfB => {
-        listOfB.foldLeft(parallelMonoid.zero)((a, b) => parallelMonoid.op(a, Par.lazyUnit(b)))
+        foldMapV(listOfB.toIndexedSeq, parallelMonoid)(b => Par.lazyUnit(b))
       }
     }
+  }
+
+
+  val intMaxMonoid = new Monoid[(Int, Boolean)] {
+    def op(a: (Int, Boolean), b: (Int, Boolean)): (Int, Boolean) = if(b._1 >= a._1) (b._1, true) else (a._1, false)
+    val zero: (Int, Boolean) = (0, true)
+  }
+
+  def isIndexedSeqAOrdered(a: IndexedSeq[Int]) = {
+     foldMap(a.toList,intMaxMonoid)(b => (b, true))._2
   }
 }
