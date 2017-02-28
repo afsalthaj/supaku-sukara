@@ -198,7 +198,9 @@ object MonoidBasics {
     }
   }
 
-
+  // Exercise 10.9
+  // Hard: Use foldMap to detect whether a given IndexedSeq[Int] is ordered. You’ll need
+  // to come up with a creative Monoid.
   val intMaxMonoid = new Monoid[(Int, Boolean)] {
     def op(a: (Int, Boolean), b: (Int, Boolean)): (Int, Boolean) = if(b._1 >= a._1) (b._1, true) else (a._1, false)
     val zero: (Int, Boolean) = (0, true)
