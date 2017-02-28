@@ -198,16 +198,28 @@ object MonoidBasics {
     }
   }
 
+  // 0,1,2,3
+
+
   // Exercise 10.9
   // Hard: Use foldMap to detect whether a given IndexedSeq[Int] is ordered. You’ll need
   // to come up with a creative Monoid.
   val intMaxMonoid = new Monoid[(Int, Boolean)] {
-    def op(a: (Int, Boolean), b: (Int, Boolean)): (Int, Boolean) = if(b._1 >= a._1) (b._1, true) else (a._1, false)
+    def op(a: (Int, Boolean), b: (Int, Boolean)): (Int, Boolean) = if(b._1 >= a._1) (b._1, a._2 && b._2) else (a._1, false)
     val zero: (Int, Boolean) = (0, true)
   }
 
   // this solution is significantly different from fpinscala, but it is tested for basic scenarios
   def isIndexedSeqAOrdered(a: IndexedSeq[Int]) = {
-     foldMap(a.toList,intMaxMonoid)(b => (b, true))._2
+     foldMap(a.toList,intMaxMonoid)(b => (b, true))
   }
+
+  // Parallel parsing
+  sealed trait WC
+  case class Stub(chars: String) extends WC
+  case class Part(lStub: String, words: Int, rStub: String) extends WC
+
+  // Exercise 10.10
+  // Write a monoid instance for WC and make sure that it meets the monoid laws.
+  // val wcMonoid: Monoid[WC]
 }
