@@ -204,6 +204,7 @@ object MonoidBasics {
     val zero: (Int, Boolean) = (0, true)
   }
 
+  // this solution is significantly different from fpinscala, but it is tested for basic scenarios
   def isIndexedSeqAOrdered(a: IndexedSeq[Int]) = {
      foldMap(a.toList,intMaxMonoid)(b => (b, true))._2
   }
