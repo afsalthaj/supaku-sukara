@@ -201,7 +201,7 @@ object MonoidBasics {
       }
     }
   }
-  
+
   // Exercise 10.9
   // Hard: Use foldMap to detect whether a given IndexedSeq[Int] is ordered. You’ll need
   // to come up with a creative Monoid.
@@ -233,9 +233,9 @@ object MonoidBasics {
   val monoidWC: Monoid[WC] = new Monoid[WC] {
     def op(a: WC, b: WC): WC = (a, b) match {
       case (Stub(x), Stub(y)) => Stub(x + y)
-      case (s1@Stub(x), s2@Part(i, j, k)) => Part(x+i, j, k)
-      case (s1@Part(i, j, k), s2@Stub(x)) => Part(i, j, k+x)
-      case (s1@Part(i1, j1, k1), s2@Part(i2, j2, k2)) =>
+      case (Stub(x), Part(i, j, k)) => Part(x+i, j, k)
+      case (Part(i, j, k), Stub(x)) => Part(i, j, k+x)
+      case (Part(i1, j1, k1), Part(i2, j2, k2)) =>
        Part(i1, (j1 + j2) + (if((k1+i2).isEmpty) 0 else 1), k2)
     }
 
