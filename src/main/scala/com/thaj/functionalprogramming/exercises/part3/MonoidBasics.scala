@@ -211,9 +211,9 @@ object MonoidBasics {
   // The monoid follows the laws: m.op(m.op(x,y), z) == m.op(x, m.op(y,z)) && m.op(x, m.zero) == x && m.op(m.zero, x) == x
   val intMaxMonoid = new Monoid[(Option[Int], Boolean)] {
     def op(a: (Option[Int], Boolean), b: (Option[Int], Boolean)): (Option[Int], Boolean) = (a, b) match {
-      case ((Some(x),bool1), (None, bool2)) => (Some(x), bool1 && bool2)
-      case ((None, bool1), (Some(x), bool2)) => (Some(x), bool1 && bool2)
-      case ((Some(x), bool1), (Some(y), bool2)) => if (y > x) (Some(y), bool1 && bool2) else (None, false)
+      case ((s@Some(x), bool1), (None, bool2)) => (s, bool1 && bool2)
+      case ((None, bool1), (s@Some(x), bool2)) => (s, bool1 && bool2)
+      case ((s1@Some(x), bool1), (s2@Some(y), bool2)) => if (y > x) (s2, bool1 && bool2) else (None, false)
       case ((None, bool1), (None, bool2)) => (None, bool1 && bool2)
     }
 
@@ -233,4 +233,28 @@ object MonoidBasics {
   // Exercise 10.10
   // Write a monoid instance for WC and make sure that it meets the monoid laws.
   // val wcMonoid: Monoid[WC]
+  val monoidWC: Monoid[WC] = new Monoid[WC] {
+    def op(a: WC, b: WC): WC = (a, b) match {
+      case (Stub(x), Stub(y)) => Stub(x + y)
+      case (s1@Stub(x), s2@Part(i, j, k)) => Part(x+i, j, k)
+      case (s1@Part(i, j, k), s2@Stub(x)) => Part(i, j, k+x)
+      case (s1@Part(i1, j1, k1), s2@Part(i2, j2, k2)) =>
+       Part(i1, (j1 + j2) + (if((k1+i2).isEmpty) 0 else 1), k2)
+    }
+
+    val zero: WC = Stub("")
+  }
+
+  // EXERCISE 10.11
+  // Use the WC monoid to implement a function that counts words in a String by recursively
+  // splitting it into substrings and counting the words in those substrings.
+  // a bit tricky algorithm
+  def addWC(a: String): Int = {
+    def toWC(a: Char): WC =
+      if(a.isWhitespace) Part("", 0, "") else Stub(a.toString)
+      foldMapV(a.toList.toIndexedSeq, monoidWC)(toWC) match {
+        case Stub(s) => s.length min 1
+        case Part(x, y, z) => y + x.length min 1 + z.length min 1
+      }
+  }
 }
