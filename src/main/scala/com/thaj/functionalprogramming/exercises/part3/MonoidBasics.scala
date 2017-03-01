@@ -137,9 +137,13 @@ object MonoidBasics {
    * we can always map over the list to turn it into a type that does:
    * def foldMap[A,B](as: List[A], m: Monoid[B])(f: A => B): B
    */
+
+
   // Exercise 10.5
-  def foldMap[A,B](as: List[A], m: Monoid[B])(f: A => B): B =
-    as.foldLeft(m.zero)((b, a) => m.op(b, f(a)))
+  def foldMap[A,B](as: List[A], m: Monoid[B])(f: A => B): B = {
+    as.foldLeft(m.zero)((b: B, a: A) => m.op(b, f(a)))
+  }
+
 
   // Hard: The foldMap function can be implemented using either
   // foldLeft or fold-Right. But you can also write foldLeft and foldRight using foldMap! Try it.
@@ -198,20 +202,19 @@ object MonoidBasics {
     }
   }
 
-  // 0,1,2,3
-
-
   // Exercise 10.9
   // Hard: Use foldMap to detect whether a given IndexedSeq[Int] is ordered. You’ll need
   // to come up with a creative Monoid.
-  val intMaxMonoid = new Monoid[(Int, Boolean)] {
-    def op(a: (Int, Boolean), b: (Int, Boolean)): (Int, Boolean) = if(b._1 >= a._1) (b._1, a._2 && b._2) else (a._1, false)
-    val zero: (Int, Boolean) = (Int.MinValue, true)
+  val intMaxMonoid = new Monoid[Option[Int]] {
+    def op(a: Option[Int], b: Option[Int]): Option[Int] =
+      a.flatMap(aa => b.flatMap(bb => if(bb >= aa) Some(bb) else None))
+
+    val zero: Option[Int] = Some(Int.MinValue)
   }
 
   // this solution is significantly different from fpinscala, but it is tested for basic scenarios
-  def isIndexedSeqAOrdered(a: IndexedSeq[Int]) = {
-     foldMap(a.toList,intMaxMonoid)(b => (b, true))._2
+  def isOrdered(a: IndexedSeq[Int]) = {
+    foldMap(a.toList,intMaxMonoid)(b => Some(b)).isDefined
   }
 
   // Parallel parsing
