@@ -201,10 +201,7 @@ object MonoidBasics {
       }
     }
   }
-
-  // 0,1,2,3
-
-
+  
   // Exercise 10.9
   // Hard: Use foldMap to detect whether a given IndexedSeq[Int] is ordered. You’ll need
   // to come up with a creative Monoid.
