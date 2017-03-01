@@ -221,7 +221,7 @@ object MonoidBasics {
   }
 
   // this solution is significantly different from fpinscala, but it is tested for basic scenarios
-  def isIndexedSeqAOrdered(a: IndexedSeq[Int]) = {
+  def isOrdered(a: IndexedSeq[Int]) = {
      foldMap(a.toList,intMaxMonoid)(b => (Some(b), true))._2
   }
 
