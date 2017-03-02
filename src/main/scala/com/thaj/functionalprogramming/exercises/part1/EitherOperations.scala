@@ -158,7 +158,6 @@ helper functions like `map2` and `sequence`.
 
 // Based on the last few comments => EXERCISE 4.8
 sealed trait Validation[+E, +A] {
-
   def map[B](f: A => B): Validation[E, B] = this match {
     case Success(a) => Success(f(a))
     case Error(Seq(a)) => Error(Seq(a))
@@ -204,3 +203,5 @@ object Validation {
   def traverse[E, A, B](a: List[A])(f: A => Validation[E, B]): Validation[E, List[B]] =
     a.foldRight(Success(Nil): Validation[E, List[B]])((a, b) => f(a).map2(b)(_ :: _))
 }
+
+

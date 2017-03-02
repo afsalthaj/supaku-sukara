@@ -346,7 +346,7 @@ object Monoid {
         case Branch(l, r) => foldLeft(r)(foldLeft(l)(z)(f))(f)
       }
     }
-    
+
     /**
      * {{{
      *   scala> Branch(Branch(Leaf(2), Branch(Leaf(3), Branch(Leaf(4), Leaf(5)))), Leaf(5))
@@ -357,5 +357,33 @@ object Monoid {
      */
     def foldMap[A, B](as: Tree[A])(f: A => B)(mb: Monoid[B]): B =
       foldLeft(as)(mb.zero)((acc, a) => mb.op(acc, f(a)))
+  }
+
+  val foldableOption = new Foldable[Option] {
+    def foldRight[A, B](as: Option[A])(z: B)(f: (A, B) => B): B = {
+      as match  {
+        case Some(x) => f(x, z)
+        case None => z
+      }
+    }
+
+    def foldLeft[A, B](as: Option[A])(z: B)(f: (B, A) => B): B = {
+      as match {
+        case Some(x) => f(z, x)
+        case None => z
+      }
+    }
+
+    /**
+     * {{{
+     *   scala> Branch(Branch(Leaf(2), Branch(Leaf(3), Branch(Leaf(4), Leaf(5)))), Leaf(5))
+     *   res10: com.thaj.functionalprogramming.example.exercises.Branch[Int] = Branch(Branch(Leaf(2),Branch(Leaf(3),Branch(Leaf(4),Leaf(5)))),Leaf(5))
+     *   scala> foldableTree.foldMap(res8)(_.toInt)(intAddition)
+     *   res11: Int = 19
+     * }}}
+     */
+    def foldMap[A, B](as: Option[A])(f: A => B)(mb: Monoid[B]): B =
+      foldLeft(as)(mb.zero)((acc, a) => mb.op(acc, f(a)))
+
   }
 }
