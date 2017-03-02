@@ -3,6 +3,8 @@ package com.thaj.functionalprogramming.exercises.part3
 import com.thaj.functionalprogramming.example.exercises.part2.Par.Par
 import com.thaj.functionalprogramming.example.exercises.part2.{Par, Prop, Gen}
 
+import scala.collection.immutable.Stream.{Empty, cons}
+
 /**
  * Created by afsalthaj on 25/02/17.
  *
@@ -30,7 +32,7 @@ import com.thaj.functionalprogramming.example.exercises.part2.{Par, Prop, Gen}
  *
  */
 
-object MonoidBasics {
+object Monoid {
   trait Monoid[A] {
     def op(a1: A, a2: A): A
     def zero: A
@@ -232,11 +234,10 @@ object MonoidBasics {
   // val wcMonoid: Monoid[WC]
   val monoidWC: Monoid[WC] = new Monoid[WC] {
     def op(a: WC, b: WC): WC = (a, b) match {
-      case (Stub(x), Stub(y)) => Stub(x + y)
-      case (Stub(x), Part(i, j, k)) => Part(x+i, j, k)
-      case (Part(i, j, k), Stub(x)) => Part(i, j, k+x)
-      case (Part(i1, j1, k1), Part(i2, j2, k2)) =>
-       Part(i1, (j1 + j2) + (if((k1+i2).isEmpty) 0 else 1), k2)
+      case (Stub(x), Stub(y))                   => Stub(x + y)
+      case (Stub(x), Part(i, j, k))             => Part(x+i, j, k)
+      case (Part(i, j, k), Stub(x))             => Part(i, j, k+x)
+      case (Part(i1, j1, k1), Part(i2, j2, k2)) => Part(i1, (j1 + j2) + (if((k1+i2).isEmpty) 0 else 1), k2)
     }
 
     val zero: WC = Stub("")
@@ -249,9 +250,84 @@ object MonoidBasics {
   def addWC(a: String): Int = {
     def toWC(a: Char): WC =
       if(a.isWhitespace) Part("", 0, "") else Stub(a.toString)
+
       foldMapV(a.toList.toIndexedSeq, monoidWC)(toWC) match {
         case Stub(s) => s.length min 1
         case Part(x, y, z) => y + x.length min 1 + z.length min 1
       }
   }
+
+  /**
+   * ints.foldRight(0)(_ + _)
+   * Looking at just this code snippet, we shouldn’t have to care about the type of ints. It
+   * could be a Vector, a Stream, or a List, or anything at all with a foldRight method.
+   * We can capture this commonality in a trait:
+   */
+  trait Foldable[F[_]] {
+    def foldRight[A,B](as: F[A])(z: B)(f: (A,B) => B): B
+    def foldLeft[A,B](as: F[A])(z: B)(f: (B,A) => B): B
+    def foldMap[A,B](as: F[A])(f: A => B)(mb: Monoid[B]): B
+    def concatenate[A](as: F[A])(m: Monoid[A]): A =
+      foldLeft(as)(m.zero)(m.op)
+  }
+
+  // EXERCISE 10.12
+  /**
+   * Implement Foldable[List], Foldable[IndexedSeq], and Foldable[Stream].
+   * Remember that foldRight, foldLeft, and foldMap can all be implemented in terms
+   * of each other, but that might not be the most efficient implementation.
+   * Some kind of learning experiments in this implementation
+   */
+  object FoldableList extends Foldable[List]{
+    def foldRight[A,B](as: List[A])(z: B)(f: (A,B) => B): B = {
+      as match  {
+        case Nil => z
+        case x :: xs => f(x, foldRight(xs)(z)(f))
+      }
+    }
+
+    def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B = {
+      as match {
+        case Nil => z
+        case x :: xs => foldLeft(xs)(f(z, x))(f)
+      }
+    }
+
+    def foldMap[A, B](as: List[A])(f: A => B)(mb: Monoid[B]): B =
+      foldLeft(as)(mb.zero)((acc, a) => mb.op(acc, f(a)))
+  }
+
+  object FoldableStream extends Foldable[Stream]{
+    def foldRight[A,B](as: Stream[A])(z: B)(f: (A,B) => B): B = {
+      as match  {
+        case Empty => z
+        case cons(h, t) => f(h, foldRight(t)(z)(f))
+      }
+    }
+
+    def foldLeft[A, B](as: Stream[A])(z: B)(f: (B, A) => B): B = {
+      as match {
+        case Empty => z
+        case cons(h, t) => foldLeft(t)(f(z, h))(f)
+      }
+    }
+
+    def foldMap[A, B](as: Stream[A])(f: A => B)(mb: Monoid[B]): B =
+      foldLeft(as)(mb.zero)((acc, a) => mb.op(acc, f(a)))
+  }
+
+  object FoldableIndexedSeq extends Foldable[IndexedSeq]{
+    def foldRight[A,B](as: IndexedSeq[A])(z: B)(f: (A,B) => B): B = {
+     as.foldRight(z)(f)
+    }
+
+    def foldLeft[A, B](as: IndexedSeq[A])(z: B)(f: (B, A) => B): B = {
+      as.foldLeft(z)(f)
+    }
+
+    def foldMap[A, B](as: IndexedSeq[A])(f: A => B)(mb: Monoid[B]): B =
+     as.foldLeft(mb.zero)((acc, a) => mb.op(acc, f(a)))
+  }
+
+
 }

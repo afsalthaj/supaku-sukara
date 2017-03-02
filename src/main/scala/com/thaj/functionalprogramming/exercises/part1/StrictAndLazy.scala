@@ -264,6 +264,5 @@ object Stream {
 
   // Exercise 5.12
   // Write fibs, from, constant, and ones in terms of unfold.[8]
-
   def constant[A](a: A) = unfold(a)(_ => Some(a, a))
 }
