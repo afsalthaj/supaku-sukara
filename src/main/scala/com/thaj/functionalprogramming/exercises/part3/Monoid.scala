@@ -346,7 +346,7 @@ object Monoid {
         case Branch(l, r) => foldLeft(r)(foldLeft(l)(z)(f))(f)
       }
     }
-
+    
     /**
      * {{{
      *   scala> Branch(Branch(Leaf(2), Branch(Leaf(3), Branch(Leaf(4), Leaf(5)))), Leaf(5))
@@ -354,7 +354,6 @@ object Monoid {
      *   scala> foldableTree.foldMap(res8)(_.toInt)(intAddition)
      *   res11: Int = 19
      * }}}
-
      */
     def foldMap[A, B](as: Tree[A])(f: A => B)(mb: Monoid[B]): B =
       foldLeft(as)(mb.zero)((acc, a) => mb.op(acc, f(a)))
