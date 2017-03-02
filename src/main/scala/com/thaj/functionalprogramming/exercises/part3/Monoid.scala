@@ -359,6 +359,7 @@ object Monoid {
       foldLeft(as)(mb.zero)((acc, a) => mb.op(acc, f(a)))
   }
 
+  // EXERCISE 10.14
   val foldableOption = new Foldable[Option] {
     def foldRight[A, B](as: Option[A])(z: B)(f: (A, B) => B): B = {
       as match  {
@@ -374,14 +375,6 @@ object Monoid {
       }
     }
 
-    /**
-     * {{{
-     *   scala> Branch(Branch(Leaf(2), Branch(Leaf(3), Branch(Leaf(4), Leaf(5)))), Leaf(5))
-     *   res10: com.thaj.functionalprogramming.example.exercises.Branch[Int] = Branch(Branch(Leaf(2),Branch(Leaf(3),Branch(Leaf(4),Leaf(5)))),Leaf(5))
-     *   scala> foldableTree.foldMap(res8)(_.toInt)(intAddition)
-     *   res11: Int = 19
-     * }}}
-     */
     def foldMap[A, B](as: Option[A])(f: A => B)(mb: Monoid[B]): B =
       foldLeft(as)(mb.zero)((acc, a) => mb.op(acc, f(a)))
 
