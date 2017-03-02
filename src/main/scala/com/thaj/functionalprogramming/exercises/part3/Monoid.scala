@@ -328,6 +328,4 @@ object Monoid {
     def foldMap[A, B](as: IndexedSeq[A])(f: A => B)(mb: Monoid[B]): B =
      as.foldLeft(mb.zero)((acc, a) => mb.op(acc, f(a)))
   }
-
-
 }
