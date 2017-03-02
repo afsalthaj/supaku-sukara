@@ -377,6 +377,5 @@ object Monoid {
 
     def foldMap[A, B](as: Option[A])(f: A => B)(mb: Monoid[B]): B =
       foldLeft(as)(mb.zero)((acc, a) => mb.op(acc, f(a)))
-
   }
 }
