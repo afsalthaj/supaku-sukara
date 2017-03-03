@@ -409,6 +409,8 @@ object Monoid {
    *
    * scala> op2((1,"2"), op2((3,"4"), (4, "5")))
    * res9: (Int, String) = (8,245)
+   *
+   * So if A and B are Monoid, then Tuple(A, B) can also form a Monoid
    */
   def productMonoid[A,B](A : Monoid[A], B: Monoid[B]): Monoid[(A,B)] = {
     new Monoid[(A, B)] {
@@ -421,6 +423,8 @@ object Monoid {
    * Some data structures form interesting monoids as long as the types of the elements
    * they contain also form monoids. For instance, there’s a monoid for merging key-value
    * Maps, as long as the value type is a monoid.
+   *
+   * So, V is a monoid, then Map[K, V] can also form a monoid.
    */
   def  mapMergeMonoid[K,V](v: Monoid[V]): Monoid[Map[K, V]] = new Monoid[Map[K, V]] {
     val zero: Map[K, V] = Map[K, V]()
