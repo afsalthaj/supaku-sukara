@@ -270,6 +270,11 @@ object Monoid {
     def foldMap[A,B](as: F[A])(f: A => B)(mb: Monoid[B]): B
     def concatenate[A](as: F[A])(m: Monoid[A]): A =
       foldLeft(as)(m.zero)(m.op)
+
+    // EXERCISE 10.15
+    // Any Foldable structure can be turned into a List. Write this conversion in a generic way
+    def toList[A](fa: F[A]): List[A] = foldRight(fa)(Nil: List[A])(_ :: _)
+
   }
 
   // EXERCISE 10.12
@@ -377,5 +382,52 @@ object Monoid {
 
     def foldMap[A, B](as: Option[A])(f: A => B)(mb: Monoid[B]): B =
       foldLeft(as)(mb.zero)((acc, a) => mb.op(acc, f(a)))
+  }
+
+  // 10.6 Composing Monoids
+  // Exercise 10.16
+  // Prove it. Notice that your implementation of op is obviously associative so long as A.op
+  // and B.op are both associative.
+  /**
+   * scala> def op(a: Int, b: Int) = a + b
+   * op: (a: Int, b: Int)Int
+   *
+   * scala> def op1(a: String, b: String) = a + b
+   * op1: (a: String, b: String)String
+   *
+   * scala> op1("1",(op1("1","2")))
+   * res6: String = 112
+   *
+   * scala> op1(op1("1","1"),"2")
+   * res7: String = 112
+   *
+   * scala> def op2(a: (Int, String), b: (Int, String)): (Int, String) = op(a._1, b._1) -> op1(a._2, b._2)
+   * op2: (a: (Int, String), b: (Int, String))(Int, String)
+   *
+   * scala> op2((1,"2"), (3,"4"))
+   * res8: (Int, String) = (4,24)
+   *
+   * scala> op2((1,"2"), op2((3,"4"), (4, "5")))
+   * res9: (Int, String) = (8,245)
+   */
+  def productMonoid[A,B](A : Monoid[A], B: Monoid[B]): Monoid[(A,B)] = {
+    new Monoid[(A, B)] {
+      def op(x: (A, B), y: (A, B)): (A, B) =  A.op(x._1, y._1) -> B.op(x._2, y._2)
+      val zero: (A, B) = (A.zero, B.zero)
+    }
+  }
+
+  /**
+   * Some data structures form interesting monoids as long as the types of the elements
+   * they contain also form monoids. For instance, there’s a monoid for merging key-value
+   * Maps, as long as the value type is a monoid.
+   */
+  def  mapMergeMonoid[K,V](v: Monoid[V]): Monoid[Map[K, V]] = new Monoid[Map[K, V]] {
+    val zero: Map[K, V] = Map[K, V]()
+    def op(a: Map[K, V], b: Map[K, V]): Map[K, V] = {
+      (a.keySet ++ b.keySet).foldLeft(zero)((acc, k) => {
+        acc.updated(k, v.op(a.getOrElse(k, v.zero), b.getOrElse(k, v.zero)))
+      })
+    }
   }
 }
