@@ -64,7 +64,7 @@ object Monoid {
   }
 
   val intMultiplication = new Monoid[Int] {
-    def op(a1: Int, b1: Int) = a1 + b1
+    def op(a1: Int, b1: Int) = a1 * b1
     val zero = 1
   }
 
@@ -355,7 +355,8 @@ object Monoid {
     /**
      * {{{
      *   scala> Branch(Branch(Leaf(2), Branch(Leaf(3), Branch(Leaf(4), Leaf(5)))), Leaf(5))
-     *   res10: com.thaj.functionalprogramming.example.exercises.Branch[Int] = Branch(Branch(Leaf(2),Branch(Leaf(3),Branch(Leaf(4),Leaf(5)))),Leaf(5))
+     *   res10: com.thaj.functionalprogramming.example.exercises.Branch[Int] =
+     *     Branch(Branch(Leaf(2),Branch(Leaf(3),Branch(Leaf(4),Leaf(5)))),Leaf(5))
      *   scala> foldableTree.foldMap(res8)(_.toInt)(intAddition)
      *   res11: Int = 19
      * }}}
@@ -434,4 +435,35 @@ object Monoid {
       })
     }
   }
+
+  /**
+   * scala> val m1 = Map("o1" -> Map("i1" -> 1, "i2" -> 2))
+   * m1: Map[String,Map[String,Int]] = Map(o1 -> Map(i1 -> 1, i2 -> 2))
+   * scala> val m2 = Map("o1" -> Map("i2" -> 3))
+   * m2: Map[String,Map[String,Int]] = Map(o1 -> Map(i2 -> 3))
+   * scala> val m3 = M.op(m1, m2)
+   * m3: Map[String,Map[String,Int]] = Map(o1 -> Map(i1 -> 1, i2 -> 5))
+   */
+   val M:  Monoid[Map[String, Map[String, Int]]] = mapMergeMonoid(mapMergeMonoid[String, Int](intAddition))
+
+   // EXERCISE 10.17
+   // Write a monoid instance for functions whose results are monoids.
+   def functionMonoid[A,B](B: Monoid[B]): Monoid[A => B] = {
+     new Monoid[A => B] {
+       def op(f1: A => B, f2: A => B): A => B = (a: A) => B.op(f1(a), f2(a))
+       val zero: A => B = (a: A) => B.zero
+     }
+   }
+
+  /**
+   * EXERCISE 10.18
+   * A bag is like a set, except that it’s represented by a map that contains one entry per
+   * element with that element as the key, and the value under that key is the number of
+   * times the element appears in the bag. For example:
+   * scala> bag(Vector("a", "rose", "is", "a", "rose"))
+   * res0: Map[String,Int] = Map(a -> 2, rose -> 2, is -> 1)
+   * Use monoids to compute a “bag” from an IndexedSeq
+   */
+  def bag[A](as: IndexedSeq[A]): Map[A, Int] =
+    foldMap(as.toList, mapMergeMonoid[A, Int](intAddition))(a => Map[A, Int](a -> 1))
 }
