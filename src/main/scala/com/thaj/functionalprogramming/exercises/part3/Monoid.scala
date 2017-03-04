@@ -466,4 +466,12 @@ object Monoid {
    */
   def bag[A](as: IndexedSeq[A]): Map[A, Int] =
     foldMap(as.toList, mapMergeMonoid[A, Int](intAddition))(a => Map[A, Int](a -> 1))
+
+  // fusing traversals
+  def getAverageParalley(list: List[Int]): Int = {
+    val monoid = productMonoid(intAddition, intAddition)
+    val (length, sum) = FoldableList.foldMap(list)(a => (1, a))(monoid)
+    sum/length
+  }
 }
+
