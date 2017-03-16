@@ -464,14 +464,13 @@ object Monoid {
    * res0: Map[String,Int] = Map(a -> 2, rose -> 2, is -> 1)
    * Use monoids to compute a “bag” from an IndexedSeq
    */
-  def bag[A](as: IndexedSeq[A]): Map[A, Int] =
+  def bag[A](as: IndexedSeq[A]): Map[A, Int] =I
     foldMap(as.toList, mapMergeMonoid[A, Int](intAddition))(a => Map[A, Int](a -> 1))
 
   // fusing traversals
-  def getAverageParalley(list: List[Int]): Int = {
+  def getAverageParallel(list: List[Int]): Int = {
     val monoid = productMonoid(intAddition, intAddition)
     val (length, sum) = FoldableList.foldMap(list)(a => (1, a))(monoid)
     sum/length
   }
 }
-
