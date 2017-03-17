@@ -464,7 +464,7 @@ object Monoid {
    * res0: Map[String,Int] = Map(a -> 2, rose -> 2, is -> 1)
    * Use monoids to compute a “bag” from an IndexedSeq
    */
-  def bag[A](as: IndexedSeq[A]): Map[A, Int] =I
+  def bag[A](as: IndexedSeq[A]): Map[A, Int] =
     foldMap(as.toList, mapMergeMonoid[A, Int](intAddition))(a => Map[A, Int](a -> 1))
 
   // fusing traversals

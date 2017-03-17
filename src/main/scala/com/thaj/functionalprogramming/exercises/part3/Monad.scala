@@ -1,7 +1,10 @@
 package com.thaj.functionalprogramming.exercises.part3
 
-import com.thaj.functionalprogramming.example.exercises.part2.Gen
-
+import com.thaj.functionalprogramming.example.exercises.{Empty, OptionOperation, Stream}
+import com.thaj.functionalprogramming.example.exercises.OptionOperation.Option
+import com.thaj.functionalprogramming.example.exercises.part2.{Par, Gen}
+import com.thaj.functionalprogramming.example.exercises.part2.Par.Par
+import scala.{Stream => _}
 /**
  * Created by afsalthaj on 4/03/17.
  */
@@ -51,7 +54,7 @@ object Monad {
 
   // An example of a functor instance
   val listFunctor = new Functor[List] {
-    def map[A, B](a: List[A])(f: A => B) = a.map(f)
+    def map[A, B](a: List[A])(f: A => B): List[B] = a.map(f)
   }
 
   /**
@@ -83,13 +86,27 @@ object Monad {
     * picture of Monad. However you have already gained a significant knowledge on Monad.
     */
 
-  trait Monad[F[_]] {
+  trait Monad[F[_]] extends  Functor[F] {
     def unit[A](a: => A): F[A]
     def flatMap[A, B](ma: F[A])(f: A => F[B]): F[B]
 
     // map can be implemented in terms of flatMap
     def map[A, B](ma: F[A])(f: A => B): F[B] = flatMap(ma)(a => unit(f(a)))
     def map2[A, B, C](ma: F[A], mb: F[B])(f: (A, B) => C): F[C] = flatMap(ma)(a => map(mb)(b => f(a, b)))
+
+
+    /**
+     * The sequence and traverse combinators should be pretty
+     * familiar to you by now, and your implementations of them from
+     * various prior chapters are probably all very simi- lar. Implement them once
+     * and for all on Monad[F].
+     * def sequence[A](lma: List[F[A]]): F[List[A]]
+     * def traverse[A,B](la: List[A])(f: A => F[B]): F[List[B]
+     */
+
+    def sequence[A](lma: List[F[A]]): F[List[A]] = traverse(lma)(identity)
+    def traverse[A,B](la: List[A])(f: A => F[B]): F[List[B]] =
+      la.foldRight(unit(Nil): F[List[B]])((a, b) => map2(f(a), b)(_ :: _))
   }
 
   // To tie this back to a concrete data type, we can implement the Monad instance for Gen.
@@ -97,6 +114,28 @@ object Monad {
     def genMonad = new Monad[Gen] {
       def unit[A](a: => A) = Gen.unit(a)
       def flatMap[A, B](ma: Gen[A])(f: A => Gen[B]): Gen[B] = ma.flatMap(f)
+    }
+
+    // Exercise 11.1
+    // Write monad instances for Par, Parser, Option, Stream, and List.
+    def parMonad = new Monad[Par]{
+      def unit[A](a: => A): Par[A] = Par.unit(a)
+      def flatMap[A, B](ma: Par[A])(f: A => Par[B]): Par[B] = Par.flatMapUsingJoin(ma)(f)
+    }
+
+    def optionMonad = new Monad[Option]{
+      def unit[A](a: => A): Option[A] = OptionOperation.Some(a)
+      def flatMap[A, B](a: Option[A])(f: A => Option[B]) = a.flatMap(f)
+    }
+
+    def streamMonad = new Monad[Stream] {
+      def unit[A](a: => A): Stream[A] = Stream.cons(a, Empty)
+      def flatMap[A, B](a: Stream[A])(f: A => Stream[B]): Stream[B] = a.flatMap(f)
+    }
+
+    def listMonad = new Monad[List]{
+      def unit[A](a: => A): List[A] = List(a)
+      def flatMap[A, B](a: List[A])(f: A => List[B]): List[B] = a.flatMap(f)
     }
   }
 }
