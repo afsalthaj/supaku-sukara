@@ -1,5 +1,7 @@
 package com.thaj.functionalprogramming.exercises.part3
 
+import com.thaj.functionalprogramming.example.exercises.part2.Gen
+
 /**
  * Created by afsalthaj on 4/03/17.
  */
@@ -50,5 +52,51 @@ object Monad {
   // An example of a functor instance
   val listFunctor = new Functor[List] {
     def map[A, B](a: List[A])(f: A => B) = a.map(f)
+  }
+
+  /**
+   * Functor Laws
+   * Example for Par data type
+   * if x = Par(something)
+   * map(x)(a => a) == x
+   * map(x) preserves the structure
+   * This kind of alge- braic reasoning can potentially save us a lot of work, s
+   * ince we don’t have to write sepa- rate tests for these properties.
+   */
+
+
+  /** MONADS:
+    * We defined functor, and possible magical combinators. However, a further upgrade
+    * in terms of abstraction is needed, allowing you to do more fantastic things.
+    * Here, we generalise flatMap and unit functions.
+    *
+    * def map2[A, B, C] (fa: Gen[A], fb: Gen[B])(f: (A, B) => C): Gen[C] - {
+    *   fa flatMap (a => fb map (b => f(a,b)))
+    * }
+    *
+    * The above implementation is similar for Parser, Option etc (replace Gen with Parser, Option)
+    * This simply means you need to generalise the tyoe (Ex: Gen with Some F
+    * Hope you remember map can be implemented in terms of flatMap and unit. Hence all monad instances
+    * should implement a flatMap and unit. (That is the starting point - under
+    *
+    * At this point, what you get out of monad is just map2 and map function. You still don't know the big
+    * picture of Monad. However you have already gained a significant knowledge on Monad.
+    */
+
+  trait Monad[F[_]] {
+    def unit[A](a: => A): F[A]
+    def flatMap[A, B](ma: F[A])(f: A => F[B]): F[B]
+
+    // map can be implemented in terms of flatMap
+    def map[A, B](ma: F[A])(f: A => B): F[B] = flatMap(ma)(a => unit(f(a)))
+    def map2[A, B, C](ma: F[A], mb: F[B])(f: (A, B) => C): F[C] = flatMap(ma)(a => map(mb)(b => f(a, b)))
+  }
+
+  // To tie this back to a concrete data type, we can implement the Monad instance for Gen.
+  object Monad {
+    def genMonad = new Monad[Gen] {
+      def unit[A](a: => A) = Gen.unit(a)
+      def flatMap[A, B](ma: Gen[A])(f: A => Gen[B]): Gen[B] = ma.flatMap(f)
+    }
   }
 }
