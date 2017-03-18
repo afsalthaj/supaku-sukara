@@ -10,7 +10,7 @@ import Monad._
 object MonadSpec extends Specification {
 
   def is=s"""
-           $testListMonad
+    $testListMonad
   """
 
   def testListMonad = {

@@ -121,17 +121,19 @@ object Monad {
     // We did this product for Gen, Par etc
     def product[A,B](ma: F[A], mb: F[B]): F[(A, B)] = map2(ma, mb)((_, _))
 
+    // EXERCISE 11.6
     // Hard: Here’s an example of a function we haven’t seen before. Implement the function filterM.
     // It’s a bit like filter, except that instead of a function from A => Boolean,
     // we have an A => F[Boolean]. (Replacing various ordinary functions like this
     // with the monadic equivalent often yields interesting results.) Implement this function,
     // and then think about what it means for various data types.
-    // EXERCISE 11.6
     def filterM[A](ms: List[A])(f: A => F[Boolean]): F[List[A]] = {
-     val result: F[List[(A, Boolean)]] =
-       ms.foldRight(unit(Nil): F[List[(A, Boolean)]])((a, b) => map2(product(unit(a), f(a)), b)((c, d) =>
-         if(c._2) c :: d else d
-      ))
+      val result: F[List[(A, Boolean)]] =
+        ms.foldRight(unit(Nil): F[List[(A, Boolean)]])((a, b) =>
+          map2(product(unit(a), f(a)), b)((c, d) =>
+            if(c._2) c :: d else d
+          ))
+
       map(result)(_.map(_._1))
     }
   }
