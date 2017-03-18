@@ -1,7 +1,6 @@
 package com.thaj.functionalprogramming.exercises.part3
 
-import com.thaj.functionalprogramming.example.exercises.{Empty, OptionOperation, Stream}
-import com.thaj.functionalprogramming.example.exercises.OptionOperation.Option
+import com.thaj.functionalprogramming.example.exercises.{Empty, Stream}
 import com.thaj.functionalprogramming.example.exercises.part2.{Par, Gen}
 import com.thaj.functionalprogramming.example.exercises.part2.Par.Par
 import scala.{Stream => _}
@@ -11,22 +10,25 @@ import scala.{Stream => _}
 object Monad {
 
   /**
-   *   In all our previous APIs, we ended up using primitive functions such as map, flatMap etc and corresponding combinators
-   *   such as sequence, traverse etc. If you haven't got a sense of these functions yet, its good to have a revisit on part 1, part 2
+   *   In all our previous APIs, we ended up using primitive functions such as map,
+   *   flatMap etc and corresponding combinators
+   *   such as sequence, traverse etc. If you haven't got a sense of these functions yet,
+   *   its good to have a revisit on part 1, part 2
    *   etc
    *
    *   We will call F (or F[_] as) type constructor.
    */
 
   /**
-   *   A functor allows you to have a map function for free, althought that's not a compelling reason for why
-   *   this concept exist.
+   *   A functor allows you to have a map function for free, althought that's not a compelling
+   *   reason for why this concept exist.
    */
   trait Functor[F[_]]{
     def map[A, B](a: F[A])(f: A => B): F[B]
 
-    /** Taking a step back, and trying to find out more combinators and helper functions with these functor instances.
-      * being a bit verbose here when compared to textbook for better understanding.
+    /** Taking a step back, and trying to find out more combinators and helper functions with these
+      * functor instances.
+      * Being a bit verbose here when compared to textbook for better understanding.
       * That operation is sometimes called unzip. So we just wrote a generic
       * unzip function that works not just for lists, but for any functor!
       */
@@ -103,10 +105,35 @@ object Monad {
      * def sequence[A](lma: List[F[A]]): F[List[A]]
      * def traverse[A,B](la: List[A])(f: A => F[B]): F[List[B]
      */
-
     def sequence[A](lma: List[F[A]]): F[List[A]] = traverse(lma)(identity)
     def traverse[A,B](la: List[A])(f: A => F[B]): F[List[B]] =
       la.foldRight(unit(Nil): F[List[B]])((a, b) => map2(f(a), b)(_ :: _))
+    /**
+     * One combinator we saw for Gen and Parser was listOfN,
+     * which allowed us to repli- cate a parser or generator n times to get a parser or
+     * generator of lists of that length. We can implement this combinator for all monads F by
+     * adding it to our Monad trait. We should also give it a more generic name such as
+     * replicateM (meaning “replicate in a monad”).
+     * Implement replicateM.
+     */
+    def replicateM[A](n: Int, ma: F[A]): F[List[A]] = sequence(List.fill(n)(ma))
+
+    // We did this product for Gen, Par etc
+    def product[A,B](ma: F[A], mb: F[B]): F[(A, B)] = map2(ma, mb)((_, _))
+
+    // Hard: Here’s an example of a function we haven’t seen before. Implement the function filterM.
+    // It’s a bit like filter, except that instead of a function from A => Boolean,
+    // we have an A => F[Boolean]. (Replacing various ordinary functions like this
+    // with the monadic equivalent often yields interesting results.) Implement this function,
+    // and then think about what it means for various data types.
+    // EXERCISE 11.6
+    def filterM[A](ms: List[A])(f: A => F[Boolean]): F[List[A]] = {
+     val result: F[List[(A, Boolean)]] =
+       ms.foldRight(unit(Nil): F[List[(A, Boolean)]])((a, b) => map2(product(unit(a), f(a)), b)((c, d) =>
+         if(c._2) c :: d else d
+      ))
+      map(result)(_.map(_._1))
+    }
   }
 
   // To tie this back to a concrete data type, we can implement the Monad instance for Gen.
@@ -124,7 +151,7 @@ object Monad {
     }
 
     def optionMonad = new Monad[Option]{
-      def unit[A](a: => A): Option[A] = OptionOperation.Some(a)
+      def unit[A](a: => A): Option[A] = Some(a)
       def flatMap[A, B](a: Option[A])(f: A => Option[B]) = a.flatMap(f)
     }
 
@@ -138,4 +165,12 @@ object Monad {
       def flatMap[A, B](a: List[A])(f: A => List[B]): List[B] = a.flatMap(f)
     }
   }
+
+  /**
+   * 11.4
+   * Think about how replicateM will behave for various choices of F. For example, how does
+   * it behave in the List monad?
+   * What about Option? Describe in your own words the general meaning of replicateM.
+   */
+  // Refer MonadSpec
 }
