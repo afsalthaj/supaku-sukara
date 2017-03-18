@@ -136,6 +136,22 @@ object Monad {
 
       map(result)(_.map(_._1))
     }
+
+    // EXERCISE 11.7
+    // Implement the Kleisli composition function compose.
+    def compose[A,B,C](f: A => F[B], g: B => F[C]): A => F[C] = (a: A) => {
+      flatMap(f(a))(bb => g(bb))
+    }
+
+    //￼EXERCISE 11.8
+    // Hard: Implement flatMap in terms of compose. It seems that we’ve found
+    // another minimal set of monad combinators: compose and unit.
+    def _flatMap[A, B](ma: F[A])(f: A => F[B]): F[B] = {
+      // take out a and apply f and u get F[F[B]]
+      val z: Unit => F[A] = (a: Unit) => ma
+      val k: (Unit) => F[B] = compose(z, f)
+      k(())
+    }
   }
 
   // To tie this back to a concrete data type, we can implement the Monad instance for Gen.
@@ -175,4 +191,35 @@ object Monad {
    * What about Option? Describe in your own words the general meaning of replicateM.
    */
   // Refer MonadSpec
+
+  /**
+   * Monad Laws
+   * In this section, we’ll introduce laws to govern our Monad interface.6 Certainly
+   * we’d expect the functor laws to also hold for Monad, since a Monad[F]is a Functor[F],
+   * but what else do we expect? What laws should constrain flatMap and unit?
+   * The law is
+   * x.flatMap(f).flatMap(g) == x.flatMap(a => f(a).flatMap(g))
+   *
+   * Example:
+   * {{{
+   *   x.flatMap(f).flatMap(g) == x.flatMap(a => f(a).flatMap(g))
+   *   Some(v).flatMap(f).flatMap(g) == Some(v).flatMap(a => f(a).flatMap(g))
+   *   f(v).flatMap(g) == (a => f(a).flatMap(g))(v)
+   *   f(v).flatMap(g) == f(v).flatMap(g)
+   * }}}
+   * And this law should hold for all values x, f, and g of the appropriate types—not
+   * just for Gen but for Parser, Option, and any other monad.
+   * It’s not so easy to see that the law we just discussed is an associative law.
+   * Remember the associative law for monoids? That was clear:
+   * op(op(x,y), z) == op(x, op(y,z))
+   *
+   * But our associative law for monads doesn’t look anything like that!
+   * Fortunately, there’s a way we can make the law clearer if we consider not the
+   * monadic values of types like F[A], but monadic functions of types like A => F[B].
+   * Functions like that are called Kleisli arrows,7 and they can be composed with one another
+   * Refer compose function
+   *
+   * We can now state the associative law for monads in a much more symmetric way:
+   * compose(compose(f, g), h) == compose(f, compose(g, h))
+   */
 }
