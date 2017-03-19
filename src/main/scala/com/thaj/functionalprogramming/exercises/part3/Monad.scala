@@ -152,6 +152,20 @@ object Monad {
       val k: (Unit) => F[B] = compose(z, f)
       k(())
     }
+
+    // Exercise 11.12
+    // There’s a third minimal set of monadic combinators: map, unit, and join.
+    // Implement join in terms of flatMap.
+    def join[A](mma: F[F[A]]): F[A] = {
+      flatMap(mma)(identity)
+    }
+
+    // Exercise 11.13
+    // Implement either flatMap or compose in terms of join and map.
+    def __flatMap[A, B](ma: F[A])(f: A => F[B]): F[B] = {
+      val k: (Unit) => F[F[B]] = (a: Unit) => map(ma)(f)
+      compose(k, join[B])()
+    }
   }
 
   // To tie this back to a concrete data type, we can implement the Monad instance for Gen.
@@ -221,5 +235,21 @@ object Monad {
    *
    * We can now state the associative law for monads in a much more symmetric way:
    * compose(compose(f, g), h) == compose(f, compose(g, h))
+   */
+
+  /**
+   * 11.4.3 The identity laws
+   * The other monad law is now pretty easy to see. Just like zero was an identity
+   * element for append in a monoid, there’s an identity element for compose in a monad. Indeed,
+   * that’s exactly what unit is, and that’s why we chose this name for this operation:8
+   * def unit[A](a: => A): F[A]
+   * This function has the right type to be passed as an argument to compose.
+   * The effect should be that anything composed with unit is that same thing.
+   * This usually takes the form of two laws, left identity and right identity:
+   * compose(f, unit) == f
+   * compose(unit, f) == f
+   * We can also state these laws in terms of flatMap, but they’re less clear that way:
+   * flatMap(x)(unit) == x
+   * flatMap(unit(y))(f) == f(y)
    */
 }

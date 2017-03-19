@@ -10,7 +10,7 @@ import Monad._
 object MonadSpec extends Specification {
 
   def is=s"""
-    $testListMonad
+    $testJoin
   """
 
   def testListMonad = {
@@ -28,6 +28,10 @@ object MonadSpec extends Specification {
 
     val list = List("afsal", "thaj", "af")
 
-    optionMonad.filterM(list)(resultBool).contains(List("afsal, thaj"))
+    assert(optionMonad.filterM(list)(resultBool).contains(List("afsal, thaj")))
+  }
+
+  def testJoin = {
+   assert(optionMonad.join(Some(Some(1))).contains(1))
   }
 }
