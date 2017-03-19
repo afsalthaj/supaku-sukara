@@ -78,7 +78,7 @@ object PureStatefulAPIGeneric {
 
     def ints(count: Int): Rand[List[Int]] = sequence(List.fill(count)(int))
 
-    // Please cover PurelyFunctionaImperativeProgramming befor you read the below functions
+    // Please cover PurelyFunctionaImperativeProgramming before you read the below functions
     // The get action simply passes the incoming state along and returns it as the value:
     def get[S]: State[S, S] = State(s => (s, s))
     //The set action is constructed with a new state s. The resulting action ignores the incoming state,

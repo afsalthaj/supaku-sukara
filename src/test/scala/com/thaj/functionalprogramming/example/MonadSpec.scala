@@ -5,7 +5,6 @@ import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.S
 import com.thaj.functionalprogramming.exercises.part3.Monad.Monad
 import org.specs2.Specification
 import com.thaj.functionalprogramming.example.exercises.PureStatefulAPI._
-import scalaz._, Scalaz._
 
 import Monad._
 /**
@@ -15,11 +14,11 @@ object MonadSpec extends Specification {
 
   def is =
     s"""
-    testListMonad
-    testOptionMonad
-    testFilterM
-    testJoin
-    $testStateMonad
+    test list monad $testListMonad
+    test option monad $testOptionMonad
+    test filterM $testFilterM
+    test join of monad $testJoin
+    test state monad $testStateMonad
   """
 
   def testListMonad = {
@@ -35,7 +34,7 @@ object MonadSpec extends Specification {
   def testFilterM = {
     def resultBool(x: String) = if (x.length > 2) Some(true) else Some(false)
 
-    assert(optionMonad.filterM(List("afsal", "thaj", "af"))(resultBool).contains(List("afsal, thaj")))
+    assert(optionMonad.filterM(List("afsal", "thaj", "af"))(resultBool).contains(List("afsal", "thaj")))
   }
 
   def testJoin = assert(optionMonad.join(Some(Some(1))).contains(1))
@@ -57,7 +56,7 @@ object MonadSpec extends Specification {
       val (i2, s2) = s1.nextInt
       (List(i1, i2), s2)
     }).run(SimpleRng(1)))
-    
+
     assert(map2State.run(SimpleRng(1)) === State((s: RNG) => {
       val (i1, s1) = s.nextInt
       val ((d1, d2, d3), s2) = double3(s1)
