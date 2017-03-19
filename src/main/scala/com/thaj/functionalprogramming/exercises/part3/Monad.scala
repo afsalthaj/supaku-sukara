@@ -444,12 +444,18 @@ object Reader {
 
 // Take away from the chapter
 // Monad: The algebraic interface of abstraction has combinators along with the primitives
-// functions that act in a different way for different monad instances. The concern of logical coding
-// is enormously reduced here. The use of monad became significant in the case of state monad, and i
-// t came up with a whole lot of functionalities that we could
-// do over State. Similarly, for each monad, you may have different meanings for these primitives, while all of them
-// satisfy the monadic laws related to associativity and identity.
-// It gives an interface through function composition, variable passing, variable binding, state transitions etc
-// become more easy and reasonable, to be specific, through for-comprehensions.
-// The easy composition of actions, be it state actions, or read only actions, became easy as well.
+// functions that act in a different way for different monad instances. For each monad, we may have different
+// meanings for corresponding combinators/primitives, while all of them
+// satisfy the monadic laws related to associativity and identity.The concern of logical coding
+// is enormously reduced as well. The use of monad became significant in the case of state monad, where we were able to
+// come up with a whole lot of functionalities apart from simple variable binding. A monadic operation written as
+// for comprehension may have a whole of magic involved in between the written statements.This magic
+// rely on the foundation of variable transition, variable binding, composition and so forth.
+// When the types become monad, it becomes really for the developer to do composition of actions or types or results
+// even if it is passing read only variable through various layers.
 // We may have to revisit this chapter of monads and discover more meanings out of it.
+
+// It seems Scala supports functional programming but not really a library completely based on FP concepts.
+// Why not a monad trait in Scala? Or functor for that matter?
+// Hence the existence of FP based libraries such as scalaz, shapeless etc become a value add in this context.
+// I may get rid of this statement it is proving to be wrong in future.
