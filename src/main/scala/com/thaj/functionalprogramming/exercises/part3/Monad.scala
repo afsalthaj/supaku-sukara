@@ -446,7 +446,7 @@ object Reader {
 // Monad: The algebraic interface of abstraction has combinators along with the primitives
 // functions that act in a different way for different monad instances. For each monad, we may have different
 // meanings for corresponding combinators/primitives, while all of them
-// satisfy the monadic laws related to associativity and identity.The concern of logical coding
+// satisfy the monadic laws related to associativity and identity. The concern of logical coding
 // is enormously reduced as well. The use of monad became significant in the case of state monad, where we were able to
 // come up with a whole lot of functionalities apart from simple variable binding. A monadic operation written as
 // for comprehension may have a whole of magic involved in between the written statements.This magic
