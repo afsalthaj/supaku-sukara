@@ -197,7 +197,6 @@ object Monad {
       def unit[A](a: => A): List[A] = List(a)
       def flatMap[A, B](a: List[A])(f: A => List[B]): List[B] = a.flatMap(f)
     }
-  }
 
   /**
    * 11.4
@@ -371,4 +370,5 @@ object Monad {
   // What is the meaning of replicateM
   // in the State monad? How does map2 behave? What about sequence?
   // Refer MonadSpec
+  }
 }

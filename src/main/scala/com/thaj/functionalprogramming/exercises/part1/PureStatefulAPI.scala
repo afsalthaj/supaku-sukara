@@ -53,7 +53,7 @@ object PureStatefulAPI {
     case (i, r) => (i/(Int.MaxValue.toDouble+1), r)
   }
 
-  // Exercise 6.3
+  // Exercise 6.39u
   // Write functions to generate an (Int, Double) pair, a (Double, Int) pair,
   // and a (Double, Double, Double) 3-tuple. You should be able to reuse the functions you’ve already written.
   // adding a few constraints such as it should be nonnegative int, and hence double, and should be handling
