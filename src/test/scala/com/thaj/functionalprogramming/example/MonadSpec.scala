@@ -10,6 +10,9 @@ import Monad._
 object MonadSpec extends Specification {
 
   def is=s"""
+    $testListMonad
+    $testOptionMonad
+    $testFilterM
     $testJoin
   """
 
@@ -26,12 +29,8 @@ object MonadSpec extends Specification {
   def testFilterM = {
     def resultBool (x: String) = if (x.length > 2) Some(true) else Some(false)
 
-    val list = List("afsal", "thaj", "af")
-
-    assert(optionMonad.filterM(list)(resultBool).contains(List("afsal, thaj")))
+    assert(optionMonad.filterM(List("afsal", "thaj", "af"))(resultBool).contains(List("afsal, thaj")))
   }
 
-  def testJoin = {
-   assert(optionMonad.join(Some(Some(1))).contains(1))
-  }
+  def testJoin = assert(optionMonad.join(Some(Some(1))).contains(1))
 }

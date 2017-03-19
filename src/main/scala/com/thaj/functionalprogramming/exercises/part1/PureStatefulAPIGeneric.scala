@@ -40,9 +40,6 @@ object PureStatefulAPIGeneric {
 
     def map2[B, C](sb: State[S, B])(f: (A, B) => C): State[S, C] =
       flatMap(a => sb.map(b => f(a, b)))
-
-
-
   }
 
   //or type Rand[A] = State[RNG, A]

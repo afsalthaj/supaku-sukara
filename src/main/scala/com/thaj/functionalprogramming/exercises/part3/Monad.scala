@@ -1,9 +1,11 @@
 package com.thaj.functionalprogramming.exercises.part3
 
+import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.State
 import com.thaj.functionalprogramming.example.exercises.{Empty, Stream}
 import com.thaj.functionalprogramming.example.exercises.part2.{Par, Gen}
 import com.thaj.functionalprogramming.example.exercises.part2.Par.Par
 import scala.{Stream => _}
+
 /**
  * Created by afsalthaj on 4/03/17.
  */
@@ -163,8 +165,7 @@ object Monad {
     // Exercise 11.13
     // Implement either flatMap or compose in terms of join and map.
     def __flatMap[A, B](ma: F[A])(f: A => F[B]): F[B] = {
-      val k: (Unit) => F[F[B]] = (a: Unit) => map(ma)(f)
-      compose(k, join[B])()
+       join(map(ma)(f))
     }
   }
 
@@ -252,4 +253,122 @@ object Monad {
    * flatMap(x)(unit) == x
    * flatMap(unit(y))(f) == f(y)
    */
+
+  /**
+   * 11.5
+   * Just what is monad?
+   * Yes, Monad factors out code duplication among them,
+   * but what is a monad exactly? What does “monad” mean?
+   *
+   * Monad, like Monoid, is a more abstract, purely algebraic interface.
+   * The Monad combinators are often just a small fragment of the full API for a given data
+   * type that happens to be a monad.
+   *
+   * So Monad doesn’t generalize one type or another; rather, many vastly different data types
+   * can satisfy the Monad interface and laws.
+   *
+   * We’ve seen three minimal sets of primitive Monad combinators, and instances of Monad
+   * will have to provide implementations of one of these sets:
+   *  unit and flatMap
+   *  unit and compose
+   *  unit, map, and join
+   *
+   * And we know that there are two monad laws to be satisfied,
+   * associativity and identity, that can be formulated in various ways.
+   * monad is precisely defined by its operations and laws; no more, no less.
+   * But it’s a little unsatisfying. It doesn’t say much about what it implies—what a monad means.
+   * The problem is that it’s a self-contained definition. Even if you’re a beginning programmer,
+   * you have by now obtained a vast amount of knowledge related to programming,
+   * and this definition integrates with none of that.
+   *
+   * To develop some intuition for what monads mean, let’s look at another couple of monads
+   * and compare their behavior.
+   */
+
+  // Identity Monad
+  /**
+   * To distill monads to their essentials, let’s look at the simplest interesting specimen,
+   * the identity monad, given by the following type:
+   */
+
+  case class Id[A](value: A) {
+    def map[B](f: A => B): Id[B] = Id(f(value))
+    def flatMap[B](f: A => Id[B]): Id[B] = f(value)
+  }
+
+  /**
+   * scala> Id("Hello, ") flatMap (a =>
+   * |   Id("monad!") flatMap (b =>
+   * |     Id(a + b)))
+   * res0: Id[java.lang.String] = Id(Hello, monad!)
+   * When we write the exact same thing with a for-comprehension, it might be clearer:
+   * scala> for {
+   *   a <- Id("Hello, ")
+   *   b <- Id("monad!")
+   * } yield a + b
+   * res1: Id[java.lang.String] = Id(Hello, monad!)
+   * So what is the action of flatMap for the identity monad?
+   * It’s simply variable substitution. The variables a and b get bound to "Hello, " and "monad!",
+   * respectively, and then substituted into the expression a + b. We could have written the same
+   * thing without the Id wrapper, using just Scala’s own variables:
+   * scala> val a = "Hello, "
+   * a: java.lang.String = "Hello, "
+   * scala> val b = "monad!"
+   * b: java.lang.String = monad!
+   * scala> a + b
+   * res2: java.lang.String = Hello, monad!
+   * Besides the Id wrapper, there’s no difference.
+   *
+   * So now we have at least a partial answer to the question of what monads mean.
+   *
+   * We could say that monads provide a context for introducing and binding variables,
+   * and performing variable substitution.
+   * Let’s see if we can get the rest of the answer.
+   */
+  object IdMonad extends Monad[Id]{
+    def unit[A](a: => A): Id[A] = Id(a)
+    def flatMap[A, B](ma: Id[A])(f: A => Id[B]): Id[B] = ma flatMap f
+  }
+
+  // 11.5.2 The State monad and partial type application
+  // Visit State implementation
+  type IntState[A] = State[Int, A]
+  // And IntState is exactly the kind of thing that we can build a Monad for:
+
+  object IntStateMonad extends Monad[IntState] {
+    def unit[A](a: => A): IntState[A] = State(s => (a, s))
+    def flatMap[A,B](st: IntState[A])(f: A => IntState[B]): IntState[B] =
+      st flatMap f
+  }
+
+  /**
+   * Of course, it would be really repetitive if we had to manually write a
+   * separate Monad instance for each specific state type. Unfortunately,
+   * Scala doesn’t allow us to use underscore syntax to simply say State[Int, _] t
+   * o create an anonymous type construc- tor like we create anonymous functions.
+   * But instead we can use something similar to lambda syntax at the type level.
+   * For example, we could have declared IntState directly inline like this:
+   */
+  object _IntStateMonad extends Monad[({
+    type IntState[A] = State[Int, A]
+  }) # IntState ] {
+    def unit[A](a: => A): IntState[A] = State(s => (a, s))
+    def flatMap[A,B](st: IntState[A])(f: A => IntState[B]): IntState[B] =
+      st flatMap f
+  }
+
+  def stateMonad[S] = new Monad[({
+   type f[x] = State[S, x]
+  }) # f] {
+    def unit[A](a: => A) = State(s => (a, s))
+    def flatMap[A, B](st: State[S, A])(f: A => State[S, B]): State[S, B] = {
+      st flatMap f
+    }
+  }
+
+  // EXERCISE 11.18
+  // Now that we have a State monad, you should try it out to see how it behaves.
+  // What is the meaning of replicateM
+  // in the State monad? How does map2 behave? What about sequence?
+  // Refer MonadSpec
 }
