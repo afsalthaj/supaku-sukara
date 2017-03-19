@@ -3,7 +3,10 @@ package com.thaj.functionalprogramming.shapeless
 /**
  * Created by afsalthaj on 19/03/17.
  */
+
+// Referred from shapeless guide
 object ADT {
+  // Chapter 2 - 2.1
   /**
    * Algebraic data types (ADTs) are a functional programming concept with a fancy name but a very simple meaning.
    * They are an idioma􏰀c way of representingg data using “ands” and “ors”. For example
