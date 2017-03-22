@@ -81,7 +81,8 @@ object ADT {
    * should have a common supertype. The least super type of Tuple2 and Unit is Any, which is not ideal.
    * 2) Each size of tuple has a different, unrelated type, making it difficult to write code that abstracts over sizes
    *
-   * For all these reasons, shapeless uses a different generic encoding for product types called heterogeneous lists or HLists4.
+   * For all these reasons, shapeless uses a different generic encoding for product types called heterogeneous lists
+   * or HLists4.
    *
    * Code base from shapeless:
    *

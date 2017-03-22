@@ -93,5 +93,4 @@ object BasicLessonsGeneric {
 
   gen.to(Circle(1.0))
   // res4: gen.Repr = Inr(Inl(Circle(1.0)))
-
 }
