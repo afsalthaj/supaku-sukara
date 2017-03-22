@@ -5,7 +5,6 @@ import shapeless._
  * Created by afsalthaj on 22/03/17.
  */
 
-
 object BasicLessonsGeneric {
 // PRODUCTS
   /**
@@ -51,4 +50,48 @@ object BasicLessonsGeneric {
 
 
   // CO-PRODUCTS
+
+  import shapeless.{Coproduct, :+:, CNil, Inl, Inr}
+  case class Red(x: String)
+  case class Amber()
+  case class Green()
+  type Light = Red :+: Amber :+: Green :+: CNil
+
+  /**
+   * In general coproducts take the form A :+: B :+: C :+: CNil meaning “A or B or C”,
+   * where :+: can be loosely interpreted as Either. The overall type of a coproduct encodes
+   * all the possible types in the disjunc􏰀on, but each con- crete instance contains a value for just
+   * one of the possibili􏰀es. :+: has two subtypes, Inl and Inr, that correspond loosely to Left and Right.
+   * We create instances of a coproduct by nes􏰀ng Inl and Inr constructors:
+   */
+
+  val red: Light = Inl(Red("x"))
+
+  val green: Light = Inr(Inr(Inl(Green())))
+
+  val amber: Light = Inr(Inl(Amber()))
+
+  // Switching encodings using Generic
+
+  /**
+   * Coproduct types are difficult to parse on first glance.
+   * However, we can see how they fit into the larger picture of generic encodings.
+   * In addi􏰀on to un- derstanding case classes and case objects, shapeless’ Generic type class also
+   * understands sealed traits and abstract classes:
+   */
+  import shapeless.Generic
+  sealed trait Shape
+  final case class Rectangle(width: Double, height: Double) extends Shape
+  final case class Circle(radius: Double) extends Shape
+
+  val gen = Generic[Shape]
+  // gen: shapeless.Generic[Shape]{type Repr = shapeless.:+:[Rectangle,
+  //shapeless.:+:[Circle,shapeless.CNil]]} = anon$macro$1$1@20ec902e
+
+  gen.to(Rectangle(3.0, 4.0))
+  // res3: gen.Repr = Inl(Rectangle(3.0,4.0))
+
+  gen.to(Circle(1.0))
+  // res4: gen.Repr = Inr(Inl(Circle(1.0)))
+
 }
