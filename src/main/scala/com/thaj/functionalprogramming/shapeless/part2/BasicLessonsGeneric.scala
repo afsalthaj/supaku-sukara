@@ -1,10 +1,10 @@
 package com.thaj.functionalprogramming.shapeless.part2
 
 import shapeless._
+
 /**
  * Created by afsalthaj on 22/03/17.
  */
-
 object BasicLessonsGeneric {
 // PRODUCTS
   /**

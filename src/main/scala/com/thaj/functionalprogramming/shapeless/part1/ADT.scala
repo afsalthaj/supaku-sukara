@@ -3,8 +3,6 @@ package com.thaj.functionalprogramming.shapeless.part1
 /**
  * Created by afsalthaj on 19/03/17.
  */
-
-
 /**
  * Generic programming
  *
