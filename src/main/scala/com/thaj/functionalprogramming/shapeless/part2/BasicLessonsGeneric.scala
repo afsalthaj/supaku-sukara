@@ -79,18 +79,4 @@ object BasicLessonsGeneric {
    * In addi􏰀on to un- derstanding case classes and case objects, shapeless’ Generic type class also
    * understands sealed traits and abstract classes:
    */
-  import shapeless.Generic
-  sealed trait Shape
-  final case class Rectangle(width: Double, height: Double) extends Shape
-  final case class Circle(radius: Double) extends Shape
-
-  val gen = Generic[Shape]
-  // gen: shapeless.Generic[Shape]{type Repr = shapeless.:+:[Rectangle,
-  //shapeless.:+:[Circle,shapeless.CNil]]} = anon$macro$1$1@20ec902e
-
-  gen.to(Rectangle(3.0, 4.0))
-  // res3: gen.Repr = Inl(Rectangle(3.0,4.0))
-
-  gen.to(Circle(1.0))
-  // res4: gen.Repr = Inr(Inl(Circle(1.0)))
 }
