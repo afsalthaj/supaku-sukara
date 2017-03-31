@@ -47,8 +47,10 @@ https://github.com/afsalthaj/ScalaSample/tree/master/src/main/scala/com/thaj/fun
 A better way to play with type classes
 https://github.com/afsalthaj/ScalaSample/tree/master/src/main/scala/com/thaj/functionalprogramming/example/jsonparsing
 
-#### A few bits on pieces on haskell
-https://github.com/afsalthaj/supaku-sukara/blob/master/src/main/scala/com/thaj/scala-haskell/haskell.md
+#### A few bits on pieces on Haskell, comparison with Scala
+https://github.com/afsalthaj/supaku-sukara/blob/master/scala-haskell/haskell.md
+
+
 PS:
 
 #### Keen to know Big Data Infrastructure? Platform ? Here is something for you in progress
