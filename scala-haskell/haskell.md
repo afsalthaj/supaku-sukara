@@ -223,7 +223,6 @@ You don't get this in scala, unless you import scalaz._ and implement `map` func
 ```
 Prelude> :set -XDeriveFunctor
 Prelude> newtype Age a = Age { age :: a } deriving (Show, Eq, Ord, Functor)
-Prelude>
 
 ```
 
