@@ -7,7 +7,7 @@ instead of `def f(x: Int): Int = x + 1`
 
 Now lets try to find the type of the above function `f` in Haskell
 
-Prelude> :t f
+Prelude> :t f </br>
 f :: Num a => a -> a
 Prelude>
 Prelude>
