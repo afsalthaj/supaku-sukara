@@ -15,7 +15,7 @@ And it takes an `a` and returns an `a`
 
 If you don't want the generic type for your function
 
-`Prelude> g:: Int -> Int; g x = x + 1`
+`Prelude> g :: Int -> Int; g x = x + 1`
 
 Example of how to use:
 
