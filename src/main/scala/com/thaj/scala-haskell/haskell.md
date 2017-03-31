@@ -227,3 +227,8 @@ newtype Age a = Age { age :: a } deriving (Show, Eq, Ord, Functor)
 ```
 
 !!! Simply means Haskell is so straight forward !!!
+
+-> Less verbose
+-> Syntax is very light weight
+-> Full type inference
+-> To be continued with pattern matching and type classes
