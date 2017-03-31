@@ -79,4 +79,7 @@ object BasicLessonsGeneric {
    * In addi􏰀on to un- derstanding case classes and case objects, shapeless’ Generic type class also
    * understands sealed traits and abstract classes:
    */
+
+
+
 }
