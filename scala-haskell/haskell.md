@@ -221,14 +221,14 @@ data Boolean = True | False deriving (Show, Eq, Ord)
 You don't get this in scala, unless you import scalaz._ and implement `map` function
 
 ```
-
-newtype Age a = Age { age :: a } deriving (Show, Eq, Ord, Functor)
+Prelude> :set -XDeriveFunctor
+Prelude> newtype Age a = Age { age :: a } deriving (Show, Eq, Ord, Functor)
+Prelude>
 
 ```
 
-!!! Simply means Haskell is so straight forward !!!
+Simply means Haskell is so straight forward
 
--> Less verbose
--> Syntax is very light weight
--> Full type inference
--> To be continued with pattern matching and type classes
+* Less verbose
+* Syntax is very light weight
+* Full type inference
