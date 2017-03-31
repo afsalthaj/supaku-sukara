@@ -9,8 +9,6 @@ Now lets try to find the type of the above function `f` in Haskell
 
 Prelude> :t f </br>
 f :: Num a => a -> a
-Prelude>
-Prelude>
 
 This implies `a` should have an instance of type class `Num` where `+` is defined.
 And it takes an `a` and returns an `a`
