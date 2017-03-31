@@ -1,7 +1,7 @@
 ## Full Type Inference
 Type signature is optional in Haskell
 
-`f x = x+1`
+`f x = x + 1`
 
 instead of `def f(x: Int): Int = x + 1`
 
