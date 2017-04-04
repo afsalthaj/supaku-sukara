@@ -1,5 +1,6 @@
 package com.thaj.functionalprogramming.exercises.part3
 
+import com.thaj.functionalprogramming.example.exercises.PureStatefulAPI.RNG
 import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.State
 import com.thaj.functionalprogramming.example.exercises.{ Empty, Stream}
 import com.thaj.functionalprogramming.example.exercises.part2.{Par, Gen}
@@ -341,12 +342,12 @@ object Monad {
 
    // 11.5.2 The State monad and partial type application
    // Visit State implementation
-   type IntState[A] = State[Int, A]
+   type RandomNumberState[A] = State[RNG, A]
    // And IntState is exactly the kind of thing that we can build a Monad for:
 
-   object IntStateMonad extends Monad[IntState] {
-     def unit[A](a: => A): IntState[A] = State(s => (a, s))
-     def flatMap[A,B](st: IntState[A])(f: A => IntState[B]): IntState[B] =
+   object IntStateMonad extends Monad[RandomNumberState] {
+     def unit[A](a: => A): RandomNumberState[A] = State(s => (a, s))
+     def flatMap[A,B](st: RandomNumberState[A])(f: A => RandomNumberState[B]): RandomNumberState[B] =
        st flatMap f
    }
 
@@ -354,20 +355,20 @@ object Monad {
     * Of course, it would be really repetitive if we had to manually write a
     * separate Monad instance for each specific state type. Unfortunately,
     * Scala doesn’t allow us to use underscore syntax to simply say State[Int, _] t
-    * o create an anonymous type construc- tor like we create anonymous functions.
+    * o create an anonymous type constructor like we create anonymous functions.
     * But instead we can use something similar to lambda syntax at the type level.
     * For example, we could have declared IntState directly inline like this:
     */
    object _IntStateMonad extends Monad[({
-     type IntState[A] = State[Int, A]
-   }) # IntState ] {
-     def unit[A](a: => A): IntState[A] = State(s => (a, s))
-     def flatMap[A,B](st: IntState[A])(f: A => IntState[B]): IntState[B] =
+     type RandomNumberState[A] = State[RNG, A]
+   }) # RandomNumberState ] {
+     def unit[A](a: => A): RandomNumberState[A] = State(s => (a, s))
+     def flatMap[A,B](st: RandomNumberState[A])(f: A => RandomNumberState[B]): RandomNumberState[B] =
        st flatMap f
    }
 
    def stateMonad[S] = new Monad[({
-    type f[x] = State[S, x]
+    type f[X] = State[S, X]
    }) # f] {
      def unit[A](a: => A) = State(s => (a, s))
      def flatMap[A, B](st: State[S, A])(f: A => State[S, B]): State[S, B] = {
@@ -408,14 +409,29 @@ object Monad {
 
     val F = stateMonad[Int]
 
+    def unit[S, A](a: => A): State[S, A] = State(s => (a, s))
 
-    def zipWithIndex[A](as: List[A]): List[(Int,A)] =
+    def zipWithIndex[A](as: List[A]): List[(Int, A)] =
       as.foldLeft(F.unit(List[(Int, A)]()))((acc,a) => for {
         xs <- acc
         n  <- getState
         _  <- setState(n + 1)
-      } yield  (n, a) :: xs).run(0)._1.reverse
+      } yield (n, a) :: xs).run(0)._1.reverse
 
+    // For better understanding, the above stuff is similar to the below code
+    // This is where you kind of doing the same monadic operations, however, not using
+    // the monadic trait, but directly using the flatMap and unit defined for state data type
+    /**
+     * scala> zipWithIndexWithoutForComp(List(2,3,4))
+     * res7: List[(Int, Int)] = List((0,2), (1,3), (2,4))
+     */
+    def zipWithIndexWithoutForComp[A](as: List[A]): List[(Int, A)] = as
+      .foldLeft(unit[Int, List[(Int, A)]](Nil: List[(Int, A)]))((acc, a) => {
+        acc.flatMap(xs => {
+          State[Int, Int](n => (n, n + 1))
+            .map(stateOfInt => (stateOfInt, a) :: xs)
+        })
+      }).run(0)._1.reverse
     /**
      * What does the difference between the action of Id and the action of State tell us
      * about monads in general? We can see that a chain of flatMap calls (or an equivalent
@@ -469,7 +485,6 @@ object Reader {
 // Why not a monad trait in Scala? Or functor for that matter?
 // Hence the existence of FP based libraries such as scalaz, shapeless etc become a value add in this context.
 // I may get rid of this statement it is proving to be wrong in future.
-
 
 // A small summary
 // More inputs after revisiting the chapter: A summary
