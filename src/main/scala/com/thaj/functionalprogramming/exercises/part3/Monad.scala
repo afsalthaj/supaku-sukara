@@ -6,6 +6,7 @@ import com.thaj.functionalprogramming.example.exercises.part2.{Par, Gen}
 import com.thaj.functionalprogramming.example.exercises.part2.Par.Par
 import scala.{Stream => _}
 
+
 /**
  * Created by afsalthaj on 4/03/17.
  */
@@ -34,6 +35,7 @@ object Monad {
       * That operation is sometimes called unzip. So we just wrote a generic
       * unzip function that works not just for lists, but for any functor!
       */
+
     def distribute[A, B](a: F[(A, B)]): (F[A], F[B]) = {
       val s: F[A] = map(a)(tuple => tuple._1)
       val y: F[B] = map(a)(tuple => tuple._2)
@@ -58,7 +60,10 @@ object Monad {
 
   // An example of a functor instance
   val listFunctor = new Functor[List] {
-    def map[A, B](a: List[A])(f: A => B): List[B] = a.map(f)
+    def map[A, B](a: List[A])(f: A => B): List[B] = a match {
+      case ::(x, xs) => ::(f(x), map(xs)(f))
+      case Nil => Nil
+    }
   }
 
   /**
@@ -98,7 +103,6 @@ object Monad {
     def map[A, B](ma: F[A])(f: A => B): F[B] = flatMap(ma)(a => unit(f(a)))
     def map2[A, B, C](ma: F[A], mb: F[B])(f: (A, B) => C): F[C] = flatMap(ma)(a => map(mb)(b => f(a, b)))
 
-
     /**
      * The sequence and traverse combinators should be pretty
      * familiar to you by now, and your implementations of them from
@@ -107,7 +111,12 @@ object Monad {
      * def sequence[A](lma: List[F[A]]): F[List[A]]
      * def traverse[A,B](la: List[A])(f: A => F[B]): F[List[B]
      */
+
+
+    //def sequence[A](a: List[F[A]]): F[List[A]] =
+
     def sequence[A](lma: List[F[A]]): F[List[A]] = traverse(lma)(identity)
+
     def traverse[A,B](la: List[A])(f: A => F[B]): F[List[B]] =
       la.foldRight(unit(Nil): F[List[B]])((a, b) => map2(f(a), b)(_ :: _))
     /**
@@ -118,6 +127,7 @@ object Monad {
      * replicateM (meaning “replicate in a monad”).
      * Implement replicateM.
      */
+
     def replicateM[A](n: Int, ma: F[A]): F[List[A]] = sequence(List.fill(n)(ma))
 
     // We did this product for Gen, Par etc
@@ -208,7 +218,7 @@ object Monad {
 
    /**
     * Monad Laws
-    * In this section, we’ll introduce laws to govern our Monad interface.6 Certainly
+    * In this section, we’ll introduce laws to govern our Monad interface.Certainly
     * we’d expect the functor laws to also hold for Monad, since a Monad[F]is a Functor[F],
     * but what else do we expect? What laws should constrain flatMap and unit?
     * The law is
@@ -459,3 +469,12 @@ object Reader {
 // Why not a monad trait in Scala? Or functor for that matter?
 // Hence the existence of FP based libraries such as scalaz, shapeless etc become a value add in this context.
 // I may get rid of this statement it is proving to be wrong in future.
+
+
+// A small summary
+// More inputs after revisiting the chapter: A summary
+// A functor will have a map function, and the instances of the functor should implement map function. We will get functions
+// such as distribute, codistribute etc for free. A functo can have a law map(x)(a => a) == x
+// A monad instance should implement flatMap and unit function and you get functions such as map, map2, filterM, replicateM,
+// sequence, traverse function for free. A monad law can be represented as:
+// flatMap(fa)(fu).flatMap(ga)

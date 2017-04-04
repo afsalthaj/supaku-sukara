@@ -1,5 +1,7 @@
 package com.thaj.functionalprogramming.example.exercises
 
+import com.thaj.functionalprogramming.example.exercises.PureStatefulAPI.SimpleRng
+
 
 /**
   * Created by afsalthaj on 8/11/2016.
@@ -53,9 +55,9 @@ object PureStatefulAPIGeneric {
 
     // Reimplementing RNG using Generic State Action
     type Rand[A] = State[RNG, A]
+
     def both[A, B] (a: Rand[A], b: Rand[B]): Rand[(A, B)] =
-    // map2(a, b)((a,b) => (a,b))
-    a.map2(b)((_,_))
+      a.map2(b)((_,_))
 
 
     def boolean: Rand[Boolean] = State (rng  =>
@@ -63,12 +65,14 @@ object PureStatefulAPIGeneric {
 
 
     val int: Rand[Int] = State(t => t.nextInt)
+
     def nonNegativeLessThanIntState(n: Int): Rand[Int] = int.map { t =>
       val mod = t % n
       if (t + (n-1) - mod>= 0 )
         mod
       else t
     }
+
     def nonNegativeInt: Rand[Int] = int.map(t => if (t < 0) -t-1 else t)
     def double:Rand[Double] = nonNegativeInt.map(a => a/Int.MaxValue.toDouble+1)
 

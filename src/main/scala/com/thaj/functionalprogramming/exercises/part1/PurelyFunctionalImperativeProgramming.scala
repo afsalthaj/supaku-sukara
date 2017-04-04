@@ -71,10 +71,10 @@ import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.S
     * elements modulo y
     */
   val nsSimple: Rand[List[Int]] = for {
-    x <- int
-    y <- int
-    xs <- ints(x)
-  } yield xs.map(_ % y)
+    someCount <- int
+    value <- int
+    xs <- ints(someCount)
+  } yield xs.map(_ % value)
 
   /**
     *  If we imagine that we have a combinator get for getting the current state, and a combinator
@@ -91,6 +91,7 @@ import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.S
   sealed trait Input
   case object Coin extends Input
   case object Turn extends Input
+
   case class Machine(locked: Boolean, candies: Int, coins: Int) {
     def operateOnMachine(input: Input) = input match {
       case _ if candies == 0 => this
@@ -127,17 +128,21 @@ import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.S
 
   // The author's implementation in fpinscala
   def simulateMachine(inputs: List[Input]): State[Machine, (Int, Int)] = for {
-    state <- { val s: State[Machine, List[Unit]] = sequence(inputs.map(input => modifyS[Machine](_.operateOnMachine(input)))); s }
+    _ <- sequence(inputs.map(input => modifyS[Machine](_.operateOnMachine(input))))
     machine <- get
   } yield (machine.coins, machine.candies)
 
 
   // OR for better understanding
-  def simulateMachineAlternate(inputs: List[Input]):State[Machine, (Int, Int)]  = {
-     val s:  State[Machine, List[Unit]] =
-       sequence(inputs.map(input => State[Machine, Unit](a => ((), a.operateOnMachine(input)))))
+  def simulateMachineAlternate(inputs: List[Input]): State[Machine, (Int, Int)]  = {
+     val s: State[Machine, List[Unit]] =
+      sequence(inputs.map(input => State[Machine, Unit](a => ((), a.operateOnMachine(input)))))
 
-    s.flatMap[(Int, Int)](_ => State[Machine, (Int, Int)](t => ((t.coins, t.candies), t)))
+    // setting the state
+    val newState: State[Machine, Machine] = s.flatMap(_ => State[Machine, Machine](t => (t, t)))
+
+    // get the state
+    newState.map(s => (s.coins, s.candies))
   }
 
   //Example usage

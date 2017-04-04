@@ -86,6 +86,7 @@ object PureStatefulAPIAdvanced {
   // Use it to reimplement the ints function you wrote before.
   // For the latter, you can use the standard library function List.fill(n)(x) to make a list with x repeated n times.
   // you may find this
+
   def sequence[A](fs: List[Rand[A]]): Rand[List[A]] =
     fs.foldLeft(unit(List[A]()))((a, b) => map2(b, a)(_ :: _))
 
