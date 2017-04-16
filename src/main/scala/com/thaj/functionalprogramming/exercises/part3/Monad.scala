@@ -412,7 +412,7 @@ object Monad {
     def unit[S, A](a: => A): State[S, A] = State(s => (a, s))
 
     def zipWithIndex[A](as: List[A]): List[(Int, A)] =
-      as.foldLeft(F.unit(List[(Int, A)]()))((acc,a) => for {
+      as.foldLeft(F.unit(List[(Int, A)]()))((acc, a) => for {
         xs <- acc
         n  <- getState
         _  <- setState(n + 1)
@@ -422,8 +422,8 @@ object Monad {
     // This is where you kind of doing the same monadic operations, however, not using
     // the monadic trait, but directly using the flatMap and unit defined for state data type
     /**
-     * scala> zipWithIndexWithoutForComp(List(2,3,4))
-     * res7: List[(Int, Int)] = List((0,2), (1,3), (2,4))
+     * scala> zipWithIndexWithoutForComp(List(2, 3, 4))
+     * res7: List[(Int, Int)] = List((0, 2), (1, 3), (2, 4))
      */
     def zipWithIndexWithoutForComp[A](as: List[A]): List[(Int, A)] = as
       .foldLeft(unit[Int, List[(Int, A)]](Nil: List[(Int, A)]))((acc, a) => {
