@@ -150,7 +150,7 @@ def sum(ints: IndexedSeq[Int]): Par[A] =
   }  
 ```
 
-We solved two problems here: We explicity told the program that the two computations given to map2 should
+We solved two problems here: We explicitly told the program that the two computations given to map2 should
 execute in separate logical thread. We could also combine two parallel computations.
 
 Based on the above program, making unit lazy doesn't give any advantage. Hence, let us define a strict unit function.
@@ -160,18 +160,29 @@ def unit[A](a: A): Par[A]
 def lazyUnit[A] (a: => A) = fork(unit(a))
 ```
 
-If fork begins evaluating its argument immediately in parallel, the implementation must clearly know something, either directly or indirectly, about how to create threads or submit tasks to some sort of thread pool. Moreover, this implies that the thread pool (or whatever resource we use to implement the parallelism) must be (globally) accessible and properly initialized wherever we want to call fork.4 This means we lose the ability to control the parallelism strategy used for different parts of our program. And though there’s nothing inherently wrong with having a global resource for executing parallel tasks, we can imagine how it would be useful to have more fine-grained control over what implementations are used where (we might like for each subsystem of a large application to get its own thread pool with different parameters, for example). It seems much more appropriate to give get the responsi- bility of creating threads and submitting execution tasks.
+If fork begins evaluating its argument immediately in parallel, the implementation must clearly know something, either directly or indirectly, about how to create threads or submit tasks to some sort of thread pool. 
+Moreover, this implies that the thread pool (or whatever resource we use to implement the parallelism) must be (globally) accessible and properly initialized wherever we want to call fork.4 
+This means we lose the ability to control the parallelism strategy used for different parts of our program. And though there’s nothing inherently wrong with having a global resource for 
+executing parallel tasks, 
+we can imagine how it would be useful to have more fine-grained control over what implementations are used where (we might like for each subsystem of a large application to
+ get its own thread pool with different parameters, for example). It seems much more appropriate to give get the responsi- bility of creating threads and submitting execution tasks.
 
 
-In contrast, if fork simply holds on to its unevaluated argument until later, it requires no access to the mechanism for implementing parallelism. It just takes an unevaluated Par and “marks” it for concurrent evaluation. Let’s now assume this meaning for fork. With this model, Par itself doesn’t need to know how to actually implement the parallelism. It’s more a description of a parallel computation that gets interpreted at a later time by something like the get function.
+In contrast, if fork simply holds on to its unevaluated argument until later, 
+it requires no access to the mechanism for implementing parallelism. It just takes an unevaluated Par and “marks” it for concurrent evaluation. 
+Let’s now assume this meaning for fork. With this model, Par itself doesn’t need to know how to actually implement the parallelism. 
+It’s more a description of a parallel computation that gets interpreted at a later time by something like the get function.
 
-This is a slight shift from the concepts that we learned. We saw Par as a container of a value that we could simply `get` when it becomes available. Now Par is more like a first class Program that we can run. It represents parallel computation, but may not deal with the actual mechanism of running programs using thread pool. So lets run Par using `run` function
+This is a slight shift from the concepts that we learned. We saw Par as a container of a value that we could simply `get` when it becomes available. 
+Now Par is more like a first class Program that we can run. It represents parallel computation, but may not deal with the actual mechanism of running programs using thread pool. 
+So lets run Par using `run` function
 
 ```
 def run[A](a: Par[A]): A
 
 ```
-Because Par is now just a pure `data structure`, run has to have some means of imple- menting the parallelism, whether it spawns new threads, delegates tasks to a thread pool, or uses some other mechanism.
+Because Par is now just a pure `data structure`, run has to have some means of imple- menting the parallelism, 
+whether it spawns new threads, delegates tasks to a thread pool, or uses some other mechanism.
 
 So our API consist of:
 

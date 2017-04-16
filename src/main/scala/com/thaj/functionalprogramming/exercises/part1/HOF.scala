@@ -4,7 +4,6 @@ package com.thaj.functionalprogramming.example.exercises
  * Created by afsalthaj on 10/10/16.
  */
 object HOF {
-
   // Exercise 2.3
   // Let’s look at another example, currying,[9] which converts a function f
   // of two arguments into a function of one argument that partially applies f.
@@ -34,4 +33,21 @@ object HOF {
   val f = (c: Double) => math.Pi/ 2 - c
 
   val cos : Double => Double = f andThen math.sin
+}
+
+object CurryTest extends App {
+
+ def filters(xs: List[Int], p: Int => Boolean): List[Int] = {
+  if (xs.isEmpty) xs
+  else if (p(xs.head)) xs.head :: filters(xs.tail, p)
+  else filters(xs.tail, p)
+ }
+
+ def modulo(n: Int)(x: Int) = (x % n) == 0
+
+ val numss = List(1, 2, 3)
+
+ filters(numss, modulo(1))
+
+ filters(numss, modulo(2))
 }

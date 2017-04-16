@@ -53,6 +53,7 @@ object DesignAspects {
    */
   // def unit[A](a: => A): Par[A], for extracting the resulting value from a parallel
   //computation
+
   sealed trait Par[A]
   case class ParA[A](a: () => A) extends Par[A]
 

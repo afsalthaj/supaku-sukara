@@ -76,6 +76,7 @@ object Par {
    * the implementation that we’ll discuss later in the chapter.
    *
    */
+
   def fork[A](a: => Par[A]): Par[A] = es => es.submit(new Callable[A] {
     def call = a(es).get
   })

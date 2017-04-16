@@ -33,6 +33,7 @@ import scala.collection.immutable.Stream.{Empty, cons}
  *
  */
 
+
 object Monoid {
   trait Monoid[A] {
     def op(a1: A, a2: A): A
@@ -147,7 +148,6 @@ object Monoid {
     as.foldLeft(m.zero)((b: B, a: A) => m.op(b, f(a)))
   }
 
-
   // Hard: The foldMap function can be implemented using either
   // foldLeft or fold-Right. But you can also write foldLeft and foldRight using foldMap! Try it.
   // Copied from fpinscala
@@ -222,7 +222,7 @@ object Monoid {
 
   // this solution is significantly different from fpinscala, but it is tested for basic scenarios
   def isOrdered(a: IndexedSeq[Int]) = {
-     foldMap(a.toList,intMaxMonoid)(b => (Some(b), true))._2
+     foldMap(a.toList, intMaxMonoid)(b => (Some(b), true))._2
   }
 
   // Parallel parsing
@@ -413,7 +413,7 @@ object Monoid {
    *
    * So if A and B are Monoid, then Tuple(A, B) can also form a Monoid
    */
-  def productMonoid[A,B](A : Monoid[A], B: Monoid[B]): Monoid[(A,B)] = {
+  def productMonoid[A,B](A : Monoid[A], B: Monoid[B]): Monoid[(A, B)] = {
     new Monoid[(A, B)] {
       def op(x: (A, B), y: (A, B)): (A, B) =  A.op(x._1, y._1) -> B.op(x._2, y._2)
       val zero: (A, B) = (A.zero, B.zero)

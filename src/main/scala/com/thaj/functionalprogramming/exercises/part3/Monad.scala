@@ -370,7 +370,7 @@ object Monad {
    def stateMonad[S] = new Monad[({
     type f[X] = State[S, X]
    }) # f] {
-     def unit[A](a: => A) = State(s => (a, s))
+     def unit[A](a: => A): State[S, A] = State(s => (a, s))
      def flatMap[A, B](st: State[S, A])(f: A => State[S, B]): State[S, B] = {
        st flatMap f
      }
@@ -460,8 +460,8 @@ object Reader {
   import Monad._
 
   def readerMonad[R] = new Monad[({type f[x] = Reader[R,x]})#f] {
-    def unit[A](a: => A): Reader[R,A] = Reader(_ => a)
-    def flatMap[A,B](st: Reader[R,A])(f: A => Reader[R, B]): Reader[R, B] = Reader (r => {
+    def unit[A](a: => A): Reader[R, A] = Reader(_ => a)
+    def flatMap[A, B](st: Reader[R, A])(f: A => Reader[R, B]): Reader[R, B] = Reader (r => {
       val a: A = st.run(r)
       f(a).run(r)
     })
@@ -493,3 +493,61 @@ object Reader {
 // A monad instance should implement flatMap and unit function and you get functions such as map, map2, filterM, replicateM,
 // sequence, traverse function for free. A monad law can be represented as:
 // flatMap(fa)(fu).flatMap(ga)
+
+// http://underscore.io/blog/posts/2015/04/28/monadic-io-laziness-makes-you-free.html
+
+// now it follows substitutions
+
+
+// A simple IO monad
+/*
+import Pure._
+final case class Return[A](a: () => A) extends IO[A]
+final case class Suspend[A](s: () => IO[A]) extends IO[A]
+
+object Pure {
+  trait IO[A] {
+    def flatMap[B](a: A => IO[B]): IO[B] =
+      Suspend(() => a(this.run))
+
+    def map[B](f: A => B): IO[B] =
+      Return(() => f(this.run))
+
+    def run: A = this match {
+      case Suspend(s) => s().run
+      case Return(a) => a()
+    }
+  }
+
+  object IO {
+    def point[A](a: => A): IO[A] =
+      Return(() => a)
+  }
+
+  def println(msg: String): IO[Unit] =
+    IO.point(Predef.println(msg))
+}
+
+*/
+
+object Pure {
+  trait IO[A] {
+    def flatMap[B](f: A => IO[B]): IO[B] = Suspend(() => f(this.run))
+    def map[B](f: A => B): IO[B] = Return(() => f(this.run))
+
+    def run: A= this match {
+      case Suspend(s) => s().run
+      case Return(r) => r()
+    }
+  }
+
+  def point[A](a: A): IO[A] = Return(() => a)
+
+  def println(msg: String): IO[Unit] = point(Predef.println(msg))
+}
+
+import Pure._
+
+case class Return[A](a: () => A) extends IO[A]
+
+case class Suspend[A](a: () => IO[A]) extends IO[A]

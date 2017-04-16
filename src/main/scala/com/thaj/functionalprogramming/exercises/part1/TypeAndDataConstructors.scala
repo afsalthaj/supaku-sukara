@@ -121,7 +121,7 @@ object TypeAndDataConstructors {
     // Exercise 3.9
     def length[A](list: List[A]) = foldRight(list, 0)((x, y) => y + 1)
 
-    // Exercise 3.10 , .tail recursive version of the above foldRight
+    // Exercise 3.10 , .\tail recursive version of the above foldRight
     // foldLeft, means the operation is mostly folding it from left to right
     def foldLeft[A, B](list: List[A], init: B)(f: (B, A) => B): B = {
       @annotation.tailrec

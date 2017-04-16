@@ -170,6 +170,42 @@ import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.S
     assert(simulateMachine(List(Coin)).run(emptyUnlockedMachine)._2 == emptyUnlockedMachine)
 
   }
+
+  /**
+   * A simple use case: Refer Monad before u jump here
+   * @param carbon
+   * @param db
+   */
+  // a fatty acid basically represents the number of carbons and double bonds
+  case class FattyAcid(carbon: Int, db: Int)
+
+  val initialFattyAcid = FattyAcid(18, 1)
+  // An enzymatic reaction is something which is a state action that converts an fatty acid to another fatty acid
+  type EnzymaticReaction =  State[FattyAcid, List[FattyAcid]]
+
+  type Reaction = FattyAcid => FattyAcid
+
+  val reaction1 = (fa: FattyAcid) => fa match {
+    case (FattyAcid(cs, dbs)) => FattyAcid(cs + 2 , dbs)
+  }
+  val reaction2 = (fa: FattyAcid) => fa match {
+    case (FattyAcid(cs, dbs)) => FattyAcid(cs - 2 , dbs)
+  }
+
+  object EnzymaticReaction {
+    def unit(x: List[FattyAcid]): EnzymaticReaction = State[FattyAcid, List[FattyAcid]] ( f => (x, f))
+    // def chainOfEnzymaticReaction(fattyAcid: FattyAcid): State[FattyAcid, FattyAcid] =
+    // def convertAListOfReactions(reactions: List[Reaction]) =
+
+    def getStreamOfFattyAcidStates (listOfReactions: List[Reaction], start: FattyAcid, end: FattyAcid): (List[FattyAcid], FattyAcid) =
+      listOfReactions.foldLeft(unit(List[FattyAcid]()): EnzymaticReaction)((accState, reaction)=> {
+        for {
+           facids <- accState
+           facid  <- get
+           _      <- set(reaction(facid))
+        } yield facid :: facids
+      }).run(start)
+  }
 }
 
 
@@ -182,4 +218,3 @@ import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.S
 // Represent RNG state actions in terms of State
 // And then you are discovering the fact that all your RNG state actions can be chained, composed, or combined
 // easily through the functions of the box `State`
-
