@@ -159,7 +159,9 @@ object Applicative {
 
   // Identity Law
   /**
-    * The first two laws for Applicative might be summarized by saying that both these implementations of map respect the functor laws. In other words, map2 of some fa: F[A] with unit preserves the structure of fa. We’ll call these the left and right identity laws (shown here in the first and second lines of code, respectively):
+    * The first two laws for Applicative might be summarized by saying that both these implementations of map respect the
+    * functor laws. In other words, map2 of some fa: F[A] with unit preserves the structure of fa. We’ll call these the
+    * left and right identity laws (shown here in the first and second lines of code, respectively):
     * map2(unit(()), fa)((_,a) => a) == fa
     * map2(fa, unit(()))((a,_) => a) == fa
     */
@@ -171,5 +173,9 @@ object Applicative {
     * product(product(fa,fb),fc) == map(product(fa, product(fb,fc)))(assoc)
     */
 
-  // .. to be continued from 216: 12.5.3
+  // Naturality of product
+  /**
+    * When working with Applicative effects, we generally have the option of applying transformations before or
+    * after combining values with map2.
+    */
 }
