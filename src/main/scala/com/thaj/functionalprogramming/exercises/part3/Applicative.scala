@@ -137,6 +137,7 @@ object Applicative {
     * The rest of the errors accumulate in the tail.
     */
   // EXERCISE 12.6
+  // Refer to page number 212 and 213
   def validationApplicativeInstance[E] = new Applicative[({ type f[A] = Validation[E, A] }) #f]{
      def map2[A, B, C](fa: Validation[E, A], fb: Validation[E, B])(f: (A, B) => C): Validation[E, C] =
        fa match {
@@ -153,4 +154,22 @@ object Applicative {
 
     def unit[A](a: => A): Validation[E, A] = Success(a)
   }
+
+  // Applicative Law
+
+  // Identity Law
+  /**
+    * The first two laws for Applicative might be summarized by saying that both these implementations of map respect the functor laws. In other words, map2 of some fa: F[A] with unit preserves the structure of fa. We’ll call these the left and right identity laws (shown here in the first and second lines of code, respectively):
+    * map2(unit(()), fa)((_,a) => a) == fa
+    * map2(fa, unit(()))((a,_) => a) == fa
+    */
+
+  // Associativity
+  /**
+    * def product[A,B](fa: F[A], fb: F[B]): F[(A,B)] = map2(fa, fb)((_,_))
+    * def assoc[A,B,C](p: (A,(B,C))): ((A,B), C) = p match { case (a, (b, c)) => ((a,b), c) }
+    * product(product(fa,fb),fc) == map(product(fa, product(fb,fc)))(assoc)
+    */
+
+  // .. to be continued from 216: 12.5.3
 }
