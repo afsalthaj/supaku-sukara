@@ -101,8 +101,8 @@ object Applicative {
   }
 
   // Exercise 12.5
-  def eitherApplicative[M] = new Monad[({ type f[X] = Either[M, X]}) #f] {
-    def unit[A](a: A): Either[M, A] = Right[M, A](a)
+  def eitherMonad[M] = new Monad[({ type f[X] = Either[M, X]}) #f] {
+    def unit[A](a: => A): Either[M, A] = Right[M, A](a)
     def flatMap[A, B](ma: Either[M, A])(f: A => Either[M, B]): Either[M, B] = ma match {
       case Right(a) => f(a)
       case Left(x) => Left(x)
@@ -127,8 +127,7 @@ object Applicative {
 
   sealed trait Validation[+E, +A]
 
-  case class Failure[E](head: E, tail: Vector[E] = Vector())
-    extends Validation[E, Nothing]
+  case class Failure[E](head: E, tail: Vector[E] = Vector()) extends Validation[E, Nothing]
 
   case class Success[A](a: A) extends Validation[Nothing, A]
 
