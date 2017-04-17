@@ -137,6 +137,7 @@ object Applicative {
     * Note that in the case of Failure there’s always at least one error, stored in head.
     * The rest of the errors accumulate in the tail.
     */
+  // EXERCISE 12.6
   def validationApplicativeInstance[E] = new Applicative[({ type f[A] = Validation[E, A] }) #f]{
      def map2[A, B, C](fa: Validation[E, A], fb: Validation[E, B])(f: (A, B) => C): Validation[E, C] =
        fa match {
