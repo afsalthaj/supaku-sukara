@@ -2,7 +2,8 @@ package com.thaj.functionalprogramming.exercises.part3
 
 import com.thaj.functionalprogramming.example.exercises.{Branch, Leaf, Tree}
 import com.thaj.functionalprogramming.example.exercises.part2.Par.Par
-import com.thaj.functionalprogramming.example.exercises.part2.{Par, Prop, Gen}
+import com.thaj.functionalprogramming.example.exercises.part2.{Par}
+import com.thaj.functionalprogramming.exercises.part2.{Prop, Gen}
 
 import scala.collection.immutable.Stream.{Empty, cons}
 

@@ -1,6 +1,8 @@
 package com.thaj.functionalprogramming.exercises.part3
 
-import com.thaj.functionalprogramming.exercises.part3.Monad.Functor
+import com.thaj.functionalprogramming.exercises.part3.Monad.{Functor, Monad}
+
+import scala.{Right => _}
 
 object Applicative {
   // If you look at `combinators` defined in Monad, most of them are defined in terms of
@@ -50,9 +52,7 @@ object Applicative {
     def apply[A,B](fab: F[A => B])(fa: F[A]): F[B]
     def unit[A](a: => A): F[A]
 
-
     def map[A, B](fa: F[A])(f: A => B): F[B] = apply(unit[A => B](f))(fa)
-
 
     def map2[A,B,C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C] = apply(apply(unit[A => B => C](f.curried))(fa))(fb)
 
@@ -70,5 +70,87 @@ object Applicative {
       val curriedBox: F[A => (B => C => D => E)] = unit(f.curried)
       apply(apply(apply(apply(curriedBox)(fa))(fb))(fc))(fd)
     }
+  }
+
+  // Using applicative, it is impossible to implement join or flatMap
+  // So Monad is clearly adding some extra capabilities beyond Applicative.
+  // But what exactly? Let’s look at some concrete examples.
+
+  /**
+   * Why applicative trait?
+   *  In general, it’s preferable to implement combinators like traverse using as few assumptions as possible.
+   *  It’s better to assume that a data type can provide map2 than flatMap. Otherwise we’d have to write a new traverse
+   *  every time we encountered a type that’s Applicative but not a Monad! We’ll look at examples of such types next.
+   *
+   *  Because Applicative is “weaker” than Monad, this gives the interpreter of applica- tive effects more flexibility.
+   *  To take just one example, consider parsing. If we describe a parser without resorting to flatMap, this implies that the
+   *  structure of our grammar is determined before we begin parsing. Therefore, our inter- preter or runner of parsers has more
+   *  information about what it’ll be doing up front and is free to make additional assumptions and possibly use a more effi- cient
+   *  implementation strategy for running the parser, based on this known structure. Adding flatMap is powerful, but it means we’re
+   *  generating our pars- ers dynamically, so the interpreter may be more limited in what it can do. Power comes at a cost.
+   *
+   *  Applicative functors compose, whereas monads (in general) don’t.
+   */
+
+  // Not all applicative functors are monads
+
+  // The idea behind this Applicative is to combine corresponding elements via zipping.
+  val streamApplicative = new Applicative[Stream ] {
+    def unit[A](a: => A): Stream[A] = Stream.continually(a)
+    def map2[A, B, C](a: Stream[A], b: Stream[B])(f: (A, B) => C): Stream[C] = a zip b map(f.tupled)
+  }
+
+  // Exercise 12.5
+  def eitherApplicative[M] = new Monad[({ type f[X] = Either[M, X]}) #f] {
+    def unit[A](a: A): Either[M, A] = Right[M, A](a)
+    def flatMap[A, B](ma: Either[M, A])(f: A => Either[M, B]): Either[M, B] = ma match {
+      case Right(a) => f(a)
+      case Left(x) => Left(x)
+    }
+  }
+
+  /**
+    * Dependency with flatMap has an inherent problem  that, after the first execution, it it fails, the second expression
+    * is not called. During these instances, applicatives can be a solution.
+    * {{{
+    * map3(
+        validName(field1),
+        validBirthdate(field2),
+        validPhone(field3))(
+        WebForm(_,_,_))
+    * }}}
+    *
+    * Here, no dependency is implied between the three expressions passed to map3, and in principle we can
+    * imagine collecting any errors from each Either into a List. But if we use the Either monad, its
+    * implementation of map3 in terms of flatMap will halt after the first error.
+    */
+
+  sealed trait Validation[+E, +A]
+
+  case class Failure[E](head: E, tail: Vector[E] = Vector())
+    extends Validation[E, Nothing]
+
+  case class Success[A](a: A) extends Validation[Nothing, A]
+
+  /**
+    * Write an Applicative instance for Validation that accumulates errors in Failure.
+    * Note that in the case of Failure there’s always at least one error, stored in head.
+    * The rest of the errors accumulate in the tail.
+    */
+  def validationApplicativeInstance[E] = new Applicative[({ type f[A] = Validation[E, A] }) #f]{
+     def map2[A, B, C](fa: Validation[E, A], fb: Validation[E, B])(f: (A, B) => C): Validation[E, C] =
+       fa match {
+         case Success(a) => fb match {
+           case Success(b) => Success(f(a, b))
+           case Failure(t, ts) => Failure(t, ts)
+         }
+
+         case Failure(failure, failures) =>  fb match {
+           case Success(_) => Failure(failure, failures)
+           case Failure(fail, fails) => Failure(failure, fails ++ Vector(fail) )
+         }
+     }
+
+    def unit[A](a: => A): Validation[E, A] = Success(a)
   }
 }

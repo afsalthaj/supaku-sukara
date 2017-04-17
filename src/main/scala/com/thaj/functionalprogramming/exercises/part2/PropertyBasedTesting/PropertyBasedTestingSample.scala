@@ -1,11 +1,14 @@
-package com.thaj.functionalprogramming.example.exercises.part2
+package com.thaj.functionalprogramming.exercises.part2
 
 import java.util.concurrent.{Executors, ExecutorService}
 
 import com.thaj.functionalprogramming.example.exercises.PureStatefulAPI.{SimpleRng, RNG}
 import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.State
+import com.thaj.functionalprogramming.example.exercises.part2.Par
 import com.thaj.functionalprogramming.example.exercises.part2.Par.Par
- /**
+import com.thaj.functionalprogramming.example.exercises.part2.Par.Par
+
+/**
  *  Although a library for testing has a very different purpose than a library for parallel computations,
  *  we’ll discover that these libraries
  *  have a lot of surprisingly similar combinators. This similarity is something we’ll return to in part 3.

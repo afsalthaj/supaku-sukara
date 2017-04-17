@@ -3,8 +3,9 @@ package com.thaj.functionalprogramming.exercises.part3
 import com.thaj.functionalprogramming.example.exercises.PureStatefulAPI.RNG
 import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.State
 import com.thaj.functionalprogramming.example.exercises.{ Empty, Stream}
-import com.thaj.functionalprogramming.example.exercises.part2.{Par, Gen}
+import com.thaj.functionalprogramming.example.exercises.part2.Par
 import com.thaj.functionalprogramming.example.exercises.part2.Par.Par
+import com.thaj.functionalprogramming.exercises.part2.Gen
 import scala.{Stream => _}
 
 
