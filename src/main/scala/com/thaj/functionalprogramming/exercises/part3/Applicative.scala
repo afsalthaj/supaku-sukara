@@ -23,12 +23,14 @@ object Applicative {
   // This leads to another interface, where map2 and unit can be the primitives and rest everything is combinators
   // This is known as applicative functors, but the less powerful nature of applicative functors comes with benefits.
 
-  trait Applicative[F[_]] extends Functor[F] {
+  trait Applicative[F[_]] extends Functor[F] { self =>
     def map2[A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C]
+
     def unit[A](a: => A): F[A]
 
     // derived combinators
     def map[A, B](a: F[A])(f: A => B): F[B] = map2(a, unit(()))((a, _) => f(a))
+
     def traverse[A, B](a: List[A])(f: A => F[B]): F[List[B]] =
       a.foldLeft(unit(List[B]()))((a, b) => map2(f(b), a)(_ :: _))
 
@@ -38,8 +40,23 @@ object Applicative {
       */
     // Exercise 12.1
     def sequence[A](lfa: List[F[A]]): F[List[A]] = traverse(lfa)(fa => fa)
+
     def replicateM[A](n: Int, fa: F[A]): F[List[A]] = sequence(List.fill(n)(fa))
+
     def product[A, B](fa: F[A], fb: F[B]): F[(A, B)] = map2(fa, fb)((_, _))
+
+    // Exercise 12.8
+    def product[G[_]](B: Applicative[G]): Applicative[({type f[X] = (F[X], G[X])})#f] = {
+      new Applicative[({type f[x] = (F[x], G[x])})#f] {
+        def map2[A, B, C](fa: (F[A], G[A]), fb: (F[B], G[B]))(f: (A, B) => C): (F[C], G[C]) = {
+          val fc = self.map2(fa._1, fb._1)(f)
+          val gc = B.map2[A, B, C](fa._2, fb._2)(f)
+          (fc, gc)
+        }
+
+         def unit[A](a: => A): (F[A], G[A]) = (self.unit(a), B.unit(a))
+      }
+    }
   }
 
   // Hard: The name applicative comes from the fact that we can formulate the Applicative
@@ -178,4 +195,15 @@ object Applicative {
     * When working with Applicative effects, we generally have the option of applying transformations before or
     * after combining values with map2.
     */
+
+  // Hard: Prove that all monads are applicative functors by showing that if the
+  // monad laws hold, the Monad implementations of map2 and map satisfy the applicative laws.
+  // Let us believe so.
+
+  // Exercise 12.8
+  // Just like we can take the product of two monoids A and B to give the monoid (A, B),
+  // we can take the product of two applicative functors. Implement this function:
+  // Refer product
+
+  // TODO: 12.9 to 12.11
 }
