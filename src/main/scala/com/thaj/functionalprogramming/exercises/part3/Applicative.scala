@@ -57,6 +57,16 @@ object Applicative {
          def unit[A](a: => A): (F[A], G[A]) = (self.unit(a), B.unit(a))
       }
     }
+
+    // Exercise 12.9
+    // Hard: Applicative functors also compose another way! If F[_] and G[_] are applicative functors,
+    // then so is F[G[_]]. Implement this function:
+    def compose[G[_]](G: Applicative[G]): Applicative[({type f[x] = F[G[x]]})#f] =
+    new Applicative[({type f[x] = F[G[x]]})#f] {
+      def lift[A, B, C](f: (A, B) => C) : (G[A], G[B]) => G[C] = (a: G[A], b: G[B]) => G.map2(a, b)(f)
+      def map2[A, B, C](a: F[G[A]], b: F[G[B]])(f: (A, B) => C): F[G[C]]  = self.map2(a, b)(lift(f))
+      def unit[A](a: => A): F[G[A]] = self.unit(G.unit(a))
+    }
   }
 
   // Hard: The name applicative comes from the fact that we can formulate the Applicative
