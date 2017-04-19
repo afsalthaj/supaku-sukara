@@ -8,7 +8,6 @@ import com.thaj.functionalprogramming.example.exercises.part2.Par.Par
 import com.thaj.functionalprogramming.exercises.part2.Gen
 import scala.{Stream => _}
 
-
 /**
  * Created by afsalthaj on 4/03/17.
  */
@@ -97,7 +96,7 @@ object Monad {
     * picture of Monad. However you have already gained a significant knowledge on Monad.
     */
 
-  trait Monad[F[_]] extends  Functor[F] {
+  trait Monad[F[_]] extends  Functor[F] { self =>
     def unit[A](a: => A): F[A]
     def flatMap[A, B](ma: F[A])(f: A => F[B]): F[B]
 
@@ -179,6 +178,13 @@ object Monad {
     def __flatMap[A, B](ma: F[A])(f: A => F[B]): F[B] = {
        join(map(ma)(f))
     }
+
+   // EXERCISE 12.11
+    // Try to write compose on Monad. It’s not possible, but it is instructive to attempt it and understand why this is the case.
+    //  def compose[G[_]](G: Monad[G]): Monad[({type f[x] = F[G[x]]})#f] = new Monad[({type f[x] = F[G[x]]})#f] {
+    // def flatMap[A, B](ma: F[G[A]])(f: (A) => F[G[B]]): F[G[B]] = self.flatMap(ma)(ga => G.map(ga)(a => f(a)))
+   // }
+
   }
 
   // To tie this back to a concrete data type, we can implement the Monad instance for Gen.

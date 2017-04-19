@@ -46,6 +46,9 @@ object Applicative {
     def product[A, B](fa: F[A], fb: F[B]): F[(A, B)] = map2(fa, fb)((_, _))
 
     // Exercise 12.8
+    // Just like we can take the product of two monoids A and B to give the monoid (A, B),
+    // we can take the product of two applicative functors. Implement this function:
+    // Refer product
     def product[G[_]](B: Applicative[G]): Applicative[({type f[X] = (F[X], G[X])})#f] = {
       new Applicative[({type f[x] = (F[x], G[x])})#f] {
         def map2[A, B, C](fa: (F[A], G[A]), fb: (F[B], G[B]))(f: (A, B) => C): (F[C], G[C]) = {
@@ -58,15 +61,31 @@ object Applicative {
       }
     }
 
+    /**
+      * Please note that the order of exercise is not in line with the conceptual explanations. Please
+      * make sure you are getting to the next topic, if you getting stuck with some of the exercises and solutions
+      * in this project
+      */
     // Exercise 12.9
     // Hard: Applicative functors also compose another way! If F[_] and G[_] are applicative functors,
     // then so is F[G[_]]. Implement this function:
     def compose[G[_]](G: Applicative[G]): Applicative[({type f[x] = F[G[x]]})#f] =
-    new Applicative[({type f[x] = F[G[x]]})#f] {
-      def lift[A, B, C](f: (A, B) => C) : (G[A], G[B]) => G[C] = (a: G[A], b: G[B]) => G.map2(a, b)(f)
-      def map2[A, B, C](a: F[G[A]], b: F[G[B]])(f: (A, B) => C): F[G[C]]  = self.map2(a, b)(lift(f))
-      def unit[A](a: => A): F[G[A]] = self.unit(G.unit(a))
-    }
+      new Applicative[({type f[x] = F[G[x]]})#f] {
+        def lift[A, B, C](f: (A, B) => C) : (G[A], G[B]) => G[C] = (a: G[A], b: G[B]) => G.map2(a, b)(f)
+        def map2[A, B, C](a: F[G[A]], b: F[G[B]])(f: (A, B) => C): F[G[C]]  = self.map2(a, b)(lift(f))
+        def unit[A](a: => A): F[G[A]] = self.unit(G.unit(a))
+      }
+
+    // Exercise 12.12
+    // On the Applicative trait, implement sequence over a
+    // Map rather than a List: def sequenceMap[K,V](ofa: Map[K,F[V]]): F[Map[K,V]]
+    /**
+      * But traversable data types are too numerous for us to write specialized sequence and traverse methods
+      * for each of them. What we need is a new interface. We’ll call it Traverse
+      */
+    def sequenceMap[K, V](ofa: Map[K, F[V]]): F[Map[K, V]] = ofa.foldLeft(unit(Map[K, V]()))((acc, keyValue) => {
+      map2(acc, keyValue._2)((map, value) =>  map.updated(keyValue._1, value))
+    })
   }
 
   // Hard: The name applicative comes from the fact that we can formulate the Applicative
@@ -209,11 +228,4 @@ object Applicative {
   // Hard: Prove that all monads are applicative functors by showing that if the
   // monad laws hold, the Monad implementations of map2 and map satisfy the applicative laws.
   // Let us believe so.
-
-  // Exercise 12.8
-  // Just like we can take the product of two monoids A and B to give the monoid (A, B),
-  // we can take the product of two applicative functors. Implement this function:
-  // Refer product
-
-  // TODO: 12.9 to 12.11
 }

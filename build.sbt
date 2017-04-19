@@ -21,3 +21,9 @@ libraryDependencies ++= Seq (
 shellPrompt := { _ =>
   s"\033[1;36m\033[40m[fpscala-spark] ~\033[0m "
 }
+
+lazy val describe = taskKey[Unit]("printing out project description")
+
+lazy val functionalprogramming = (project in file(".")).settings(
+  describe := { println("this is a project that explains everything about functional programming in Scala.. Everything!") }
+)
