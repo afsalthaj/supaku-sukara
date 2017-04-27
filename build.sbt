@@ -24,6 +24,17 @@ shellPrompt := { _ =>
 
 lazy val describe = taskKey[Unit]("printing out project description")
 
+lazy val versionPrint = taskKey[Unit]("print out the scala version")
+
+lazy val printDetails = taskKey[Unit]("print other details")
+
 lazy val functionalprogramming = (project in file(".")).settings(
-  describe := { println("this is a project that explains everything about functional programming in Scala.. Everything!") }
+  name := "Functional Programming in Scala",
+  describe := { println("this is a project that explains everything about functional programming in Scala.. Everything!") },
+  versionPrint := { println(scalaBinaryVersion.value) },
+  printDetails := {
+    println(s"scala source in test ${(scalaSource in Test).value}")
+    println(s"scala source in compile ${(scalaSource in Test).value}")
+    println(s"baseDirectory ${baseDirectory.value.toString}")
+  }
 )

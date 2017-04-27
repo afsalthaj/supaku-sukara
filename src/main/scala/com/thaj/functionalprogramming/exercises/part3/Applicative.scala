@@ -1,8 +1,12 @@
 package com.thaj.functionalprogramming.exercises.part3
 
-import com.thaj.functionalprogramming.exercises.part3.Monad.{Functor, Monad}
+import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.State
+import com.thaj.functionalprogramming.exercises.part3.MonadLearnings.{Functor, Monad}
+import com.thaj.functionalprogramming.exercises.part3.Monoid.{Foldable, Monoid}
 
 import scala.{Right => _}
+
+import com.thaj.functionalprogramming.exercises.part3.MonadLearnings._
 
 object Applicative {
   // If you look at `combinators` defined in Monad, most of them are defined in terms of
@@ -22,7 +26,6 @@ object Applicative {
   // because of its usage.
   // This leads to another interface, where map2 and unit can be the primitives and rest everything is combinators
   // This is known as applicative functors, but the less powerful nature of applicative functors comes with benefits.
-
   trait Applicative[F[_]] extends Functor[F] { self =>
     def map2[A, B, C](fa: F[A], fb: F[B])(f: (A, B) => C): F[C]
 
@@ -228,4 +231,131 @@ object Applicative {
   // Hard: Prove that all monads are applicative functors by showing that if the
   // monad laws hold, the Monad implementations of map2 and map satisfy the applicative laws.
   // Let us believe so.
+
+  /**
+    * But traversable data types are too numerous for us to write specialized sequence and traverse methods
+    * for each of them. What we need is a new interface. We’ll call it Traverse:
+    *
+    * {{{
+       trait Traverse[F[_]] {
+         def traverse[G[_]:Applicative,A,B](fa: F[A])(f: A => G[B]): G[F[B]] =
+           sequence(map(fa)(f))
+         def sequence[G[_]:Applicative,A](fga: F[G[A]]): G[F[A]] =
+           traverse(fga)(ga => ga)
+       }
+    * }}}
+    *
+    * The interesting operation here is sequence. Look at its signature closely.
+    * It takes F[G[A]] and swaps the order of F and G, so long as G is an applicative functor.
+    * Now, this is a rather abstract, algebraic notion. We’ll get to what it all means in a minute, but first,
+    * let’s look at a few instances of Traverse.
+    */
+  trait Traversable[F[_]] extends Functor[F] with Foldable[F]{ self =>
+    def traverse[G[_]: Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]]
+    // def sequence[A](lfa: List[F[A]]): F[List[A]] = traverse(lfa)(fa => fa)
+    def sequence[G[_]: Applicative, A](f: F[G[A]]): G[F[A]] = traverse(f)(identity)
+    // Exercise 12.14
+
+
+    type Id[A] = A
+
+    val applicativeInstance = new Applicative[Id] {
+      def unit[A](a: => A): Id[A] = a
+      def map2[A, B, C](a: Id[A], b: Id[B])(f: (A, B) => C): Id[C] = f(a, b)
+    }
+
+    // Uses of traverse
+    // Exercise 12.14
+    def map[A, B](fa: F[A])(f: A => B): F[B] = traverse[Id, A, B](fa)(f)(applicativeInstance)
+
+    type ConstG[M, B] = M
+
+    implicit def monoidApplicative[M](M: Monoid[M]) = new Applicative[({type f[x] = ConstG[M, x]}) #f] {
+      def map2[A, B, C](a: ConstG[M, A], b: ConstG[M, B])(f: (A, B) => C): ConstG[M, C] = M.op(a, b)
+      def unit[A](a: => A): ConstG[M, A] = M.zero
+    }
+
+    // This means that Traverse can extend Foldable and we can give a default implemen-
+    // tation of foldMap in terms of traverse:
+    def foldMap[A, M](as: F[A])(f: A => M)(mb: Monoid[M]): M =
+      traverse[({type f[x] = ConstG[M, x]}) #f, A, Nothing](as)(f)(monoidApplicative(mb))
+
+    // Exercise 12.17
+    def foldRight[A,B](as: F[A])(z: B)(f: (A,B) => B): B = mapAccum(as, z)((a, b) => ((),f(a, b)))._2
+    def foldLeft[A,B](as: F[A])(z: B)(f: (B,A) => B): B = mapAccum(as, z)((a, b) => ((), f(b, a)))._2
+
+    def traverseS[S, A, B](fa: F[A])(f: A => State[S, B]): State[S, F[B]] =
+      traverse[({type f[x] = State[S, x]}) #f, A, B](fa)(f)(Monad.stateMonad)
+
+    def zipWithIndex[A](ta: F[A]): F[(A, Int)] = traverseS(ta)(a => {
+      for {
+        n <- Monad.getState[Int]
+        _ <- Monad.setState(n + 1)
+      } yield (a, n)
+    }).run(0)._1
+
+    override def toList[A](ta: F[A]): List[A] = traverseS(ta)(a => {
+      for {
+        list <- Monad.getState[List[A]]
+        _ <- Monad.setState(a :: list)
+      } yield list
+    }).run(Nil)._2.reverse
+
+
+    def mapAccum[S, A, B](ta: F[A], s: S)(f: (A, S) => (B, S)): (F[B], S) = traverseS(ta)(a => {
+      for {
+         s1 <- Monad.getState[S]
+         (b, s2) = f(a, s1)
+         _ <- Monad.setState(s2)
+      } yield b
+    }).run(s)
+
+    def toListUsingMapAcc[A](ta: F[A]): List[A] = mapAccum(ta, Nil: List[A])((a, s) => ((), a :: s))._2.reverse
+    def zipWithIndexUsingMapAccum[A](fa: F[A]): F[(A, Int)] = mapAccum(fa, 0)((a, s) => ((a, s), s + 1))._1
+
+  }
+
+  // Exercise 12.13
+  // Write Traverse instances for List, Option and Tree
+  case class Tree[+A](head: A, tail: List[Tree[A]])
+
+  val listTraverseInstance = new Traversable[List] {
+    def traverse[G[_], A, B](fa: List[A])(f: A => G[B])(implicit m: Applicative[G]): G[List[B]] =
+      fa.foldLeft(m.unit(Nil: List[B]))((acc, a) => m.map2(f(a), acc)(_ :: _))
+  }
+
+  val optionTraverseInstance = new Traversable[Option] {
+    def traverse[G[_], A, B](fa: Option[A])(f: A => G[B])(implicit m: Applicative[G]): G[Option[B]] =
+      fa match {
+        case Some(a) => m.map(f(a))(Some(_))
+        case None => m.unit(None)
+      }
+  }
+
+  val treeTraverseInstance = new Traversable[Tree] {
+    // slightly different from the original solution
+    def traverse[G[_], A, B](fa: Tree[A])(f: (A) => G[B])(implicit m: Applicative[G]): G[Tree[B]] =
+      m.map2(f(fa.head), listTraverseInstance.sequence(fa.tail.map(tt => traverse(tt)(f))))(Tree(_, _))
+  }
+
+  /**
+    * A traversal is similar to a fold in that both take some data structure and apply a func- tion to the data within
+    * in order to produce a result. The difference is that traverse preserves the original structure, whereas foldMap
+    * discards the structure and replaces it with the operations of a monoid.
+    * Look at the signature Tree[Option[A]] => Option[Tree[A]],
+    * for instance. We’re preserving the Tree structure, not merely col- lapsing the values using some monoid.
+    *
+    * {{{
+    *   def foldMap[A, B](as: List[A], m: Monoid[B])(f: A => B): B = {
+    *     as.foldLeft(m.zero)((b: B, a: A) => m.op(b, f(a)))
+    *   }
+    * }}}
+    */
+
+  // Turning a Monoid into Applicative
+  type Const[A] = Int
+  def intMonoidApplicative(m: Monoid[Int]) = new Applicative[Const] {
+    def map2[A, B, C](a: Const[A], b: Const[B])(f: (A, B) => C) = m.op(a, b)
+    def unit[A](a: => A): Const[A] = m.zero
+  }
 }

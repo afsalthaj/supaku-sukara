@@ -145,7 +145,7 @@ object Monoid {
 
 
   // Exercise 10.5
-  def foldMap[A,B](as: List[A], m: Monoid[B])(f: A => B): B = {
+  def foldMap[A, B](as: List[A], m: Monoid[B])(f: A => B): B = {
     as.foldLeft(m.zero)((b: B, a: A) => m.op(b, f(a)))
   }
 

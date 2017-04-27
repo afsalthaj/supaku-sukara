@@ -2,16 +2,18 @@ package com.thaj.functionalprogramming.exercises.part3
 
 import com.thaj.functionalprogramming.example.exercises.PureStatefulAPI.RNG
 import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.State
-import com.thaj.functionalprogramming.example.exercises.{ Empty, Stream}
+import com.thaj.functionalprogramming.example.exercises.{Empty, Stream}
 import com.thaj.functionalprogramming.example.exercises.part2.Par
 import com.thaj.functionalprogramming.example.exercises.part2.Par.Par
 import com.thaj.functionalprogramming.exercises.part2.Gen
+import com.thaj.functionalprogramming.exercises.part3.Applicative.Applicative
+
 import scala.{Stream => _}
 
 /**
  * Created by afsalthaj on 4/03/17.
  */
-object Monad {
+object MonadLearnings {
 
   /**
    *   In all our previous APIs, we ended up using primitive functions such as map,
@@ -96,12 +98,12 @@ object Monad {
     * picture of Monad. However you have already gained a significant knowledge on Monad.
     */
 
-  trait Monad[F[_]] extends  Functor[F] { self =>
+  trait Monad[F[_]] extends  Applicative[F] { self =>
     def unit[A](a: => A): F[A]
     def flatMap[A, B](ma: F[A])(f: A => F[B]): F[B]
 
     // map can be implemented in terms of flatMap
-    def map[A, B](ma: F[A])(f: A => B): F[B] = flatMap(ma)(a => unit(f(a)))
+    override def map[A, B](ma: F[A])(f: A => B): F[B] = flatMap(ma)(a => unit(f(a)))
     def map2[A, B, C](ma: F[A], mb: F[B])(f: (A, B) => C): F[C] = flatMap(ma)(a => map(mb)(b => f(a, b)))
 
     /**
@@ -116,9 +118,9 @@ object Monad {
 
     //def sequence[A](a: List[F[A]]): F[List[A]] =
 
-    def sequence[A](lma: List[F[A]]): F[List[A]] = traverse(lma)(identity)
+    override def sequence[A](lma: List[F[A]]): F[List[A]] = traverse(lma)(identity)
 
-    def traverse[A,B](la: List[A])(f: A => F[B]): F[List[B]] =
+    override def traverse[A,B](la: List[A])(f: A => F[B]): F[List[B]] =
       la.foldRight(unit(Nil): F[List[B]])((a, b) => map2(f(a), b)(_ :: _))
     /**
      * One combinator we saw for Gen and Parser was listOfN,
@@ -129,10 +131,10 @@ object Monad {
      * Implement replicateM.
      */
 
-    def replicateM[A](n: Int, ma: F[A]): F[List[A]] = sequence(List.fill(n)(ma))
+    override def replicateM[A](n: Int, ma: F[A]): F[List[A]] = sequence(List.fill(n)(ma))
 
     // We did this product for Gen, Par etc
-    def product[A,B](ma: F[A], mb: F[B]): F[(A, B)] = map2(ma, mb)((_, _))
+    override def product[A,B](ma: F[A], mb: F[B]): F[(A, B)] = map2(ma, mb)((_, _))
 
     // EXERCISE 11.6
     // Hard: Here’s an example of a function we haven’t seen before. Implement the function filterM.
@@ -179,12 +181,12 @@ object Monad {
        join(map(ma)(f))
     }
 
-   // EXERCISE 12.11
-    // Try to write compose on Monad. It’s not possible, but it is instructive to attempt it and understand why this is the case.
-    //  def compose[G[_]](G: Monad[G]): Monad[({type f[x] = F[G[x]]})#f] = new Monad[({type f[x] = F[G[x]]})#f] {
+    // EXERCISE 12.11
+    // Try to write compose on Monad. It’s not possible, but it is instructive to attempt it and
+    // understand why this is the case.
+    // def compose[G[_]](G: Monad[G]): Monad[({type f[x] = F[G[x]]})#f] = new Monad[({type f[x] = F[G[x]]})#f] {
     // def flatMap[A, B](ma: F[G[A]])(f: (A) => F[G[B]]): F[G[B]] = self.flatMap(ma)(ga => G.map(ga)(a => f(a)))
-   // }
-
+    // }
   }
 
   // To tie this back to a concrete data type, we can implement the Monad instance for Gen.
@@ -464,7 +466,7 @@ object Monad {
 case class Reader[R, A](run: R => A)
 object Reader {
 
-  import Monad._
+  import MonadLearnings._
 
   def readerMonad[R] = new Monad[({type f[x] = Reader[R,x]})#f] {
     def unit[A](a: => A): Reader[R, A] = Reader(_ => a)

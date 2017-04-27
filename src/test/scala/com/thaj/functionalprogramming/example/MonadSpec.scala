@@ -2,7 +2,7 @@ package com.thaj.functionalprogramming.example
 
 import com.thaj.functionalprogramming.example.exercises.PureStatefulAPI.{RNG, SimpleRng}
 import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.State
-import com.thaj.functionalprogramming.exercises.part3.Monad.Monad
+import com.thaj.functionalprogramming.exercises.part3.MonadLearnings.Monad
 import org.specs2.Specification
 import com.thaj.functionalprogramming.example.exercises.PureStatefulAPI._
 
