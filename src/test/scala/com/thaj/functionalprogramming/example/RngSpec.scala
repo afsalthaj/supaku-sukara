@@ -45,7 +45,6 @@ class RngSpec extends WordSpec with PropertyChecks with Checkers {
       forAll { (n: (Long)) => {
         // the reason behind the skewness is explained here.
         val s = nonNegativeLessThanSkewed(100)(SimpleRng(n))
-        println(s._1)
         assert(s._1 <= 100)
       }}
     }

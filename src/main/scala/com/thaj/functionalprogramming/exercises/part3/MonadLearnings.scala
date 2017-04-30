@@ -6,7 +6,7 @@ import com.thaj.functionalprogramming.example.exercises.{Empty, Stream}
 import com.thaj.functionalprogramming.example.exercises.part2.Par
 import com.thaj.functionalprogramming.example.exercises.part2.Par.Par
 import com.thaj.functionalprogramming.exercises.part2.Gen
-import com.thaj.functionalprogramming.exercises.part3.Applicative.Applicative
+import com.thaj.functionalprogramming.exercises.part3.Applicative.{Applicative, Traverse}
 
 import scala.{Stream => _}
 
@@ -115,12 +115,9 @@ object MonadLearnings {
      * def traverse[A,B](la: List[A])(f: A => F[B]): F[List[B]
      */
 
-
-    //def sequence[A](a: List[F[A]]): F[List[A]] =
-
     override def sequence[A](lma: List[F[A]]): F[List[A]] = traverse(lma)(identity)
 
-    override def traverse[A,B](la: List[A])(f: A => F[B]): F[List[B]] =
+    override def traverse[A, B](la: List[A])(f: A => F[B]): F[List[B]] =
       la.foldRight(unit(Nil): F[List[B]])((a, b) => map2(f(a), b)(_ :: _))
     /**
      * One combinator we saw for Gen and Parser was listOfN,
@@ -187,6 +184,33 @@ object MonadLearnings {
     // def compose[G[_]](G: Monad[G]): Monad[({type f[x] = F[G[x]]})#f] = new Monad[({type f[x] = F[G[x]]})#f] {
     // def flatMap[A, B](ma: F[G[A]])(f: (A) => F[G[B]]): F[G[B]] = self.flatMap(ma)(ga => G.map(ga)(a => f(a)))
     // }
+
+
+    // HARD
+    // Exercise 12.20
+    /**
+      *
+      * READ THIS ONLY AFTER YOU COMPLETE APPLICATIVES, COMPOSING APPLICATIVES, TRAVERSE ETC
+      * Monad Composition
+      * Let’s now return to the issue of composing monads.
+      * As we saw earlier in this chapter, Applicative instances always compose,
+      * but Monad instances do not. If you tried before to implement general monad composition,
+      * then you would have found that in order to implement join for nested monads F and G, you’d have to write
+      * something of a type like F[G[F[G[A]]]] => F[G[A]]. And that can’t be written generally. But if G also happens
+      * to have a Traverse instance, we can sequence to turn G[F[_]] into F[G[_]], leading to F[F[G[G[A]]]].
+      * Then we can join the adjacent F layers as well as the adjacent G layers using their respective Monad instances.
+      *
+      * Expressivity and power sometimes come at the price of compositionality and modular- ity.
+      * The issue of composing monads is often addressed with a custom-written version of each monad that’s
+      * specifically constructed for composition. This kind of thing is called a monad transformer.
+      * For example, the OptionT monad transformer composes Option with any other monad:
+      */
+    def composeM[G[_]](F: Monad[F], G: Monad[G], T: Traverse[G]): Monad[({type f[x] = F[G[x]]})#f] =
+      new Monad[({type f[x] = F[G[x]]})#f] {
+       def flatMap[A, B](ma: F[G[A]])(f: (A) => F[G[B]]): F[G[B]] =
+         F.map(F.join(F.map(ma)((g: G[A]) => T.traverse(g)(f)(F))))(a => G.join(a))
+       override def unit[A](a: => A): F[G[A]] = F.unit(G.unit(a))
+    }
   }
 
   // To tie this back to a concrete data type, we can implement the Monad instance for Gen.

@@ -142,7 +142,6 @@ object Applicative {
    */
 
   // Not all applicative functors are monads
-
   // The idea behind this Applicative is to combine corresponding elements via zipping.
   val streamApplicative = new Applicative[Stream ] {
     def unit[A](a: => A): Stream[A] = Stream.continually(a)
