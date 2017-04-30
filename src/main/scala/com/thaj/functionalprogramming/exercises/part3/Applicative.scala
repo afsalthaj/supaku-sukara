@@ -250,12 +250,11 @@ object Applicative {
     * Now, this is a rather abstract, algebraic notion. We’ll get to what it all means in a minute, but first,
     * let’s look at a few instances of Traverse.
     */
-  trait Traversable[F[_]] extends Functor[F] with Foldable[F]{ self =>
+  trait Traverse[F[_]] extends Functor[F] with Foldable[F]{ self =>
     def traverse[G[_]: Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]]
     // def sequence[A](lfa: List[F[A]]): F[List[A]] = traverse(lfa)(fa => fa)
     def sequence[G[_]: Applicative, A](f: F[G[A]]): G[F[A]] = traverse(f)(identity)
     // Exercise 12.14
-
 
     type Id[A] = A
 
@@ -265,13 +264,15 @@ object Applicative {
     }
 
     // Uses of traverse
+    // traverse is a generic version of map. hence we can define map, and there by foldMap
+    // which would then make can make a traversable `Foldable`
     // Exercise 12.14
     def map[A, B](fa: F[A])(f: A => B): F[B] = traverse[Id, A, B](fa)(f)(applicativeInstance)
 
     type ConstG[M, B] = M
 
     implicit def monoidApplicative[M](M: Monoid[M]) = new Applicative[({type f[x] = ConstG[M, x]}) #f] {
-      def map2[A, B, C](a: ConstG[M, A], b: ConstG[M, B])(f: (A, B) => C): ConstG[M, C] = M.op(a, b)
+      def map2[A, B, C](a: M, b: M)(f: (A, B) => C): ConstG[M, C] = M.op(a, b)
       def unit[A](a: => A): ConstG[M, A] = M.zero
     }
 
@@ -299,7 +300,7 @@ object Applicative {
         list <- Monad.getState[List[A]]
         _ <- Monad.setState(a :: list)
       } yield list
-    }).run(Nil)._2.reverse
+    }).run(Nil)._2
 
 
     def mapAccum[S, A, B](ta: F[A], s: S)(f: (A, S) => (B, S)): (F[B], S) = traverseS(ta)(a => {
@@ -310,21 +311,88 @@ object Applicative {
       } yield b
     }).run(s)
 
+    // this one fails if both side are not the same
+    def zip[A, B](fa: F[A], fb: F[B]): F[(A, B)] = mapAccum(fa, toList(fb))({
+      case (a, Nil) => sys.error("there exists a value in either side which couldn't find a value on the either side to zip it with")
+      case (a, x :: xs) => ((a, x), xs)
+    })._1
+
+    // A more flexible implementation of zip
+    def zipL[A, B](fa: F[A], fb: F[B]): F[(A, Option[B])] = mapAccum(fa, toList(fb))({
+      case (a, Nil) => ((a, None), Nil)
+      case (a, x::xs) => ((a, Some(x)), xs)
+    })._1
+
+    def zipR[A, B](fa: F[A], fb: F[B]): F[(Option[A], B)] = mapAccum(fb, toList(fa))({
+      case (b, Nil) => ((None, b), Nil)
+      case (b, a::as) => ((Some(a), b), as)
+    })._1
+
     def toListUsingMapAcc[A](ta: F[A]): List[A] = mapAccum(ta, Nil: List[A])((a, s) => ((), a :: s))._2.reverse
     def zipWithIndexUsingMapAccum[A](fa: F[A]): F[(A, Int)] = mapAccum(fa, 0)((a, s) => ((a, s), s + 1))._1
 
+
+    // Exercise 12.18
+    // Use applicative functor products to write the fusion of two traversals. This function will,
+    // given two functions f and g, traverse fa a single time, collecting the results of both functions at once.
+    // this is about fusing traversals
+    def fuse[G[_],H[_],A,B](fa: F[A])(g: A => G[B], h: A => H[B]) (G: Applicative[G], H: Applicative[H]):
+    (G[F[B]], H[F[B]]) = {
+      // (traverse(fa)(f), traverse(fa)(g))
+      // Please note that when we wanted to fuse it in a single go, and when we wanted to use traverse
+      // to solve this problem, we had to give an applicative for `({type f[X] = (G[X], H[X])})#f` which is
+      // given by G.productApp(H)
+      traverse[({type f[X] = (G[X], H[X])})#f, A, B](fa)(a => (g(a), h(a)))(G.product(H))
+    }
+
+    /**
+      * not only can we use composed applicative functors to fuse traversals, traversable functors themselves
+      * compose. If we have a nested structure like Map[K,Option[List[V]]], then we can traverse the map, the option,
+      * and the list at the same time and easily get
+      * to the V value inside, because Map, Option, and List are all traversable.
+      * you can traverse Map[K, Option[List[V]] and operate on V directly. That's awesome.
+      * Get a sense of compose for `Applicatives`, `Functors` and even `Traverse`
+      */
+    // Exercise 12.19
+    //Implement the composition of two Traverse instances
+     def compose[G[_]](implicit G: Traverse[G]): Traverse[({type f[x] = F[G[x]]})#f] = new Traverse[({type f[x] = F[G[x]]})#f] {
+       def traverse[M[_]: Applicative, A, B](fa: F[G[A]])(f: (A) => M[B]): M[F[G[B]]] = self.traverse(fa)((ga: G[A]) => G.traverse(ga)(f))
+    }
+
+    /**
+     *
+      scala> res0.toList(List(1,2,3))
+      res1: List[Int] = List(1, 2, 3)
+
+      scala> val x = List(1,2,3)
+      x: List[Int] = List(1, 2, 3)
+
+      scala> res0.toList(res0.reverse(x))
+      res2: List[Int] = List(3, 2, 1)
+
+      scala> val y = List(4,5,6)
+      y: List[Int] = List(4, 5, 6)
+
+      scala> res0.toList(res0.reverse(x)) ++ res0.toList(res0.reverse(y))
+      res3: List[Int] = List(3, 2, 1, 6, 5, 4)
+
+      scala> res0.reverse(res0.toList(y) ++ res0.toList(x))
+      res4: List[Int] = List(3, 2, 1, 6, 5, 4)
+     */
+    // Different from fpinscala, but need to see whats the difference
+    def reverse[A](fa: F[A]): F[A] = mapAccum(fa, ())((a, s) => (a, s))._1
   }
 
   // Exercise 12.13
   // Write Traverse instances for List, Option and Tree
   case class Tree[+A](head: A, tail: List[Tree[A]])
 
-  val listTraverseInstance = new Traversable[List] {
+  val listTraverseInstance = new Traverse[List] {
     def traverse[G[_], A, B](fa: List[A])(f: A => G[B])(implicit m: Applicative[G]): G[List[B]] =
       fa.foldLeft(m.unit(Nil: List[B]))((acc, a) => m.map2(f(a), acc)(_ :: _))
   }
 
-  val optionTraverseInstance = new Traversable[Option] {
+  val optionTraverseInstance = new Traverse[Option] {
     def traverse[G[_], A, B](fa: Option[A])(f: A => G[B])(implicit m: Applicative[G]): G[Option[B]] =
       fa match {
         case Some(a) => m.map(f(a))(Some(_))
@@ -332,7 +400,7 @@ object Applicative {
       }
   }
 
-  val treeTraverseInstance = new Traversable[Tree] {
+  val treeTraverseInstance = new Traverse[Tree] {
     // slightly different from the original solution
     def traverse[G[_], A, B](fa: Tree[A])(f: (A) => G[B])(implicit m: Applicative[G]): G[Tree[B]] =
       m.map2(f(fa.head), listTraverseInstance.sequence(fa.tail.map(tt => traverse(tt)(f))))(Tree(_, _))
