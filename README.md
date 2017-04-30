@@ -9,7 +9,7 @@ The project doesn't help you in learning any language syntax. It details just *c
 ### Why Supaku-Sukara
 Supaku-Sukara explains Scala (from a functional programming perspective, and not syntax) and Spark. I am developing the project **for personal purpose of learning**, and with an intend to share it with my friends in future.
 
-The main focus of this project, is to solve Functional programming exercises in the book `Functional Programming in Scala` written by Paul Chiusano and Runar Bjarnason (Foreword by Martin Odersky). The intention is to solve them and explore new abstractions available in this interesting programming paradigm.
+The main focus of this project, is to solve exercises in the book `Functional Programming in Scala` written by Paul Chiusano and Runar Bjarnason (Foreword by Martin Odersky). The project is similar to `fpinscala` project, however, doesn't refer to any of the solutions in `fpinscala`. At the same time, the solutions may differ from those in fpinscala, and some pull requests are raised to `fpinscala` based on what I do in this project. 
 
 #### Why Functional Program in Scala? (Sukara, Kansūkei puroguramingu)
 The greatest advantage of keeping your code aligned with functional program paradigm is to enable stable, consistent, performant, and reliable parallelism with no chance of any state mutation even with multi-thread processes. One of the prominent use cases of parallelism is in Big Data platforms, where the program runs on big chunks of data distributed across different computing nodes.
