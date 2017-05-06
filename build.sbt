@@ -5,6 +5,8 @@ resolvers += Resolver.sonatypeRepo("releases")
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
 addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.3")
 
+libraryDependencies += "org.typelevel" %% "cats" % "0.9.0"
+
 libraryDependencies ++= Seq (
   "org.scalatest" %% "scalatest" % "3.0.0" % "test",
   "org.scalacheck" %% "scalacheck" % "1.13.3" % "test",

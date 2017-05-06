@@ -33,16 +33,8 @@ object IOOperations {
     d <- ReadLine.map(_.toDouble)
     _ <- PrintLine(fahrenheitToCelsius(d).toString)
   } yield ()
-}
 
-object MainApp{
-  import IOOperations._
-  def main(args: Array[String]): Unit = {
-    println("this is finding factorial")
-    println(factorialREPIOHeap.run)
-  }
 
-  // normal factorial
   def factorial(n: Int): Long = {
     if (n <= 1) 1
     else n * factorial(n - 1)
@@ -57,26 +49,61 @@ object MainApp{
     if(n != 0) inner(1, n) else 0
   }
 
-
-  def factorialREPIO(implicit m: Monad[IO]): IO[Long] = for {
+  def factorialIO(implicit m: Monad[IO]): IO[Long] = for {
     _ <- PrintLine("Enter the factorial thing")
     result <- ReadLine.map(t => factorial(t.toInt))
   } yield result
 
   // this ask for 10 numbers and print out the factorial and list down the IO
   def factorialREPLIOFor3(implicit m: Monad[IO]): IO[List[Long]] = {
-    m.replicateM(3, factorialREPIO)
+    m.replicateM(3, factorialIO)
   }
 
   // the one that can result in stack overflow
   def factorialREPIOHeap(implicit m: Monad[IO]): IO[List[Unit]] =
     m.sequence((0 to 100000).map(t => PrintLine(factorialN(t).toString)).toList)
 
-  // mutable factorial
-  // def factorialREPIOs(implicit m: Monad[IO])
   def continuouslyDoReadLineAndFindFactorial(implicit m: Monad[IO]): IO[Unit] = for {
     aa <- ReadLine.map(_.toInt)
     _  <- PrintLine(factorialN(aa).toString)
     _ <- if (aa!=0) continuouslyDoReadLineAndFindFactorial else m.unit()
   } yield ()
+}
+
+
+/**
+  * This is a better representation of avoiding stack overflow
+  * illustrated in the book over the pages from 235 to 238
+  */
+object IOWithoutOverFlow {
+  trait IO[A] {
+    def flatMap[B](f: A => IO[B]): IO[B] = FlatMap(this, f)
+    def map[B](f: A => B): IO[B] = flatMap(f andThen (Return(_)))
+  }
+
+  implicit object IOMonad extends Monad[IO] {
+    def unit[A](a: => A): IO[A] = Return(a)
+    def flatMap[A, B](ma: IO[A])(f: (A) => IO[B]): IO[B] = ma flatMap f
+  }
+
+  @tailrec
+  def run[A](io: IO[A]): A = io match {
+    case Return(a) => a
+    case Suspend(r) => r()
+    case FlatMap(x, f) => x match {
+      case Return(a) => run(f(a))
+      case Suspend(r) => run(f(r()))
+      case FlatMap(y, g) => run(y flatMap(a => g(a) flatMap f))
+    }
+  }
+
+  case class Return[A](a: A) extends IO[A]
+  case class Suspend[A](resume: () => A) extends  IO[A]
+  case class FlatMap[A, B](bs: IO[A], f: A => IO[B]) extends IO[B]
+
+  def PrintLine(msg: String): IO[Unit] = Suspend(() => Return(println(msg)))
+
+  // the one that cannot result in stack overflow
+  def factorialREPIOWithoutHeap(implicit m: Monad[IO]): IO[List[Unit]] =
+    m.sequence((0 to 100000).map(t => PrintLine(IOOperations.factorialN(t).toString)).toList)
 }

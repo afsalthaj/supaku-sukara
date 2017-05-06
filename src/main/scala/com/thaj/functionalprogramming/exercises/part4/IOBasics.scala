@@ -25,7 +25,6 @@ import com.thaj.functionalprogramming.exercises.part3.MonadLearnings.Monad
 case class Player(name: String, score: Int)
 
 object IOBasics {
-
   // A simple IO
   trait IO {
     def run: Unit
@@ -55,7 +54,6 @@ object IOBasics {
     def contest(p1: Player, p2: Player): IO = {
       printLine(winnerMsg(winner(p1, p2)))
     }
-
     //... on to 13.2.1
   }
 }
