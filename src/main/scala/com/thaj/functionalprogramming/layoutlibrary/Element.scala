@@ -48,12 +48,12 @@ abstract class Element {
 }
 
 object Element {
-  private class ArrayElement(val contents: Array[String]) extends Element
-  private class UniformElement(char: Char, width: Int, height: Int) extends Element {
+  class ArrayElement(val contents: Array[String]) extends Element
+  class UniformElement(char: Char, width: Int, height: Int) extends Element {
     def contents = Array.fill(height)(char.toString * width)
   }
 
-  private class LineElement(s: String) extends Element {
+  class LineElement(s: String) extends Element {
     val contents = Array(s)
     override val width : Int= s.length
     override val height: Int  = 1
