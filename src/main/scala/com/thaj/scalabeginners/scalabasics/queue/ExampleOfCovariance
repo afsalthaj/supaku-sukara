@@ -1,0 +1,42 @@
+scala> trait Human[T]
+defined trait Human
+warning: previously defined object Human is not a companion to trait Human.
+Companions must be defined together; you may wish to use :paste mode for this.
+
+scala> case object Manu extends Human[Int]
+defined object Manu
+
+scala> case object Afsal extends Human[String]
+defined object Afsal
+
+scala> val x: Human[Any] = Manu
+<console>:13: error: type mismatch;
+ found   : Manu.type
+ required: Human[Any]
+Note: Int <: Any (and Manu.type <: Human[Int]), but trait Human is invariant in type T.
+You may wish to define T as +T instead. (SLS 4.5)
+       val x: Human[Any] = Manu
+                           ^
+
+scala> val x: Human[Any] = Afsal
+<console>:13: error: type mismatch;
+ found   : Afsal.type
+ required: Human[Any]
+Note: String <: Any (and Afsal.type <: Human[String]), but trait Human is invariant in type T.
+You may wish to define T as +T instead. (SLS 4.5)
+       val x: Human[Any] = Afsal
+                           ^
+
+scala> trait Human[+T]
+defined trait Human
+warning: previously defined object Human is not a companion to trait Human.
+Companions must be defined together; you may wish to use :paste mode for this.
+
+scala> case object Afsal extends Human[String]
+defined object Afsal
+
+scala> case object Manu extends Human[Int]
+defined object Manu
+
+scala> val x: Human[Any] = Afsal
+x: Human[Any] = Afsal

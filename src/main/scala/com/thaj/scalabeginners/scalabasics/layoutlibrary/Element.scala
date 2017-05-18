@@ -1,4 +1,4 @@
-package com.thaj.functionalprogramming.layoutlibrary
+package com.thaj.scalabeginners.scalabasics.layoutlibrary
 
 /**
   * Created by afsalthaj on 5/05/2017.

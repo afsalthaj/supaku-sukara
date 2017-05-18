@@ -1,0 +1,15 @@
+
+scala> trait Human[-T]
+defined trait Human
+warning: previously defined object Human is not a companion to trait Human.
+Companions must be defined together; you may wish to use :paste mode for this.
+
+scala> val x: Human[String] = new Human[Any] {}
+x: Human[String] = $anon$1@3ae9c3c2
+
+scala> val x: Human[Any] = new Human[String] {}
+<console>:12: error: type mismatch;
+ found   : Human[String]
+ required: Human[Any]
+       val x: Human[Any] = new Human[String] {}
+

@@ -1,0 +1,11 @@
+When is not Covariant?
+As soon as the generic parameter type appears as the type of the method parameter, the containing class
+or trait may not be covariant in the type parameter
+
+
+Lower bound
+you can generalise the function by making it polymorphic and using a lower bound for its type parameter.
+
+
+ContraVariant:
+// Refer chapter 19 page no: 402

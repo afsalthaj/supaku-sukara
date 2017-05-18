@@ -17,8 +17,9 @@ libraryDependencies ++= Seq (
   "ml.sparkling" %% "sparkling-graph-loaders" % "0.0.6",
   "ml.sparkling" %% "sparkling-graph-operators" % "0.0.6",
   "com.github.mpilquist" %% "simulacrum" % "0.10.0",
-  "com.chuusai" %% "shapeless" % "2.3.2"
-)
+  "com.chuusai" %% "shapeless" % "2.3.2")
+
+libraryDependencies += "com.github.nscala-time" %% "nscala-time" % "2.16.0"
 
 shellPrompt := { _ =>
   s"\033[1;36m\033[40m[fpscala-spark] ~\033[0m "

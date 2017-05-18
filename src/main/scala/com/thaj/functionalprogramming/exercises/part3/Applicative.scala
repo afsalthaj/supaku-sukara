@@ -253,8 +253,8 @@ object Applicative {
     def traverse[G[_]: Applicative, A, B](fa: F[A])(f: A => G[B]): G[F[B]]
     // def sequence[A](lfa: List[F[A]]): F[List[A]] = traverse(lfa)(fa => fa)
     def sequence[G[_]: Applicative, A](f: F[G[A]]): G[F[A]] = traverse(f)(identity)
-    // Exercise 12.14
 
+    // Exercise 12.14
     type Id[A] = A
 
     val applicativeInstance = new Applicative[Id] {
@@ -264,7 +264,7 @@ object Applicative {
 
     // Uses of traverse
     // traverse is a generic version of map. hence we can define map, and there by foldMap
-    // which would then make can make a traversable `Foldable`
+    // which would then make can make a Traverse `Foldable`
     // Exercise 12.14
     def map[A, B](fa: F[A])(f: A => B): F[B] = traverse[Id, A, B](fa)(f)(applicativeInstance)
 

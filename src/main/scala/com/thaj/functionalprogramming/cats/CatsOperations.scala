@@ -1,9 +1,8 @@
 package com.thaj.functionalprogramming.cats
 
-import cats.Semigroup
+import cats.{Applicative, Semigroup}
 
-import scala. { specialized => sp }
-
+import scala.{specialized => sp}
 import cats.instances.all._
 /**
   * Created by afsalthaj on 6/05/2017.
@@ -93,4 +92,28 @@ object FunctorCats{
   // doesn't resolve in IDE
   nested.map(_ + 1)
 }
+
+// Concept 4
+// Applicatives
+object ApplicativeCats {
+  import cats.instances.option._
+
+  // Applicatives
+  def traverseOption[A, B](as: List[A])(f: A => Option[B]): Option[List[B]] =
+  as.foldRight(Some(List.empty[B]): Option[List[B]]) { (a: A, acc: Option[List[B]]) =>
+    val optB: Option[B] = f(a)
+    // optB and acc are independent effects so we can use Applicative to compose
+    Applicative[Option].map2(optB, acc)(_ :: _)
+  }
+
+
+  def traverse[F[_]: Applicative, A, B](as: List[A])(f: A => F[B]): F[List[B]] =
+    as.foldRight(Applicative[F].pure(List.empty[B])) { (a: A, acc: F[List[B]]) =>
+      val fb: F[B] = f(a)
+      Applicative[F].map2(fb, acc)(_ :: _)
+    }
+}
+
+// Concept 5
+
 
