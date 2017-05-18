@@ -115,5 +115,25 @@ object ApplicativeCats {
 }
 
 // Concept 5
+// A generalised version of Apply method
+// http://typelevel.org/cats/typeclasses/applicative.html
+object CatsApply {
+  /**
+    * trait Apply[F[_]] extends Functor[F] {
+        def ap[A, B](ff: F[A => B])(fa: F[A]): F[B]
+      }
+
+      trait Applicative[F[_]] extends Apply[F] {
+        def pure[A](a: A): F[A]
+        def map[A, B](fa: F[A])(f: A => B): F[B] = ap(pure(f))(fa)
+      }
+    */
+
+  /**
+    * One of the motivations for Apply’s existence is that some types have Apply instances but not Applicative -
+    * one example is Map[K, ?]. Consider the behavior of pure for Map[K, A].
+    * Given a value of type A, we need to associate some arbitrary K to it but we have no way of doing that
+    */
+}
 
 
