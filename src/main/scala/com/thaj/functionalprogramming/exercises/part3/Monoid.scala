@@ -86,8 +86,14 @@ object Monoid {
    * def optionMonoid[A]: Monoid[Option[A]]
    */
 
-  def optionMonoid[A]: Monoid[Option[A]] = new Monoid[Option[A]] {
-    def op(a1: Option[A], b1: Option[A]) = a1.orElse(b1)
+  def optionMonoid[A: Monoid[A]]: Monoid[Option[A]] = new Monoid[Option[A]] {
+    val m = implicitly[Monoid[A]]
+    def op(a1: Option[A], b1: Option[A]) = (a1, a2) match  {
+      case (Some(x), Some(y)) => Some(m.op(x, y))
+      case (Some(x), None)) => Some(x)
+      case (None, Some(y)) => Some(y)
+      case _ => None
+    }   
     val zero = None
   }
 
