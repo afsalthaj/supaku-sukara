@@ -1,6 +1,6 @@
 package com.thaj.functionalprogramming.cats
 
-import cats.{Applicative, Semigroup}
+import cats.{Applicative, Monoid, Semigroup}
 
 import scala.{specialized => sp}
 import cats.instances.all._
@@ -98,6 +98,14 @@ object FunctorCats{
 object ApplicativeCats {
   import cats.instances.option._
 
+  // difficulty in having an applicative instance for a Map because of an arbitrary K type
+  def applicativeInstanceForMap[K: Monoid, Lamb] =
+    new com.thaj.functionalprogramming.exercises.part3.Applicative.Applicative[({type F[X] = Map[K, X]})#F] {
+      override def map2[A, B, C](fa: Map[K, A], fb: Map[K, B])(f: (A, B) => C): Map[K, C] = ???
+
+    override def unit[A](a: => A): Map[K, A] = Map[K, A](Monoid[K].empty -> a)
+  }
+
   // Applicatives
   def traverseOption[A, B](as: List[A])(f: A => Option[B]): Option[List[B]] =
   as.foldRight(Some(List.empty[B]): Option[List[B]]) { (a: A, acc: Option[List[B]]) =>
@@ -135,5 +143,3 @@ object CatsApply {
     * Given a value of type A, we need to associate some arbitrary K to it but we have no way of doing that
     */
 }
-
-
