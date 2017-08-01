@@ -35,7 +35,7 @@ import scala.collection.immutable.Stream.{Empty, cons}
  */
 
 
-object Monoid {
+object MonoidExp {
   trait Monoid[A] {
     def op(a1: A, a2: A): A
     def zero: A
@@ -86,11 +86,10 @@ object Monoid {
    * def optionMonoid[A]: Monoid[Option[A]]
    */
 
-  def optionMonoid[A: Monoid[A]]: Monoid[Option[A]] = new Monoid[Option[A]] {
-    val m = implicitly[Monoid[A]]
-    def op(a1: Option[A], b1: Option[A]) = (a1, a2) match  {
+  def optionMonoid[A](implicit m: Monoid[A]): Monoid[Option[A]] = new Monoid[Option[A]] {
+    def op(a1: Option[A], b1: Option[A]) = (a1, b1) match  {
       case (Some(x), Some(y)) => Some(m.op(x, y))
-      case (Some(x), None)) => Some(x)
+      case (Some(x), None) => Some(x)
       case (None, Some(y)) => Some(y)
       case _ => None
     }   

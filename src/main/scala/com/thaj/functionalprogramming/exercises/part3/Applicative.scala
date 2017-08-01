@@ -2,7 +2,7 @@ package com.thaj.functionalprogramming.exercises.part3
 
 import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.State
 import com.thaj.functionalprogramming.exercises.part3.MonadLearnings.{Functor, Monad}
-import com.thaj.functionalprogramming.exercises.part3.Monoid.{Foldable, Monoid}
+import com.thaj.functionalprogramming.exercises.part3.MonoidExp.{Foldable, Monoid}
 
 import scala.{Right => _}
 
