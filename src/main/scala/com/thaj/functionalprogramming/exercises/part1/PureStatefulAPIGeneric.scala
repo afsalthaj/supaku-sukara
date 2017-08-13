@@ -157,34 +157,31 @@ object MutationWithState {
   // referentially transparent
   val x = 10
 
-  // Oh Nasty! Nasty! Now this is where we all get fucked up while trying to re-use the state DataStructure. We will come to know why.
-  // Would this really work? This nasty code lead us to think that a dummy value
-  // representing a state should be a dummy instantiation of a class that represents the state with no data in it.
+  // Oh that's ugly. Now this is where we'l be in trouble trying to re-use the state DataStructure. 
+  // Would the initial state really work? Probably Not. I think a dummy value
+  // representing a state should be a dummy instantiation of a class that represents the state with no data in it (explained later)
   val dummyVariable: Nothing = "".asInstanceOf[Nothing]
 
-  // work around
+  // natural transformation kind of thing...Quantifying a type universally! 
   trait Forall[P[_]] {
     def apply[A]: P[A]
   }
 
   // this is similar to scalaz's implementation of Run ST where it specifically takes care of
   def myRunST[A](f: Forall[({type λ[S] = scalaz.State[S, A]})#λ]): A =
+    f.apply.run(dummyVariable)._2
 
   /** we are forced to run with a dummyValue that actually represents the state
-    * However our state is just a type parameter S. What can be value out of it?
+    * However our state is just a type parameter S. 
     * So had the state been a case class with no data in it, we could easily
-    * make a dummy instance of it with no data. This is exactly what scalaz meant by
-    * World.scala. Here goes scalaz's Tower implementation.
+    * make a dummy instance of it with no data. This is exactly what scalaz does in
+    * `World.scala`. 
     *
     * {{{
-    *   case class Tower().... something like that? Guess what you
-    *   are missing a type parameter S that represents the state change after every mutation. (Tower[S])
-    *   Or in other words, it should be a state thread that should handle a mutation, and noone else
-    *   can come into that thread, and change the value that is already being mutated.
+    *   case class Tower[S]()...it should be a state thread that should handle a mutation, and noone else
+    *   can come into that thread, and change the value that is already being mutated. This is why it is type-parameterized by S.
     * }}}
     */
-
-    f.apply.run(dummyVariable)._2
 
   def e1[S]: scalaz.State[S, MutationContainer[S, Int]] = for {
     r <- newMutationContainer[S, Int](0)
@@ -212,6 +209,7 @@ object MutationWithState {
 /**
   * the below session is quite advanced. however, if you are wondering why scalaz.State (or the above the State
   * data structure) can't be directly used instead of ST monad for working with in place swapping, mutation etc.
+  * This is just a simplified version of scalaz's ST. This is in line with the explanation of Scala red book.
   */
 object MutationInScalaz {
 
