@@ -1,5 +1,10 @@
 package com.thaj.functionalprogramming.example.exercises
 
+import scalaz.Scalaz._
+import scalaz._
+import scalaz.effect.ST.newArr
+import scalaz.effect._
+
 /**
   * Created by afsalthaj on 8/11/2016.
   */
@@ -62,7 +67,6 @@ object PureStatefulAPIGeneric {
       rng.nextInt match {
         case (i, rng2) => (i % 2 == 0, rng2)
       })
-
 
     val int: Rand[Int] = State(t => t.nextInt)
 
@@ -224,39 +228,39 @@ object MutationInScalaz {
   // sensible for me atleast.
   case class World[A]()
 
-  case class STX[S, A](f: World[S] => (World[S], A)) {
+  case class ST[S, A](f: World[S] => (World[S], A)) {
     def apply(s: World[S]) = f(s)
 
-    def flatMap[B](g: A => STX[S, B]): STX[S, B] =
-      STX(s => f(s) match {
+    def flatMap[B](g: A => ST[S, B]): ST[S, B] =
+      ST(s => f(s) match {
         case (ns, a) => g(a)(ns)
       })
 
-    def map[B](g: A => B): STX[S, B] =
-      STX(s => f(s) match {
+    def map[B](g: A => B): ST[S, B] =
+      ST(s => f(s) match {
         case (ns, a) => (ns, g(a))
       })
   }
 
-  def returnST[S, A](a: => A): STX[S, A] = STX(s => (s, a))
+  def returnST[S, A](a: => A): ST[S, A] = ST(s => (s, a))
 
   case class STRef[S, A](a: A) {
     private var value: A = a
 
-    def read: STX[S, A] = returnST(value)
+    def read: ST[S, A] = returnST(value)
 
-    def write(a: A): STX[S, STRef[S, A]] = STX((s: World[S]) => {
-      value = a;
+    def write(a: A): ST[S, STRef[S, A]] = ST((s: World[S]) => {
+      value = a
       (s, this)
     })
 
-    def mod[B](f: A => A): STX[S, STRef[S, A]] = for {
+    def mod[B](f: A => A): ST[S, STRef[S, A]] = for {
       a <- read
       v <- write(f(a))
     } yield v
   }
 
-  def newVar[S, A](a: => A): STX[S, STRef[S, A]] = returnST(STRef[S, A](a))
+  def newVar[S, A](a: => A): ST[S, STRef[S, A]] = returnST(STRef[S, A](a))
 
   trait Forall[P[_]] {
     def apply[A]: P[A]
@@ -264,34 +268,111 @@ object MutationInScalaz {
 
   sealed trait Antartica
 
-  val antartica = World[Antartica]()
+  private val antartica = World[Antartica]()
 
-  def runSTT[A](f: Forall[({type λ[S] = STX[S, A]})#λ]): A =
+  def runSTT[A](f: Forall[({type λ[S] = ST[S, A]})#λ]): A =
     f.apply.f(antartica)._2
 
-  def e1[S]: STX[S, STRef[S, Int]] = for {
+  def e1[S]: ST[S, STRef[S, Int]] = for {
     r <- newVar[S, Int](0)
     x <- r.mod(_ + 1)
   } yield x
 
-  def eArray[S]: STX[S, STRef[S, Array[Int]]] =  for {
+  def eArray[S]: ST[S, STRef[S, Array[Int]]] = for {
     r <- newVar[S, Array[Int]](Array(1, 2, 3))
-    x <- r.mod(ty => {ty(2) = 1; ty})
+    x <- r.mod(ty => {
+      ty(2) = 1
+      ty
+    })
   } yield x
 
-  def eArrayRead[A]: STX[A, Array[Int]] = eArray[A].flatMap(_.read)
+  def eArrayRead[A]: ST[A, Array[Int]] = eArray[A].flatMap(_.read)
+
   // this is nicer and compiles
-  def e2[A]: STX[A, Int] = e1[A].flatMap(_.read)
+  def e2[A]: ST[A, Int] = e1[A].flatMap(_.read)
 
   // but this doesn't compile, since it exposes the STRef
   // The whole complexity comes in through
   // runSTT(new Forall[({type λ[S] = STX[S, STRef[S, Int]]})#λ] { def apply[A] = e1 })
   // this compiles as it doesn't expose the ST
-  val sample = runSTT(new Forall[({type λ[S] = STX[S, Int]})#λ] {
+  val sample = runSTT(new Forall[({type λ[S] = ST[S, Int]})#λ] {
     def apply[A] = e2
   })
 
-  val sample1 = runSTT(new Forall[({type λ[S] = STX[S, Array[Int]]})#λ] {
+  val sample1 = runSTT(new Forall[({type λ[S] = ST[S, Array[Int]]})#λ] {
     def apply[A] = eArrayRead
   })
+
+
+  // Let's look at the simple quick sort example:
+
+  def quickSortSimple(array: Array[Int], l: Int, r: Int): Array[Int] = {
+    def partition(l: Int, r: Int) = {
+      var i = l + 1
+      ((l + 1) to r).foreach { x =>
+        if (array(x) < array(l)) {
+          val temp = array(l)
+          array(l) = array(x)
+          array(x) = temp
+          i += 1
+        }
+      }
+
+      val temp = array(l)
+      array(l) = array(i - 1)
+      array(i - 1) = temp
+
+      i - 1
+    }
+
+
+    if (r - l < 1) array
+    else {
+      val pivotIndex = partition(0, array.length - 1)
+      quickSortSimple(array, l, pivotIndex - 1)
+      quickSortSimple(array, pivotIndex + 1, r)
+    }
+  }
+
+  // A handy function to test with ST array. I am not sure
+  // how to create an ST array without creating an array. Or any easy way.
+  // Any inputs?
+  def quickSort[A, S](arrayInSt: effect.ST[S, STArray[S, Int]], min: Int, max: Int):
+  effect.ST[S, STArray[S, Int]]= {
+    def swap(i: Int, j: Int): effect.ST[S, Unit] = {
+      for {
+        array <- arrayInSt
+        elemI <- array.read(i)
+        elemJ <- array.read(j)
+        _ <- array.write(i, elemJ)
+        _ <- array.write(j, elemI)
+      } yield ()
+    }
+
+    def x(pivotElement: Int, i: Int, index: Int): effect.ST[S, Int] = {
+      for {
+        array <- arrayInSt
+        indexElement <- array.read(index)
+        _ <- if (indexElement < pivotElement) swap(i, index)
+              else effect.ST.returnST[S, Unit](())
+        position =
+          if (indexElement > pivotElement) index else index + 1
+      } yield position
+    }
+
+    if (max - min < 1) arrayInSt
+    else {
+      for {
+        array <- arrayInSt
+        pivotElement <- array.read(min)
+        index <- ((min + 1) to max)
+          .foldLeft(effect.ST.returnST[S, Int](min + 1))((_, b) =>
+            x(pivotElement, min + 1, b))
+        _ <- quickSort(arrayInSt, min, index - 2)
+        _ <- quickSort(arrayInSt, index, max)
+      } yield array
+    }
+  }
+
+  type ForallST[A] = Forall[({type λ[S] = ST[S, A]})#λ]
 }

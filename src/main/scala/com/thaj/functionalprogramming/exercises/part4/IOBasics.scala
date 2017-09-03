@@ -48,7 +48,7 @@ object IOBasics {
     /**
       * We say that contest has (or produces) an effect or is effectful, but it’s only the
       * interpreter of IO (its run method) that actually has a side effect.
-      * The responsi- bility of interpreting the effect and actually manipulating the console is
+      * The responsibility of interpreting the effect and actually manipulating the console is
       * held by the run method on IO.
       */
     def contest(p1: Player, p2: Player): IO = {

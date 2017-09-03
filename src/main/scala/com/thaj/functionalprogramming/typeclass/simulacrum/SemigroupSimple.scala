@@ -1,5 +1,7 @@
 package com.thaj.functionalprogramming.example.typeclass
 
+import scalaz._, Scalaz._
+
 // A Simple type class. The companion object consist of Ops
 // consist extension methods for the value of type A, for which there is a SemiGroupSimple[A]
 // intance.
@@ -25,6 +27,7 @@ object SemigroupSimple {
     def |+| (y: A): A = typeClassInstance.append(self, y)
   }
 
+  Tags.Disjunction(true) |+| Tags.Disjunction(false)
   object ops {
     implicit def toSemigroupOps[A](target: A)(
       implicit tc: SemigroupSimple[A]

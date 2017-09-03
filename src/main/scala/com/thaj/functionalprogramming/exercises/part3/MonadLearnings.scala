@@ -92,7 +92,7 @@ object MonadLearnings {
     * Hope you remember map can be implemented in terms of flatMap and unit. Hence all monad instances
     * should implement a flatMap and unit. (That is the starting point - under
     *
-    * At this point, what you get out of monad is just map2 and map function. You still don't know the big
+    * At this point, what you get out` of monad is just map2 and map function. You still don't know the big
     * picture of Monad. However you have already gained a significant knowledge on Monad.
     */
 

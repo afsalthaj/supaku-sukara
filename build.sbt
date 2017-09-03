@@ -3,10 +3,16 @@ scalaVersion := "2.11.8"
 resolvers += Resolver.sonatypeRepo("releases")
 
 addCompilerPlugin("org.scalamacros" % "paradise" % "2.1.0" cross CrossVersion.full)
+
 addCompilerPlugin("org.spire-math" %% "kind-projector" % "0.9.3")
 
 libraryDependencies += "org.typelevel" %% "cats" % "0.9.0"
+
 libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.1.1"
+
+libraryDependencies += "org.scalaz" %% "scalaz-effect" % "7.1.1"
+
+initialCommands in console := "import scalaz._, Scalaz._"
 
 libraryDependencies ++= Seq (
   "org.scalatest" %% "scalatest" % "3.0.0" % "test",
