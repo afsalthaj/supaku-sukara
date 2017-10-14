@@ -1,6 +1,7 @@
 package com.thaj.functionalprogramming.exercises.part4
 
 import com.thaj.functionalprogramming.exercises.part3.MonadLearnings.Monad
+import com.thaj.functionalprogramming.exercises.part4
 
 /**
  * A more nuanced IO type
@@ -66,6 +67,7 @@ object FreeMonad {
 
   // An example of using free monad to do the same computation
   type IO[Int] = Free[Function0, Int]
+
   def f: Int => IO[Int] = (x: Int) => Return(x + 2)
   // you can confidently run this method :D
   def g: (Int) => IO[Int] = List.fill(2)(f).foldLeft(f)((a, b) => x => Suspend(() => ()).flatMap(_ => a(x).flatMap(b)))
@@ -111,4 +113,24 @@ object FreeMonad {
    * defines the protocol of this interaction. By choosing our F carefully, we can precisely control
    * what kinds of interactions are allowed.
    */
+  /**
+   * In a Free[F, A], F may not always be a monad, and we need
+   * an implicit monad to run this free operation. To convert F into a target monad
+   * we can have a translate function
+   */
+  trait Translate[F[_], G[_]] {
+    def apply[A](a: F[A]): G[A]
+  }
+
+  type ~>[F[_], G[_]] = Translate[F, G]
+
+  def runFree[F[_], G[_], A](a: Free[F, A])(t: F ~> G)(implicit G: Monad[G]): G[A] = a match {
+    case Return(v)   => G.unit(v)
+    case Suspend(fa) => t(fa)
+    case FlatMap(sub, cont) => sub match {
+      case Return(v)                 => runFree(cont(v))(t)
+      case Suspend(fa)               => G.flatMap(t(fa))(a => runFree(cont(a))(t))
+      case FlatMap(subsub, contcont) => runFree(subsub.flatMap(g => contcont(g) flatMap (cont)))(t)
+    }
+  }
 }
