@@ -9,7 +9,6 @@ import com.thaj.functionalprogramming.exercises.part4.FreeMonad.{ Free, Suspend,
  * choice for F in Free[F,A] might be an algebraic data type that only models interaction
  * with the console.
  */
-
 sealed trait Console[A] {
   def toThunk: () => A
 }
@@ -34,7 +33,6 @@ case class PrintLine(string: String) extends Console[Unit] {
  * possible forms: ReadLine (having type Console[Option[String]]) or PrintLine
  */
 object Console {
-
   def readLn: Free[Console, Option[String]] =
     Suspend(ReadLine)
 
@@ -64,7 +62,6 @@ object Console {
    * }
    * }}}
    */
-
   def consoleToFunction0 = new (Console ~> Function0) {
     def apply[A](a: Console[A]): Function0[A] = a.toThunk
   }
