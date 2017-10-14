@@ -25,14 +25,9 @@ The project also covers a few bits and pieces on Haskell
 ### Sukara, Kansūkei puroguramingu and Supaku
 ===============================================================
 #### Functional Programming in Scala
-https://github.com/afsalthaj/supaku-sukara/tree/master/src/main/scala/com/thaj/functionalprogramming
 
 Project covers answers for the exercises in "Functional Programming in Scala" with conceptual explanation.
 https://github.com/afsalthaj/supaku-sukara/tree/master/src/main/scala/com/thaj/functionalprogramming/exercises
-
-#### Keynote on Functional Programming in Scala - A Quick Revision!
-A WIP keynote on Functional Programming in Scala.
-https://rawgit.com/afsalthaj/ScalaSample/master/functional_programming/assets/player/KeynoteDHTMLPlayer.html#0
 
 #### Keynote on Functor, Applicative and Monads - A Quick Revision!
 A WIP keynote on functors, applicatives and monads.
