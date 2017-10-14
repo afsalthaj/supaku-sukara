@@ -5,7 +5,7 @@ package com.thajaf.fp.example.wrong.fp
  * buyCofee has a side-effect of charging a creditcard
  * Also, we can't buy multiple coffee without multiple credit card processing charge.
  */
-private case class CreditCard (cNumber: String) {
+private case class CreditCard(cNumber: String) {
   def charge(price: Int) = println(s"credit card $cNumber charged Rs.$price")
 }
 
@@ -22,9 +22,9 @@ class Tea extends Beverage {
 }
 
 class Cafe {
-  def buyCofee (cc: CreditCard): Coffee = {
+  def buyCofee(cc: CreditCard): Coffee = {
     val cup = new Coffee
-    
+
     cc.charge(cup.price)
 
     cup

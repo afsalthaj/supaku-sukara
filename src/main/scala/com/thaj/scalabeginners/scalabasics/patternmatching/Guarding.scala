@@ -58,8 +58,8 @@ object MatchingCaseClass {
 
   // pattern matching with GUARDING
   def getEvenNumberSecondType(n: Any) = n match {
-	 //case match with Guarding
+    //case match with Guarding
     case n: Int if (n % 2 == 0) => true
-    case n: Any => false
+    case n: Any                 => false
   }
 }

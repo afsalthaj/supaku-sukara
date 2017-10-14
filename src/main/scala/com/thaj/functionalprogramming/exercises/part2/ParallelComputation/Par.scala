@@ -166,7 +166,7 @@ object Par {
   // Implement parFilter, which filters elements of a list in parallel.
   def parFilter[A](as: List[A])(f: A => Boolean): Par[List[A]] = {
     as.map(asyncF(a => (f(a), a))).foldRight(unit(List[A]()))(map2(_, _) {
-      case ((true, a), acc) => a :: acc
+      case ((true, a), acc)  => a :: acc
       case ((false, a), acc) => acc
     })
   }
@@ -197,30 +197,29 @@ object Par {
      = Par[F]
   */
 
-
-   /**
-     *  def map[A, B](pa: Par[A])(f: A => B): Par[B] = map2(pa, unit(()))((a, _) => f(a))
-     *  map(unit(x))(id) == unit(id(x))
-     *  map(unit(x))(id) = unit(x)
-     *  map(y)(id) == y
-     */
-
-    // map(map(y)(g))(f) == map(y)(f compose g)
-    // let g = id
-    // map (map(y)(id))(f) = map (y) (f)
-    // map (y)(f) = map(y)(f)
   /**
-    * Issue with fork (<reference from fpinscala>)
-      Assume that ExecutorService represents a thread pool of size X.
-      Now if fork(x) will execute as far as X != 1; But if it fork(fork(x)). It now constitutes
-      2 thread pools. Now if fork(fork(fork(x)) will result in a state of complete lock; or None
-      of them not being able to use.
+   *  def map[A, B](pa: Par[A])(f: A => B): Par[B] = map2(pa, unit(()))((a, _) => f(a))
+   *  map(unit(x))(id) == unit(id(x))
+   *  map(unit(x))(id) = unit(x)
+   *  map(y)(id) == y
+   */
 
-      Now the second case is fork(map2(fork(x), fork(y)))
-      The outer task is submitted to a thread pool and occupies a thread waiting for
-      fork(x) and fork(y). This is because get function is called in map2. fork(x) and fork(y)
-      will execute in parallel, but there is only one thread available and it results in a deadlock.
-    */
+  // map(map(y)(g))(f) == map(y)(f compose g)
+  // let g = id
+  // map (map(y)(id))(f) = map (y) (f)
+  // map (y)(f) = map(y)(f)
+  /**
+   * Issue with fork (<reference from fpinscala>)
+   * Assume that ExecutorService represents a thread pool of size X.
+   * Now if fork(x) will execute as far as X != 1; But if it fork(fork(x)). It now constitutes
+   * 2 thread pools. Now if fork(fork(fork(x)) will result in a state of complete lock; or None
+   * of them not being able to use.
+   *
+   * Now the second case is fork(map2(fork(x), fork(y)))
+   * The outer task is submitted to a thread pool and occupies a thread waiting for
+   * fork(x) and fork(y). This is because get function is called in map2. fork(x) and fork(y)
+   * will execute in parallel, but there is only one thread available and it results in a deadlock.
+   */
 
   // The rest of the chapter deals with the alternate of fork funtionality, and the obvious change in
   // Future implementation. The main changes are as follows:
@@ -231,7 +230,6 @@ object Par {
 
   // We will skip the session as we already covered the core of this chapter.
 
-
   //def run(es: ExecutorService)(pr: Par[A]) = ???
   def choice[A](cond: Par[Boolean])(f: Par[A], t: Par[A]): Par[A] = {
     es => if (run(es)(cond).get) f(es) else t(es)
@@ -239,45 +237,46 @@ object Par {
 
   //Exercise 7.11
   def choiceN[A](int: Par[Int])(choices: List[Par[A]]): Par[A] = {
-    es => {
-      val n = run(es)(int).get
-      if(choices.size >= n)
-        choices(n)(es)
-      else
-        choices(choices.size)(es)
-    }
+    es =>
+      {
+        val n = run(es)(int).get
+        if (choices.size >= n)
+          choices(n)(es)
+        else
+          choices(choices.size)(es)
+      }
   }
 
   def choiceInTermsOfChoiceN[A](cond: Par[Boolean])(f: Par[A], t: Par[A]) =
-    choiceN[A](map(cond)(if(_) 0 else 1))(List(f, t))
-
+    choiceN[A](map(cond)(if (_) 0 else 1))(List(f, t))
 
   // Exercise 7.12
   // Please note that it differs from fpinscala. May be u can try to find out the differece. For me this makes more sense as of now
-  def choiceMap[K,V](key: Par[K])(choices: Map[K,Par[V]]): Par[V] = {
-    es => {
-      val k = run(es)(key).get
-      choices(k)(es)
-    }
+  def choiceMap[K, V](key: Par[K])(choices: Map[K, Par[V]]): Par[V] = {
+    es =>
+      {
+        val k = run(es)(key).get
+        choices(k)(es)
+      }
   }
 
   // Exercise 7.13
-  def chooser[A,B](pa: Par[A])(choices: A => Par[B]): Par[B] = {
-    es => {
-      val k = run(es)(pa).get
-      val par = choices(k)
-      par(es)
-    }
+  def chooser[A, B](pa: Par[A])(choices: A => Par[B]): Par[B] = {
+    es =>
+      {
+        val k = run(es)(pa).get
+        val par = choices(k)
+        par(es)
+      }
   }
 
   def choiceUsingChoose[A](cond: Par[Boolean])(f: Par[A], t: Par[A]): Par[A] = {
-    chooser[Boolean, A](cond)(if(_) f else t)
+    chooser[Boolean, A](cond)(if (_) f else t)
   }
 
   def choiceNUsingChoose[A](n: Par[Int])(list: List[Par[A]]): Par[A] = {
     chooser[Int, A](n)(list(_))
   }
-
 
   // join function
   def join[A](a: Par[Par[A]]): Par[A] = es => {
@@ -287,15 +286,14 @@ object Par {
 
   //bind or flatMap
   def flatMapUsingJoin[A, B](a: Par[A])(f: A => Par[B]): Par[B] = {
-   val parOfpar:Par[Par[B]] = map(a)(f)
+    val parOfpar: Par[Par[B]] = map(a)(f)
     join(parOfpar)
   }
 
   // join function
-  def joinUsingFlatMap[A](a: Par[Par[A]]): Par[A] =  {
+  def joinUsingFlatMap[A](a: Par[Par[A]]): Par[A] = {
     chooser(a)(a => a)
   }
-
 
   // Takeaway
   // We described the API in terms of data types and primitive functions. That is merely description.

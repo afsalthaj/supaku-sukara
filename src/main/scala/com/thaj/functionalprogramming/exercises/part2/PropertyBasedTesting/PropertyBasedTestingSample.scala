@@ -1,8 +1,8 @@
 package com.thaj.functionalprogramming.exercises.part2
 
-import java.util.concurrent.{Executors, ExecutorService}
+import java.util.concurrent.{ Executors, ExecutorService }
 
-import com.thaj.functionalprogramming.example.exercises.PureStatefulAPI.{SimpleRng, RNG}
+import com.thaj.functionalprogramming.example.exercises.PureStatefulAPI.{ SimpleRng, RNG }
 import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.State
 import com.thaj.functionalprogramming.example.exercises.part2.Par
 import com.thaj.functionalprogramming.example.exercises.part2.Par.Par
@@ -55,25 +55,26 @@ object PropertyBasedTestingSample {
     max of list with Int.MaxValue => Int.MaxValue
    */
 
-  /** A few nice properties of property based checking
-    * API Generators and Properties
-    *
-    * Test Case minimisation: if a property fails, it tries to find out the smallest list of values, for which
-    * the property was failing. This illuminates debugging.
-    *
-    * Exhaustive test case generation: If your domain Gen[A] is well defined, it runs test for all the values
-    * in the domain and test, instead of taking a sample of values and run the test that can result in proving
-    * a theorem by the absence of an evidence to the contrary.
-    *
-    * ScalaCheck is one property-based testing library
-    * val intList = Gen.listOf(Gen.choose(0,100))
-    * val prop = forAll(intList)(ns => ns.reverse.reverse == ns) &&
-    * forAll(intList )(ns => ns.headOption == ns.reverse.lastOption)
-    */
+  /**
+   * A few nice properties of property based checking
+   * API Generators and Properties
+   *
+   * Test Case minimisation: if a property fails, it tries to find out the smallest list of values, for which
+   * the property was failing. This illuminates debugging.
+   *
+   * Exhaustive test case generation: If your domain Gen[A] is well defined, it runs test for all the values
+   * in the domain and test, instead of taking a sample of values and run the test that can result in proving
+   * a theorem by the absence of an evidence to the contrary.
+   *
+   * ScalaCheck is one property-based testing library
+   * val intList = Gen.listOf(Gen.choose(0,100))
+   * val prop = forAll(intList)(ns => ns.reverse.reverse == ns) &&
+   * forAll(intList )(ns => ns.headOption == ns.reverse.lastOption)
+   */
 
   // Initial API set up
 
-  def listOf[A](gen:Gen[A]): Gen[List[A]] = ???
+  def listOf[A](gen: Gen[A]): Gen[List[A]] = ???
 
   // bringing in size constrains
 
@@ -90,7 +91,6 @@ object PropertyBasedTestingSample {
 
 }
 
-
 trait LegacyProp {
   def check: Boolean
   /**
@@ -100,7 +100,6 @@ trait LegacyProp {
     def check = this.check && p.check
   }
 }
-
 
 // Design refinement
 trait PropRefinedV1 {
@@ -112,23 +111,20 @@ object PropRefinedV1 {
   type SuccessCount = Int
 }
 
-
 // Consider gen as something dealing with random number generator, that in turn deals with state transitions.
 // Lets wrap State transition with respect to RNG in Gen case class
 
 // Gen[RNG, Gen[A](State (rng => (genA, rng2))) : Gen[Gen[A]]
 case class Gen[A](sample: State[RNG, A]) {
-  def map [B](a: A => B): Gen[B] = Gen(this.sample.map(a))
+  def map[B](a: A => B): Gen[B] = Gen(this.sample.map(a))
   // Exercise 8.6
   def flatMap[B](a: A => Gen[B]): Gen[B] = Gen.join(this.map(a))
   def listOfN(size: Int): Gen[List[A]] = Gen.sequence(List.fill(size)(this))
-  def map2[B, C](a: Gen[B])(f: (A, B) => C): Gen[C] = this.flatMap( t => a.map(aa => f(t, aa)))
+  def map2[B, C](a: Gen[B])(f: (A, B) => C): Gen[C] = this.flatMap(t => a.map(aa => f(t, aa)))
   // Exercise 8.10
   def unsized: SGen[A] = SGen(_ => this)
   def **[B](g: Gen[B]): Gen[(A, B)] = this.map2(g)((_, _))
 }
-
-
 
 object Gen {
   //Exercise 8.4
@@ -142,7 +138,7 @@ object Gen {
   // From this we can somehow guess, we are moving towards
   // using `Stream` in this API
   def choose(start: Int, stopExclusive: Int): Gen[Int] =
-    Gen(nonNegativeInt.map(n => start + n % (stopExclusive-start)))
+    Gen(nonNegativeInt.map(n => start + n % (stopExclusive - start)))
 
   // Exercise 8.5
   // It can be considered as a continuation, where you got a number and an associated state which doesn't really matter
@@ -176,7 +172,7 @@ object Gen {
     }))
   }
 
-  def sequence[A](a: List[Gen[A]] ): Gen[List[A]] =
+  def sequence[A](a: List[Gen[A]]): Gen[List[A]] =
     a.foldRight(unit(Nil: List[A]))((c, d) => c.map2(d)(_ :: _))
 
   // Sample ones
@@ -198,7 +194,7 @@ object Gen {
   // This might be wrong
   def getStringPairWithSecondStringBeingSubStringOfFirst: Gen[(String, String)] = {
     Gen.choose(0, 100).map(_.toString).map2(Gen.choose(0, 100).map(_.toString)) { (a, b) =>
-      if(a.contains(b))(a, b) else (a, a)
+      if (a.contains(b)) (a, b) else (a, a)
     }
   }
 
@@ -210,16 +206,14 @@ object Gen {
   // Implement weighted, a version of union that accepts a weight for each
   // Gen and generates values from each Gen with probability proportional to its weight.
   // Referred the answer here
-  def weighted[A](g1: (Gen[A], Double), g2: (Gen[A],Double)): Gen[A] = {
+  def weighted[A](g1: (Gen[A], Double), g2: (Gen[A], Double)): Gen[A] = {
     val g1Threshold = g1._2.abs / (g1._2.abs + g2._2.abs)
 
     Gen(State.double).flatMap(d => if (d < g1Threshold) g1._1 else g2._1)
   }
 }
 
-
 import Prop._
-
 
 case class Prop(run: (MaxSize, TestCases, RNG) => Result) {
 
@@ -228,41 +222,46 @@ case class Prop(run: (MaxSize, TestCases, RNG) => Result) {
   // executed in case of failure.
   // this implementation as of now seems to be straight forward (than the one in fpinscala),
   // and doesn't have the usual the boolean && behaviour
-  def && (x: Prop): Prop = Prop({ (max, n, rng) => {
-    val result = this.run(max, n,rng)
-    val result2 = x.run(max, n,rng)
-    (result, result2) match {
-      case (Falsified(a, b), Falsified(c, d)) => Falsified(a.toString + c.toString, b + d)
-      case (Passed | Proved, Falsified(a, b)) => Falsified(a.toString, n + b )
-      case (Falsified(a, b), Passed | Proved) => Falsified(a.toString, n + b)
-      case (Proved, Proved) => Proved
-      case _ => Passed
+  def &&(x: Prop): Prop = Prop({ (max, n, rng) =>
+    {
+      val result = this.run(max, n, rng)
+      val result2 = x.run(max, n, rng)
+      (result, result2) match {
+        case (Falsified(a, b), Falsified(c, d)) => Falsified(a.toString + c.toString, b + d)
+        case (Passed | Proved, Falsified(a, b)) => Falsified(a.toString, n + b)
+        case (Falsified(a, b), Passed | Proved) => Falsified(a.toString, n + b)
+        case (Proved, Proved)                   => Proved
+        case _                                  => Passed
+      }
     }
-  }})
+  })
 
   // I personally didn't like the fact anding a property result in sequential execution
   // Hence I added a sequentialAnd to combine multiple properties such that,
   // if the first property fails, the whole test case fails
-  def sequentialAnd (x: Prop): Prop = Prop({ (max, n, rng) => {
-    this.run(max, n,rng) match {
-      case Passed | Proved => x.run(max,n, rng)
-      case a => a
+  def sequentialAnd(x: Prop): Prop = Prop({ (max, n, rng) =>
+    {
+      this.run(max, n, rng) match {
+        case Passed | Proved => x.run(max, n, rng)
+        case a               => a
+      }
     }
-  }})
+  })
 
   // differs from the other solutions, but its simpler and readable and does the same thing.
-  def || (x: Prop): Prop = Prop ( { (max, n, rng) => {
-    val result1 = this.run(max, n, rng)
-    result1 match {
-      case Falsified(a, b) => x.run(max, n, rng) match {
-        case Falsified(c, d ) => Falsified(a.toString + c.toString, b + d)
+  def ||(x: Prop): Prop = Prop({ (max, n, rng) =>
+    {
+      val result1 = this.run(max, n, rng)
+      result1 match {
+        case Falsified(a, b) => x.run(max, n, rng) match {
+          case Falsified(c, d) => Falsified(a.toString + c.toString, b + d)
+          case t               => t
+        }
         case t => t
       }
-      case t => t
     }
-  }})
+  })
 }
-
 
 // Prop Refined - Final Version
 object Prop {
@@ -313,13 +312,13 @@ object Prop {
   // predicate (which is possibly the function to be tested). Hence we are testing
   // the function `n` times. Hence n refers to `TestCases`
   def forAll[A](as: Gen[A])(f: A => Boolean): Prop = Prop {
-    (max,n,rng) => randomStream(as)(rng).zip(Stream.from(0)).take(n).map {
-      case (a, i) => try {
-        if (f(a)) Passed else Falsified(a.toString, i)
-      } catch { case e: Exception => Falsified(buildMsg(a, e), i) }
-    }.find(_.isFalsified).getOrElse(Passed)
+    (max, n, rng) =>
+      randomStream(as)(rng).zip(Stream.from(0)).take(n).map {
+        case (a, i) => try {
+          if (f(a)) Passed else Falsified(a.toString, i)
+        } catch { case e: Exception => Falsified(buildMsg(a, e), i) }
+      }.find(_.isFalsified).getOrElse(Passed)
   }
-
 
   def forAll[A](g: SGen[A])(f: A => Boolean): Prop =
     forAll(g.forSize)(f)
@@ -333,29 +332,31 @@ object Prop {
   // please note that the next Gen will generate more test cases than previous
   // one, and once you reach the max, you && all the properties. and then you call run
   // you are done!
-  def forAll[A](g: Int => Gen[A])(f: A => Boolean): Prop = Prop( {
-    (max, n, rng) => {
+  def forAll[A](g: Int => Gen[A])(f: A => Boolean): Prop = Prop({
+    (max, n, rng) =>
+      {
 
-      val casesPerSize = ( n + (max - 1)) / max
+        val casesPerSize = (n + (max - 1)) / max
 
-      // based on an int, you will have a Gen
-      // assume n = 10, max = 10, the only thing thats going to happen here
-      // It makes sure that the minimum between n and max is selected to ensure that
-      // we are not stuffing up starting from the maximum values. We add plus 1 to ensure
-      // we have n number of properties as we are starting from zero. So right now, we have
-      // a stream starting from 0 to the minimum between n and max + 1, and we have that many number
-      // of generators. This implies, we have that many number of properties. Each of those properties
-      // expect a number of test cases to run, maximum number of test cases and rng state. Hence we have to combine
-      // all these properties using && and provide these numbers only once.
-      val props: Stream[Prop] = Stream.from(0).take(n min max + 1).map( i => forAll(g(i))(f))
-      // Now if we pass a single max and n to all properties, then we have equal number of test cases
-      val prop: Prop = props.map(eachProp => {
-        Prop ( { case (m, _, r) => eachProp.run(m, casesPerSize, r)
-        })
-      }).toList.reduce(_ sequentialAnd _)
+        // based on an int, you will have a Gen
+        // assume n = 10, max = 10, the only thing thats going to happen here
+        // It makes sure that the minimum between n and max is selected to ensure that
+        // we are not stuffing up starting from the maximum values. We add plus 1 to ensure
+        // we have n number of properties as we are starting from zero. So right now, we have
+        // a stream starting from 0 to the minimum between n and max + 1, and we have that many number
+        // of generators. This implies, we have that many number of properties. Each of those properties
+        // expect a number of test cases to run, maximum number of test cases and rng state. Hence we have to combine
+        // all these properties using && and provide these numbers only once.
+        val props: Stream[Prop] = Stream.from(0).take(n min max + 1).map(i => forAll(g(i))(f))
+        // Now if we pass a single max and n to all properties, then we have equal number of test cases
+        val prop: Prop = props.map(eachProp => {
+          Prop({
+            case (m, _, r) => eachProp.run(m, casesPerSize, r)
+          })
+        }).toList.reduce(_ sequentialAnd _)
 
-      prop.run(max, n, rng)
-    }
+        prop.run(max, n, rng)
+      }
   })
 
   // building an error message - needn't get your head around this.
@@ -365,10 +366,12 @@ object Prop {
       s"stack trace:\n ${e.getStackTrace.mkString("\n")}"
 
   // A helper function to run the properties with default arguments
-  def run(p: Prop,
-          maxSize: Int = 100,
-          testCases: Int = 100,
-          rng: RNG = SimpleRng(System.currentTimeMillis)): Unit =
+  def run(
+    p:         Prop,
+    maxSize:   Int  = 100,
+    testCases: Int  = 100,
+    rng:       RNG  = SimpleRng(System.currentTimeMillis)
+  ): Unit =
     p.run(maxSize, testCases, rng) match {
       case Falsified(msg, n) =>
         println(s"! Falsified after $n passed tests:\n $msg")
@@ -399,7 +402,6 @@ object Prop {
 
 }
 
-
 // Test Case Minimisation
 // Instead of starting from a wide set of test cases and then `shrinking` it down to find the
 // test case that failed, we slowly generate test case and then widens up..(sized generation)
@@ -407,28 +409,30 @@ object Prop {
 // let’s introduce sized generation as a separate layer in our library. A simple representation of a sized generator is just a function that takes a size and produces a generator:
 // Exercise 8.11
 case class SGen[A](forSize: Int => Gen[A]) {
-  def map [B](a: A => B): SGen[B] = SGen(n => this.forSize(n).map(a))
+  def map[B](a: A => B): SGen[B] = SGen(n => this.forSize(n).map(a))
   // Exercise 8.6
   def flatMap[B](a: A => SGen[B]): SGen[B] = SGen.join(this.map(a))
   def listOfN(size: SGen[Int]): SGen[List[A]] = size.flatMap(n => SGen.sequence(List.fill(n)(this)))
-  def map2[B, C](a: SGen[B])(f: (A, B) => C): SGen[C] = this.flatMap( t => a.map(aa => f(t, aa)))
+  def map2[B, C](a: SGen[B])(f: (A, B) => C): SGen[C] = this.flatMap(t => a.map(aa => f(t, aa)))
 }
 
 object SGen {
   def unit[A](a: A): SGen[A] = SGen(n => Gen.unit(a))
-  def join[A](sgen: SGen[SGen[A]]): SGen[A] = SGen ({ n => {
+  def join[A](sgen: SGen[SGen[A]]): SGen[A] = SGen({ n =>
+    {
       val gen = sgen.forSize(n)
       val genOfGen: Gen[Gen[A]] = gen.map(a => a.forSize(n))
       Gen.join(genOfGen)
-    }})
+    }
+  })
 
-  def sequence[A](a: List[SGen[A]] ): SGen[List[A]] =
+  def sequence[A](a: List[SGen[A]]): SGen[List[A]] =
     a.foldRight(unit(Nil: List[A]))((c, d) => c.map2(d)(_ :: _))
 
   def listOf[A](g: Gen[A]): SGen[List[A]] = SGen(n => g.listOfN(n))
 
   // An example that results in a failure
-  def smallInt = Gen.choose(-10,10)
+  def smallInt = Gen.choose(-10, 10)
   def maxProp = forAll(listOf(smallInt)) { ns =>
     val max = ns.max
     !ns.exists(_ > max)
@@ -448,10 +452,12 @@ object SGen {
   // Something like this
   def genInt = Gen.choose(0, 100)
   def genListOfInt = listOf1(genInt)
-  def propertyTestingSorting = forAll(genListOfInt) { list => {
-    val ls = list.sorted
-    list.isEmpty ||  list.tail.isEmpty || !(ls.head > ls.tail.reverse.head)
-  }}
+  def propertyTestingSorting = forAll(genListOfInt) { list =>
+    {
+      val ls = list.sorted
+      list.isEmpty || list.tail.isEmpty || !(ls.head > ls.tail.reverse.head)
+    }
+  }
 }
 
 // 8.4.2. Writing a test suite for parallel computations
@@ -482,7 +488,6 @@ object ParallelComputationsTestLib {
   // This is less of an exercise and more of an extensive, open-ended design project.
   // We will get back to this later just as we did with streams.
 
-
   // Using the new `checkCorrectImpl`
 
   val plCorrect: Prop = Prop.checkCorrectImpl({
@@ -506,17 +511,17 @@ object ParallelComputationsTestLib {
     Gen.weighted(Gen.choose(1, 4).map(Executors.newFixedThreadPool) -> .75, Gen.unit(Executors.newCachedThreadPool) -> .25)
 
   def forAllPar[A](g: Gen[A])(f: A => Par[Boolean]): Prop = {
-     Prop.forAll(S.map2(g)((_, _))){ case (a, b) => f(b)(a).get()}
+    Prop.forAll(S.map2(g)((_, _))) { case (a, b) => f(b)(a).get() }
   }
   // Much more nicer
   def forAllParNicer[A](g: Gen[A])(f: A => Par[Boolean]): Prop = {
-    Prop.forAll(S.map2(g)((_, _))){ case (a, b) => f(b)(a).get()}
+    Prop.forAll(S.map2(g)((_, _))) { case (a, b) => f(b)(a).get() }
   }
   // Much more more nicer
   def forAllParNicerOh[A](g: Gen[A])(f: A => Par[Boolean]): Prop =
-    forAll(S ** g) { case (s,a) => f(a)(s).get }
+    forAll(S ** g) { case (s, a) => f(a)(s).get }
   // Higher order functions
-  val isEven = (i: Int) => i%2 == 0
+  val isEven = (i: Int) => i % 2 == 0
   val gen = Gen.choose(0, 100)
   val takeWhileProp = Prop.forAll(Gen.listOfN(gen, 10))(_.takeWhile(isEven).forall(isEven))
 }

@@ -6,8 +6,8 @@ import scalaz.effect.ST.newArr
 import scalaz.effect._
 
 /**
-  * Created by afsalthaj on 8/11/2016.
-  */
+ * Created by afsalthaj on 8/11/2016.
+ */
 object PureStatefulAPIGeneric {
 
   import com.thaj.functionalprogramming.example.exercises.PureStatefulAPI.RNG
@@ -21,18 +21,20 @@ object PureStatefulAPIGeneric {
   // def map[S, A, B] (action: S => (A, S) (f: A => B):  S => (B, s)
 
   // Instead of Rand[A], let us define a generic state
-  /** {{{
-    * type State[S, +A] = S => (A, S) === type Rand[+A] = RNG => (A, RNG)
-    * }}}
-    */
+  /**
+   * {{{
+   * type State[S, +A] = S => (A, S) === type Rand[+A] = RNG => (A, RNG)
+   * }}}
+   */
   // it is +A instead of A so that even `Nothing` can take part in your state actions
   // Here State is short for computation that carries some state along,
   // or state action, state transition, or even statement
   // (see the next section). I might want to write it as its own class, wrapping the underlying function like this:
 
-  /** Instead of a type State, and state action somewhere in the class,
-    * let us have a state class that wraps the state action
-    */
+  /**
+   * Instead of a type State, and state action somewhere in the class,
+   * let us have a state class that wraps the state action
+   */
 
   // Exercise 6.10
   case class State[S, +A](run: S => (A, S)) {
@@ -61,7 +63,6 @@ object PureStatefulAPIGeneric {
 
     def both[A, B](a: Rand[A], b: Rand[B]): Rand[(A, B)] =
       a.map2(b)((_, _))
-
 
     def boolean: Rand[Boolean] = State(rng =>
       rng.nextInt match {
@@ -102,34 +103,35 @@ object PureStatefulAPIGeneric {
 
 // Another straight forward implementation, that covers end to end
 // Difference is only in map implementation
-/** *
-  * {{{
-  * case class State[S, +A] (run: S => (A, S)) {
-  * def map[B](f: A => B): State[S, B] = State(state => {
-  * val (a, r) = run(state)
-  * (f(a), r)
-  * })
-  * *
-  * def flatMap[B] (f: A => State[S, B]) = State(state => {
-  * val (a, s) = run(state)
-  * f(a).run(s)
-  * })
-  * *
-  * def map2[B, C](state: State[S, B])(f: (A, B) => C): State[S, C] =
-  * flatMap(aa => state.map(cc => f(aa, cc)))
-  * }
-  *
-  *
-  * }}}
-  */
+/**
+ * *
+ * {{{
+ * case class State[S, +A] (run: S => (A, S)) {
+ * def map[B](f: A => B): State[S, B] = State(state => {
+ * val (a, r) = run(state)
+ * (f(a), r)
+ * })
+ * *
+ * def flatMap[B] (f: A => State[S, B]) = State(state => {
+ * val (a, s) = run(state)
+ * f(a).run(s)
+ * })
+ * *
+ * def map2[B, C](state: State[S, B])(f: (A, B) => C): State[S, C] =
+ * flatMap(aa => state.map(cc => f(aa, cc)))
+ * }
+ *
+ *
+ * }}}
+ */
 
 /**
-  * Should you know why we have something known as `scalaz.ST` then please read the below contents, else skip!
-  * "http://docplayer.net/404814-Lazy-functional-state-threads.html#show_full_text" should be a good read to
-  * understand how mutations are handled nicely in FP paradigm. Also, if you are looking for a quick
-  * explanation on why State monad is NOT used instead of ST monad in scala for handling mutations,
-  * then below code explanations might help.
-  */
+ * Should you know why we have something known as `scalaz.ST` then please read the below contents, else skip!
+ * "http://docplayer.net/404814-Lazy-functional-state-threads.html#show_full_text" should be a good read to
+ * understand how mutations are handled nicely in FP paradigm. Also, if you are looking for a quick
+ * explanation on why State monad is NOT used instead of ST monad in scala for handling mutations,
+ * then below code explanations might help.
+ */
 object MutationWithState {
 
   // A mutation handling using state monad. Assume that the mutation that you need to perform is encapsulated
@@ -172,20 +174,21 @@ object MutationWithState {
   }
 
   // this is similar to scalaz's implementation of Run ST where it specifically takes care of
-  def myRunST[A](f: Forall[({type λ[S] = scalaz.State[S, A]})#λ]): A =
+  def myRunST[A](f: Forall[({ type λ[S] = scalaz.State[S, A] })#λ]): A =
     f.apply.run(dummyVariable)._2
 
-  /** we are forced to run with a dummyValue that actually represents the state
-    * However our state is just a type parameter S. 
-    * So had the state been a case class with no data in it, we could easily
-    * make a dummy instance of it with no data. This is exactly what scalaz does in
-    * `World.scala`. 
-    *
-    * {{{
-    *   case class Tower[S]()...it should be a state thread that should handle a mutation, and noone else
-    *   can come into that thread, and change the value that is already being mutated. This is why it is type-parameterized by S.
-    * }}}
-    */
+  /**
+   * we are forced to run with a dummyValue that actually represents the state
+   * However our state is just a type parameter S.
+   * So had the state been a case class with no data in it, we could easily
+   * make a dummy instance of it with no data. This is exactly what scalaz does in
+   * `World.scala`.
+   *
+   * {{{
+   *   case class Tower[S]()...it should be a state thread that should handle a mutation, and noone else
+   *   can come into that thread, and change the value that is already being mutated. This is why it is type-parameterized by S.
+   * }}}
+   */
 
   def e1[S]: scalaz.State[S, MutationContainer[S, Int]] = for {
     r <- newMutationContainer[S, Int](0)
@@ -205,16 +208,16 @@ object MutationWithState {
   // In the case of a mutation, the usage of state is to make them act like a state thread - this
   // somehow proved that, we can't directly use the data structure that we used to represent the state Monad
   // wouldn't work here.
-  myRunST(new Forall[({type λ[S] = scalaz.State[S, Int]})#λ] {
+  myRunST(new Forall[({ type λ[S] = scalaz.State[S, Int] })#λ] {
     def apply[A] = e2
   })
 }
 
 /**
-  * the below session is quite advanced. however, if you are wondering why scalaz.State (or the above the State
-  * data structure) can't be directly used instead of ST monad for working with in place swapping, mutation etc.
-  * This is just a simplified version of scalaz's ST. This is in line with the explanation of Scala red book.
-  */
+ * the below session is quite advanced. however, if you are wondering why scalaz.State (or the above the State
+ * data structure) can't be directly used instead of ST monad for working with in place swapping, mutation etc.
+ * This is just a simplified version of scalaz's ST. This is in line with the explanation of Scala red book.
+ */
 object MutationInScalaz {
 
   // So for the above reasons we need to represent the state
@@ -268,7 +271,7 @@ object MutationInScalaz {
 
   private val antartica = World[Antartica]()
 
-  def runSTT[A](f: Forall[({type λ[S] = ST[S, A]})#λ]): A =
+  def runSTT[A](f: Forall[({ type λ[S] = ST[S, A] })#λ]): A =
     f.apply.f(antartica)._2
 
   def e1[S]: ST[S, STRef[S, Int]] = for {
@@ -293,14 +296,13 @@ object MutationInScalaz {
   // The whole complexity comes in through
   // runSTT(new Forall[({type λ[S] = STX[S, STRef[S, Int]]})#λ] { def apply[A] = e1 })
   // this compiles as it doesn't expose the ST
-  val sample = runSTT(new Forall[({type λ[S] = ST[S, Int]})#λ] {
+  val sample = runSTT(new Forall[({ type λ[S] = ST[S, Int] })#λ] {
     def apply[A] = e2
   })
 
-  val sample1 = runSTT(new Forall[({type λ[S] = ST[S, Array[Int]]})#λ] {
+  val sample1 = runSTT(new Forall[({ type λ[S] = ST[S, Array[Int]] })#λ] {
     def apply[A] = eArrayRead
   })
-
 
   // Let's look at the simple quick sort example:
 
@@ -323,7 +325,6 @@ object MutationInScalaz {
       i - 1
     }
 
-
     if (r - l < 1) array
     else {
       val pivotIndex = partition(0, array.length - 1)
@@ -335,8 +336,7 @@ object MutationInScalaz {
   // A handy function to test with ST array. I am not sure
   // how to create an ST array without creating an array. Or any easy way.
   // Any inputs?
-  def quickSort[A, S](arrayInSt: effect.ST[S, STArray[S, Int]], min: Int, max: Int):
-  effect.ST[S, STArray[S, Int]]= {
+  def quickSort[A, S](arrayInSt: effect.ST[S, STArray[S, Int]], min: Int, max: Int): effect.ST[S, STArray[S, Int]] = {
     def swap(i: Int, j: Int): effect.ST[S, Unit] = {
       for {
         array <- arrayInSt
@@ -352,9 +352,8 @@ object MutationInScalaz {
         array <- arrayInSt
         indexElement <- array.read(index)
         _ <- if (indexElement < pivotElement) swap(i, index)
-              else effect.ST.returnST[S, Unit](())
-        position =
-          if (indexElement > pivotElement) index else index + 1
+        else effect.ST.returnST[S, Unit](())
+        position = if (indexElement > pivotElement) index else index + 1
       } yield position
     }
 
@@ -372,5 +371,5 @@ object MutationInScalaz {
     }
   }
 
-  type ForallST[A] = Forall[({type λ[S] = ST[S, A]})#λ]
+  type ForallST[A] = Forall[({ type λ[S] = ST[S, A] })#λ]
 }

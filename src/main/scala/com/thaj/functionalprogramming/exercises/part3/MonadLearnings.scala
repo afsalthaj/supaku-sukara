@@ -2,11 +2,11 @@ package com.thaj.functionalprogramming.exercises.part3
 
 import com.thaj.functionalprogramming.example.exercises.PureStatefulAPI.RNG
 import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric.State
-import com.thaj.functionalprogramming.example.exercises.{Empty, Stream}
+import com.thaj.functionalprogramming.example.exercises.{ Empty, Stream }
 import com.thaj.functionalprogramming.example.exercises.part2.Par
 import com.thaj.functionalprogramming.example.exercises.part2.Par.Par
 import com.thaj.functionalprogramming.exercises.part2.Gen
-import com.thaj.functionalprogramming.exercises.part3.Applicative.{Applicative, Traverse}
+import com.thaj.functionalprogramming.exercises.part3.Applicative.{ Applicative, Traverse }
 
 /**
  * Created by afsalthaj on 4/03/17.
@@ -27,15 +27,16 @@ object MonadLearnings {
    *   A functor allows you to have a map function for free, althought that's not a compelling
    *   reason for why this concept exist.
    */
-  trait Functor[F[_]]{
+  trait Functor[F[_]] {
     def map[A, B](a: F[A])(f: A => B): F[B]
 
-    /** Taking a step back, and trying to find out more combinators and helper functions with these
-      * functor instances.
-      * Being a bit verbose here when compared to textbook for better understanding.
-      * That operation is sometimes called unzip. So we just wrote a generic
-      * unzip function that works not just for lists, but for any functor!
-      */
+    /**
+     * Taking a step back, and trying to find out more combinators and helper functions with these
+     * functor instances.
+     * Being a bit verbose here when compared to textbook for better understanding.
+     * That operation is sometimes called unzip. So we just wrote a generic
+     * unzip function that works not just for lists, but for any functor!
+     */
 
     def distribute[A, B](a: F[(A, B)]): (F[A], F[B]) = {
       val s: F[A] = map(a)(tuple => tuple._1)
@@ -47,23 +48,24 @@ object MonadLearnings {
     def codistribute[A, B](a: Either[F[A], F[B]]): F[Either[A, B]] = {
       a match {
         case Right(fb) => map(fb)(Right(_))
-        case Left(fa) => map(fa)(Left(_))
+        case Left(fa)  => map(fa)(Left(_))
       }
     }
-    /** Is functor that powerful. Not really!
-      * For example the following will throw compilation error.
-      * Guess, what this function intends to do:
-      * def codistribute[A, B](fa: F[A], fb: F[B]): F[(A, B)] = {
-      *   map(fa)(a => map(fb)(b => (a, b)))
-      * }
-      */
+    /**
+     * Is functor that powerful. Not really!
+     * For example the following will throw compilation error.
+     * Guess, what this function intends to do:
+     * def codistribute[A, B](fa: F[A], fb: F[B]): F[(A, B)] = {
+     *   map(fa)(a => map(fb)(b => (a, b)))
+     * }
+     */
   }
 
   // An example of a functor instance
   val listFunctor = new Functor[List] {
     def map[A, B](a: List[A])(f: A => B): List[B] = a match {
       case ::(x, xs) => ::(f(x), map(xs)(f))
-      case Nil => Nil
+      case Nil       => Nil
     }
   }
 
@@ -77,26 +79,26 @@ object MonadLearnings {
    * ince we don’t have to write sepa- rate tests for these properties.
    */
 
+  /**
+   * MONADS:
+   * We defined functor, and possible magical combinators. However, a further upgrade
+   * in terms of abstraction is needed, allowing you to do more fantastic things.
+   * Here, we generalise flatMap and unit functions.
+   *
+   * def map2[A, B, C] (fa: Gen[A], fb: Gen[B])(f: (A, B) => C): Gen[C] - {
+   *   fa flatMap (a => fb map (b => f(a,b)))
+   * }
+   *
+   * The above implementation is similar for Parser, Option etc (replace Gen with Parser, Option)
+   * This simply means you need to generalise the tyoe (Ex: Gen with Some F
+   * Hope you remember map can be implemented in terms of flatMap and unit. Hence all monad instances
+   * should implement a flatMap and unit. (That is the starting point - under
+   *
+   * At this point, what you get out` of monad is just map2 and map function. You still don't know the big
+   * picture of Monad. However you have already gained a significant knowledge on Monad.
+   */
 
-  /** MONADS:
-    * We defined functor, and possible magical combinators. However, a further upgrade
-    * in terms of abstraction is needed, allowing you to do more fantastic things.
-    * Here, we generalise flatMap and unit functions.
-    *
-    * def map2[A, B, C] (fa: Gen[A], fb: Gen[B])(f: (A, B) => C): Gen[C] - {
-    *   fa flatMap (a => fb map (b => f(a,b)))
-    * }
-    *
-    * The above implementation is similar for Parser, Option etc (replace Gen with Parser, Option)
-    * This simply means you need to generalise the tyoe (Ex: Gen with Some F
-    * Hope you remember map can be implemented in terms of flatMap and unit. Hence all monad instances
-    * should implement a flatMap and unit. (That is the starting point - under
-    *
-    * At this point, what you get out` of monad is just map2 and map function. You still don't know the big
-    * picture of Monad. However you have already gained a significant knowledge on Monad.
-    */
-
-  trait Monad[F[_]] extends  Applicative[F] { self =>
+  trait Monad[F[_]] extends Applicative[F] { self =>
     def unit[A](a: => A): F[A]
     def flatMap[A, B](ma: F[A])(f: A => F[B]): F[B]
 
@@ -129,7 +131,7 @@ object MonadLearnings {
     override def replicateM[A](n: Int, ma: F[A]): F[List[A]] = sequence(List.fill(n)(ma))
 
     // We did this product for Gen, Par etc
-    override def product[A,B](ma: F[A], mb: F[B]): F[(A, B)] = map2(ma, mb)((_, _))
+    override def product[A, B](ma: F[A], mb: F[B]): F[(A, B)] = map2(ma, mb)((_, _))
 
     // EXERCISE 11.6
     // Hard: Here’s an example of a function we haven’t seen before. Implement the function filterM.
@@ -141,15 +143,14 @@ object MonadLearnings {
       val result: F[List[(A, Boolean)]] =
         ms.foldRight(unit(Nil): F[List[(A, Boolean)]])((a, b) =>
           map2(product(unit(a), f(a)), b)((c, d) =>
-            if(c._2) c :: d else d
-          ))
+            if (c._2) c :: d else d))
 
       map(result)(_.map(_._1))
     }
 
     // EXERCISE 11.7
     // Implement the Kleisli composition function compose.
-    def compose[A,B,C](f: A => F[B], g: B => F[C]): A => F[C] = (a: A) => {
+    def compose[A, B, C](f: A => F[B], g: B => F[C]): A => F[C] = (a: A) => {
       flatMap(f(a))(bb => g(bb))
     }
 
@@ -173,7 +174,7 @@ object MonadLearnings {
     // Exercise 11.13
     // Implement either flatMap or compose in terms of join and map.
     def __flatMap[A, B](ma: F[A])(f: A => F[B]): F[B] = {
-       join(map(ma)(f))
+      join(map(ma)(f))
     }
 
     // EXERCISE 12.11
@@ -183,32 +184,31 @@ object MonadLearnings {
     // def flatMap[A, B](ma: F[G[A]])(f: (A) => F[G[B]]): F[G[B]] = self.flatMap(ma)(ga => G.map(ga)(a => f(a)))
     // }
 
-
     // HARD
     // Exercise 12.20
     /**
-      *
-      * READ THIS ONLY AFTER YOU COMPLETE APPLICATIVES, COMPOSING APPLICATIVES, TRAVERSE ETC
-      * Monad Composition
-      * Let’s now return to the issue of composing monads.
-      * As we saw earlier in this chapter, Applicative instances always compose,
-      * but Monad instances do not. If you tried before to implement general monad composition,
-      * then you would have found that in order to implement join for nested monads F and G, you’d have to write
-      * something of a type like F[G[F[G[A]]]] => F[G[A]]. And that can’t be written generally. But if G also happens
-      * to have a Traverse instance, we can sequence to turn G[F[_]] into F[G[_]], leading to F[F[G[G[A]]]].
-      * Then we can join the adjacent F layers as well as the adjacent G layers using their respective Monad instances.
-      *
-      * Expressivity and power sometimes come at the price of compositionality and modular- ity.
-      * The issue of composing monads is often addressed with a custom-written version of each monad that’s
-      * specifically constructed for composition. This kind of thing is called a monad transformer.
-      * For example, the OptionT monad transformer composes Option with any other monad:
-      */
-    def composeM[G[_]](F: Monad[F], G: Monad[G], T: Traverse[G]): Monad[({type f[x] = F[G[x]]})#f] =
-      new Monad[({type f[x] = F[G[x]]})#f] {
-       def flatMap[A, B](ma: F[G[A]])(f: (A) => F[G[B]]): F[G[B]] =
-         F.map(F.join(F.map(ma)((g: G[A]) => T.traverse(g)(f)(F))))(a => G.join(a))
-       override def unit[A](a: => A): F[G[A]] = F.unit(G.unit(a))
-    }
+     *
+     * READ THIS ONLY AFTER YOU COMPLETE APPLICATIVES, COMPOSING APPLICATIVES, TRAVERSE ETC
+     * Monad Composition
+     * Let’s now return to the issue of composing monads.
+     * As we saw earlier in this chapter, Applicative instances always compose,
+     * but Monad instances do not. If you tried before to implement general monad composition,
+     * then you would have found that in order to implement join for nested monads F and G, you’d have to write
+     * something of a type like F[G[F[G[A]]]] => F[G[A]]. And that can’t be written generally. But if G also happens
+     * to have a Traverse instance, we can sequence to turn G[F[_]] into F[G[_]], leading to F[F[G[G[A]]]].
+     * Then we can join the adjacent F layers as well as the adjacent G layers using their respective Monad instances.
+     *
+     * Expressivity and power sometimes come at the price of compositionality and modular- ity.
+     * The issue of composing monads is often addressed with a custom-written version of each monad that’s
+     * specifically constructed for composition. This kind of thing is called a monad transformer.
+     * For example, the OptionT monad transformer composes Option with any other monad:
+     */
+    def composeM[G[_]](F: Monad[F], G: Monad[G], T: Traverse[G]): Monad[({ type f[x] = F[G[x]] })#f] =
+      new Monad[({ type f[x] = F[G[x]] })#f] {
+        def flatMap[A, B](ma: F[G[A]])(f: (A) => F[G[B]]): F[G[B]] =
+          F.map(F.join(F.map(ma)((g: G[A]) => T.traverse(g)(f)(F))))(a => G.join(a))
+        override def unit[A](a: => A): F[G[A]] = F.unit(G.unit(a))
+      }
   }
 
   // To tie this back to a concrete data type, we can implement the Monad instance for Gen.
@@ -220,12 +220,12 @@ object MonadLearnings {
 
     // Exercise 11.1
     // Write monad instances for Par, Parser, Option, Stream, and List.
-    def parMonad = new Monad[Par]{
+    def parMonad = new Monad[Par] {
       def unit[A](a: => A): Par[A] = Par.unit(a)
       def flatMap[A, B](ma: Par[A])(f: A => Par[B]): Par[B] = Par.flatMapUsingJoin(ma)(f)
     }
 
-    def optionMonad = new Monad[Option]{
+    def optionMonad = new Monad[Option] {
       def unit[A](a: => A): Option[A] = Some(a)
       def flatMap[A, B](a: Option[A])(f: A => Option[B]) = a.flatMap(f)
     }
@@ -235,182 +235,182 @@ object MonadLearnings {
       def flatMap[A, B](a: Stream[A])(f: A => Stream[B]): Stream[B] = a.flatMap(f)
     }
 
-    def listMonad = new Monad[List]{
+    def listMonad = new Monad[List] {
       def unit[A](a: => A): List[A] = List(a)
       def flatMap[A, B](a: List[A])(f: A => List[B]): List[B] = a.flatMap(f)
     }
 
-   /**
-    * 11.4
-    * Think about how replicateM will behave for various choices of F. For example, how does
-    * it behave in the List monad?
-    * What about Option? Describe in your own words the general meaning of replicateM.
-    */
-   // Refer MonadSpec
+    /**
+     * 11.4
+     * Think about how replicateM will behave for various choices of F. For example, how does
+     * it behave in the List monad?
+     * What about Option? Describe in your own words the general meaning of replicateM.
+     */
+    // Refer MonadSpec
 
-   /**
-    * Monad Laws
-    * In this section, we’ll introduce laws to govern our Monad interface.Certainly
-    * we’d expect the functor laws to also hold for Monad, since a Monad[F]is a Functor[F],
-    * but what else do we expect? What laws should constrain flatMap and unit?
-    * The law is
-    * x.flatMap(f).flatMap(g) == x.flatMap(a => f(a).flatMap(g))
-    *
-    * Example:
-    * {{{
-    *   x.flatMap(f).flatMap(g) == x.flatMap(a => f(a).flatMap(g))
-    *   Some(v).flatMap(f).flatMap(g) == Some(v).flatMap(a => f(a).flatMap(g))
-    *   f(v).flatMap(g) == (a => f(a).flatMap(g))(v)
-    *   f(v).flatMap(g) == f(v).flatMap(g)
-    * }}}
-    * And this law should hold for all values x, f, and g of the appropriate types—not
-    * just for Gen but for Parser, Option, and any other monad.
-    * It’s not so easy to see that the law we just discussed is an associative law.
-    * Remember the associative law for monoids? That was clear:
-    * op(op(x,y), z) == op(x, op(y,z))
-    *
-    * But our associative law for monads doesn’t look anything like that!
-    * Fortunately, there’s a way we can make the law clearer if we consider not the
-    * monadic values of types like F[A], but monadic functions of types like A => F[B].
-    * Functions like that are called Kleisli arrows,7 and they can be composed with one another
-    * Refer compose function
-    *
-    * We can now state the associative law for monads in a much more symmetric way:
-    * compose(compose(f, g), h) == compose(f, compose(g, h))
-    */
+    /**
+     * Monad Laws
+     * In this section, we’ll introduce laws to govern our Monad interface.Certainly
+     * we’d expect the functor laws to also hold for Monad, since a Monad[F]is a Functor[F],
+     * but what else do we expect? What laws should constrain flatMap and unit?
+     * The law is
+     * x.flatMap(f).flatMap(g) == x.flatMap(a => f(a).flatMap(g))
+     *
+     * Example:
+     * {{{
+     *   x.flatMap(f).flatMap(g) == x.flatMap(a => f(a).flatMap(g))
+     *   Some(v).flatMap(f).flatMap(g) == Some(v).flatMap(a => f(a).flatMap(g))
+     *   f(v).flatMap(g) == (a => f(a).flatMap(g))(v)
+     *   f(v).flatMap(g) == f(v).flatMap(g)
+     * }}}
+     * And this law should hold for all values x, f, and g of the appropriate types—not
+     * just for Gen but for Parser, Option, and any other monad.
+     * It’s not so easy to see that the law we just discussed is an associative law.
+     * Remember the associative law for monoids? That was clear:
+     * op(op(x,y), z) == op(x, op(y,z))
+     *
+     * But our associative law for monads doesn’t look anything like that!
+     * Fortunately, there’s a way we can make the law clearer if we consider not the
+     * monadic values of types like F[A], but monadic functions of types like A => F[B].
+     * Functions like that are called Kleisli arrows,7 and they can be composed with one another
+     * Refer compose function
+     *
+     * We can now state the associative law for monads in a much more symmetric way:
+     * compose(compose(f, g), h) == compose(f, compose(g, h))
+     */
 
-   /**
-    * 11.4.3 The identity laws
-    * The other monad law is now pretty easy to see. Just like zero was an identity
-    * element for append in a monoid, there’s an identity element for compose in a monad. Indeed,
-    * that’s exactly what unit is, and that’s why we chose this name for this operation:8
-    * def unit[A](a: => A): F[A]
-    * This function has the right type to be passed as an argument to compose.
-    * The effect should be that anything composed with unit is that same thing.
-    * This usually takes the form of two laws, left identity and right identity:
-    * compose(f, unit) == f
-    * compose(unit, f) == f
-    * We can also state these laws in terms of flatMap, but they’re less clear that way:
-    * flatMap(x)(unit) == x
-    * flatMap(unit(y))(f) == f(y)
-    */
+    /**
+     * 11.4.3 The identity laws
+     * The other monad law is now pretty easy to see. Just like zero was an identity
+     * element for append in a monoid, there’s an identity element for compose in a monad. Indeed,
+     * that’s exactly what unit is, and that’s why we chose this name for this operation:8
+     * def unit[A](a: => A): F[A]
+     * This function has the right type to be passed as an argument to compose.
+     * The effect should be that anything composed with unit is that same thing.
+     * This usually takes the form of two laws, left identity and right identity:
+     * compose(f, unit) == f
+     * compose(unit, f) == f
+     * We can also state these laws in terms of flatMap, but they’re less clear that way:
+     * flatMap(x)(unit) == x
+     * flatMap(unit(y))(f) == f(y)
+     */
 
-   /**
-    * 11.5
-    * Just what is monad?
-    * Yes, Monad factors out code duplication among them,
-    * but what is a monad exactly? What does “monad” mean?
-    *
-    * Monad, like Monoid, is a more abstract, purely algebraic interface.
-    * The Monad combinators are often just a small fragment of the full API for a given data
-    * type that happens to be a monad.
-    *
-    * So Monad doesn’t generalize one type or another; rather, many vastly different data types
-    * can satisfy the Monad interface and laws.
-    *
-    * We’ve seen three minimal sets of primitive Monad combinators, and instances of Monad
-    * will have to provide implementations of one of these sets:
-    *  unit and flatMap
-    *  unit and compose
-    *  unit, map, and join
-    *
-    * And we know that there are two monad laws to be satisfied,
-    * associativity and identity, that can be formulated in various ways.
-    * monad is precisely defined by its operations and laws; no more, no less.
-    * But it’s a little unsatisfying. It doesn’t say much about what it implies—what a monad means.
-    * The problem is that it’s a self-contained definition. Even if you’re a beginning programmer,
-    * you have by now obtained a vast amount of knowledge related to programming,
-    * and this definition integrates with none of that.
-    *
-    * To develop some intuition for what monads mean, let’s look at another couple of monads
-    * and compare their behavior.
-    */
+    /**
+     * 11.5
+     * Just what is monad?
+     * Yes, Monad factors out code duplication among them,
+     * but what is a monad exactly? What does “monad” mean?
+     *
+     * Monad, like Monoid, is a more abstract, purely algebraic interface.
+     * The Monad combinators are often just a small fragment of the full API for a given data
+     * type that happens to be a monad.
+     *
+     * So Monad doesn’t generalize one type or another; rather, many vastly different data types
+     * can satisfy the Monad interface and laws.
+     *
+     * We’ve seen three minimal sets of primitive Monad combinators, and instances of Monad
+     * will have to provide implementations of one of these sets:
+     *  unit and flatMap
+     *  unit and compose
+     *  unit, map, and join
+     *
+     * And we know that there are two monad laws to be satisfied,
+     * associativity and identity, that can be formulated in various ways.
+     * monad is precisely defined by its operations and laws; no more, no less.
+     * But it’s a little unsatisfying. It doesn’t say much about what it implies—what a monad means.
+     * The problem is that it’s a self-contained definition. Even if you’re a beginning programmer,
+     * you have by now obtained a vast amount of knowledge related to programming,
+     * and this definition integrates with none of that.
+     *
+     * To develop some intuition for what monads mean, let’s look at another couple of monads
+     * and compare their behavior.
+     */
 
-   // Identity Monad
-   /**
-    * To distill monads to their essentials, let’s look at the simplest interesting specimen,
-    * the identity monad, given by the following type:
-    */
+    // Identity Monad
+    /**
+     * To distill monads to their essentials, let’s look at the simplest interesting specimen,
+     * the identity monad, given by the following type:
+     */
 
-   case class Id[A](value: A) {
-     def map[B](f: A => B): Id[B] = Id(f(value))
-     def flatMap[B](f: A => Id[B]): Id[B] = f(value)
-   }
+    case class Id[A](value: A) {
+      def map[B](f: A => B): Id[B] = Id(f(value))
+      def flatMap[B](f: A => Id[B]): Id[B] = f(value)
+    }
 
-   /**
-    * scala> Id("Hello, ") flatMap (a =>
-    * |   Id("monad!") flatMap (b =>
-    * |     Id(a + b)))
-    * res0: Id[java.lang.String] = Id(Hello, monad!)
-    * When we write the exact same thing with a for-comprehension, it might be clearer:
-    * scala> for {
-    *   a <- Id("Hello, ")
-    *   b <- Id("monad!")
-    * } yield a + b
-    * res1: Id[java.lang.String] = Id(Hello, monad!)
-    * So what is the action of flatMap for the identity monad?
-    * It’s simply variable substitution. The variables a and b get bound to "Hello, " and "monad!",
-    * respectively, and then substituted into the expression a + b. We could have written the same
-    * thing without the Id wrapper, using just Scala’s own variables:
-    * scala> val a = "Hello, "
-    * a: java.lang.String = "Hello, "
-    * scala> val b = "monad!"
-    * b: java.lang.String = monad!
-    * scala> a + b
-    * res2: java.lang.String = Hello, monad!
-    * Besides the Id wrapper, there’s no difference.
-    *
-    * So now we have at least a partial answer to the question of what monads mean.
-    *
-    * We could say that monads provide a context for introducing and binding variables,
-    * and performing variable substitution.
-    * Let’s see if we can get the rest of the answer.
-    */
-   object IdMonad extends Monad[Id]{
-     def unit[A](a: => A): Id[A] = Id(a)
-     def flatMap[A, B](ma: Id[A])(f: A => Id[B]): Id[B] = ma flatMap f
-   }
+    /**
+     * scala> Id("Hello, ") flatMap (a =>
+     * |   Id("monad!") flatMap (b =>
+     * |     Id(a + b)))
+     * res0: Id[java.lang.String] = Id(Hello, monad!)
+     * When we write the exact same thing with a for-comprehension, it might be clearer:
+     * scala> for {
+     *   a <- Id("Hello, ")
+     *   b <- Id("monad!")
+     * } yield a + b
+     * res1: Id[java.lang.String] = Id(Hello, monad!)
+     * So what is the action of flatMap for the identity monad?
+     * It’s simply variable substitution. The variables a and b get bound to "Hello, " and "monad!",
+     * respectively, and then substituted into the expression a + b. We could have written the same
+     * thing without the Id wrapper, using just Scala’s own variables:
+     * scala> val a = "Hello, "
+     * a: java.lang.String = "Hello, "
+     * scala> val b = "monad!"
+     * b: java.lang.String = monad!
+     * scala> a + b
+     * res2: java.lang.String = Hello, monad!
+     * Besides the Id wrapper, there’s no difference.
+     *
+     * So now we have at least a partial answer to the question of what monads mean.
+     *
+     * We could say that monads provide a context for introducing and binding variables,
+     * and performing variable substitution.
+     * Let’s see if we can get the rest of the answer.
+     */
+    object IdMonad extends Monad[Id] {
+      def unit[A](a: => A): Id[A] = Id(a)
+      def flatMap[A, B](ma: Id[A])(f: A => Id[B]): Id[B] = ma flatMap f
+    }
 
-   // 11.5.2 The State monad and partial type application
-   // Visit State implementation
-   type RandomNumberState[A] = State[RNG, A]
-   // And IntState is exactly the kind of thing that we can build a Monad for:
+    // 11.5.2 The State monad and partial type application
+    // Visit State implementation
+    type RandomNumberState[A] = State[RNG, A]
+    // And IntState is exactly the kind of thing that we can build a Monad for:
 
-   object IntStateMonad extends Monad[RandomNumberState] {
-     def unit[A](a: => A): RandomNumberState[A] = State(s => (a, s))
-     def flatMap[A,B](st: RandomNumberState[A])(f: A => RandomNumberState[B]): RandomNumberState[B] =
-       st flatMap f
-   }
+    object IntStateMonad extends Monad[RandomNumberState] {
+      def unit[A](a: => A): RandomNumberState[A] = State(s => (a, s))
+      def flatMap[A, B](st: RandomNumberState[A])(f: A => RandomNumberState[B]): RandomNumberState[B] =
+        st flatMap f
+    }
 
-   /**
-    * Of course, it would be really repetitive if we had to manually write a
-    * separate Monad instance for each specific state type. Unfortunately,
-    * Scala doesn’t allow us to use underscore syntax to simply say State[Int, _] t
-    * o create an anonymous type constructor like we create anonymous functions.
-    * But instead we can use something similar to lambda syntax at the type level.
-    * For example, we could have declared IntState directly inline like this:
-    */
-   object _IntStateMonad extends Monad[({
-     type RandomNumberState[A] = State[RNG, A]
-   }) # RandomNumberState ] {
-     def unit[A](a: => A): RandomNumberState[A] = State(s => (a, s))
-     def flatMap[A,B](st: RandomNumberState[A])(f: A => RandomNumberState[B]): RandomNumberState[B] =
-       st flatMap f
-   }
+    /**
+     * Of course, it would be really repetitive if we had to manually write a
+     * separate Monad instance for each specific state type. Unfortunately,
+     * Scala doesn’t allow us to use underscore syntax to simply say State[Int, _] t
+     * o create an anonymous type constructor like we create anonymous functions.
+     * But instead we can use something similar to lambda syntax at the type level.
+     * For example, we could have declared IntState directly inline like this:
+     */
+    object _IntStateMonad extends Monad[({
+      type RandomNumberState[A] = State[RNG, A]
+    })#RandomNumberState] {
+      def unit[A](a: => A): RandomNumberState[A] = State(s => (a, s))
+      def flatMap[A, B](st: RandomNumberState[A])(f: A => RandomNumberState[B]): RandomNumberState[B] =
+        st flatMap f
+    }
 
-   def stateMonad[S] = new Monad[({
-    type f[X] = State[S, X]
-   }) # f] {
-     def unit[A](a: => A): State[S, A] = State(s => (a, s))
-     def flatMap[A, B](st: State[S, A])(f: A => State[S, B]): State[S, B] = {
-       st flatMap f
-     }
-   }
+    def stateMonad[S] = new Monad[({
+      type f[X] = State[S, X]
+    })#f] {
+      def unit[A](a: => A): State[S, A] = State(s => (a, s))
+      def flatMap[A, B](st: State[S, A])(f: A => State[S, B]): State[S, B] = {
+        st flatMap f
+      }
+    }
 
     // Exercise 11.18
     // Refer Monad Spec
     /**
-     *Let’s now look at the difference between the Id monad and the State monad.
+     * Let’s now look at the difference between the Id monad and the State monad.
      * Remember that the primitive operations on State (besides the monadic operations unit and flatMap)
      * are that we can read the current state with getState and we can set a new state with setState:
      * def getState[S]: State[S, S]
@@ -436,7 +436,7 @@ object MonadLearnings {
     // What laws do you expect to mutually hold for getState, setState, unit, and flatMap?
     // Refer MonadSpec
     def getState[S]: State[S, S] = State(s => (s, s))
-    def setState[S](s: => S): State[S, Unit] = State( _ => ((), s))
+    def setState[S](s: => S): State[S, Unit] = State(_ => ((), s))
 
     val F = stateMonad[Int]
 
@@ -445,8 +445,8 @@ object MonadLearnings {
     def zipWithIndex[A](as: List[A]): List[(Int, A)] =
       as.foldLeft(F.unit(List[(Int, A)]()))((acc, a) => for {
         xs <- acc
-        n  <- getState
-        _  <- setState(n + 1)
+        n <- getState
+        _ <- setState(n + 1)
       } yield (n, a) :: xs).run(0)._1.reverse
 
     // For better understanding, the above stuff is similar to the below code
@@ -490,9 +490,9 @@ object Reader {
 
   import MonadLearnings._
 
-  def readerMonad[R] = new Monad[({type f[x] = Reader[R,x]})#f] {
+  def readerMonad[R] = new Monad[({ type f[x] = Reader[R, x] })#f] {
     def unit[A](a: => A): Reader[R, A] = Reader(_ => a)
-    def flatMap[A, B](st: Reader[R, A])(f: A => Reader[R, B]): Reader[R, B] = Reader (r => {
+    def flatMap[A, B](st: Reader[R, A])(f: A => Reader[R, B]): Reader[R, B] = Reader(r => {
       val a: A = st.run(r)
       f(a).run(r)
     })
@@ -528,7 +528,6 @@ object Reader {
 // http://underscore.io/blog/posts/2015/04/28/monadic-io-laziness-makes-you-free.html
 
 // now it follows substitutions
-
 
 // A simple IO monad
 /*
@@ -566,9 +565,9 @@ object Pure {
     def flatMap[B](f: A => IO[B]): IO[B] = Suspend(() => f(this.run))
     def map[B](f: A => B): IO[B] = Return(() => f(this.run))
 
-    def run: A= this match {
+    def run: A = this match {
       case Suspend(s) => s().run
-      case Return(r) => r()
+      case Return(r)  => r()
     }
   }
 

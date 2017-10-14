@@ -1,8 +1,8 @@
 package com.thaj.functionalprogramming.example.exercises
 
 /**
-  * Created by afsalthaj on 22/10/2016.
-  */
+ * Created by afsalthaj on 22/10/2016.
+ */
 object EitherOperations {
 
   // Different from Options in the sense that, we give value to the reason for failure. (exceptions/errors)
@@ -23,14 +23,14 @@ object EitherOperations {
 
     def map[B](f: A => B): Either[E, B] = this match {
       case Right(e) => Right(f(e))
-      case Left(x) => Left(x)
+      case Left(x)  => Left(x)
     }
 
     // when mapping over the right side, we must promote the left side to some super type
     // to satisfy the +E variance annotation
     def flatMap[EE >: E, B](f: A => Either[EE, B]): Either[EE, B] = this match {
       case Right(e) => f(e)
-      case Left(a) => Left(a)
+      case Left(a)  => Left(a)
     }
 
     def orElse[EE >: E, B](f: => Either[EE, B]) = if (isLeft) f else this
@@ -51,11 +51,11 @@ object EitherOperations {
   // Exercise 4.7
   object Either {
     def sequence[E, A](es: List[Either[E, A]]): Either[E, List[A]] = {
-      es.foldRight(Right(Nil): Either[E, List[A]])((a, b) => a.map2(b)( _ :: _))
+      es.foldRight(Right(Nil): Either[E, List[A]])((a, b) => a.map2(b)(_ :: _))
     }
 
-    def traverse[E, A, B](as: List[A])(f: A => Either[E, B]): Either[E, List[B]]  =
-      as.foldRight(Right(Nil): Either[E, List[B]])((a,b) =>f(a).map2(b)( _ :: _))
+    def traverse[E, A, B](as: List[A])(f: A => Either[E, B]): Either[E, List[B]] =
+      as.foldRight(Right(Nil): Either[E, List[B]])((a, b) => f(a).map2(b)(_ :: _))
 
     def Try[A](a: => A): Either[String, A] =
       try {
@@ -84,11 +84,11 @@ object EitherExamples {
   // Note that there are actually three of them: collection.Seq, collection.mutable.Seq
   // and collection.immutable.Seq, and it is the latter one that is the "default" imported into scope.
 
-  def mean (xs: IndexedSeq[Double]): Either[String, Double] =
+  def mean(xs: IndexedSeq[Double]): Either[String, Double] =
     if (xs.isEmpty)
       Left("mean of empty list")
     else
-      Right(xs.sum/xs.length)
+      Right(xs.sum / xs.length)
 
   def safeDiv(x: Int, y: Int): Either[Exception, Int] =
     try
@@ -97,21 +97,20 @@ object EitherExamples {
       case e: Exception => Left(e)
     }
 
-  def insuranceRateQuote (age: Int, numberOfSpeedingTickets: Int) =
-    age+numberOfSpeedingTickets
-
+  def insuranceRateQuote(age: Int, numberOfSpeedingTickets: Int) =
+    age + numberOfSpeedingTickets
 
   def parseInsuranceQuotes(age: String, numberOfSpeedingTickets: String): Either[String, Int] = {
-    val ageInt = Try {age.toInt}
-    val numberOfSpeedingTicketsInt = Try {numberOfSpeedingTickets.toInt}
+    val ageInt = Try { age.toInt }
+    val numberOfSpeedingTicketsInt = Try { numberOfSpeedingTickets.toInt }
 
     ageInt.map2(numberOfSpeedingTicketsInt)(insuranceRateQuote)
   }
 
-  def parseInsuranceQuotesUsingForComprehension(age: String, noT: String):  Either[String, Int]  = {
+  def parseInsuranceQuotesUsingForComprehension(age: String, noT: String): Either[String, Int] = {
     for {
-      ageInt <- Try{age.toInt}
-      numberOfSpeedingTicket <- Try {noT.toInt}
+      ageInt <- Try { age.toInt }
+      numberOfSpeedingTicket <- Try { noT.toInt }
     } yield insuranceRateQuote(ageInt, numberOfSpeedingTicket)
   }
 
@@ -129,7 +128,6 @@ object EitherExamples {
 
   def mkPerson(name: String, age: Int): Either[String, Person] =
     mkName(name).map2(mkAge(age))(Person(_, _))
-
 
   // In this implementation, map2 is only able to report one error,
   // even if both the name and the age are invalid. What would you need to change in order to report both errors?
@@ -159,21 +157,21 @@ helper functions like `map2` and `sequence`.
 // Based on the last few comments => EXERCISE 4.8
 sealed trait Validation[+E, +A] {
   def map[B](f: A => B): Validation[E, B] = this match {
-    case Success(a) => Success(f(a))
+    case Success(a)    => Success(f(a))
     case Error(Seq(a)) => Error(Seq(a))
   }
 
-  def flatMap[EE >: E,B](f: A => Validation[EE,B]): Validation[EE, B] = this match {
-    case Success(a) => f(a)
+  def flatMap[EE >: E, B](f: A => Validation[EE, B]): Validation[EE, B] = this match {
+    case Success(a)    => f(a)
     case Error(errors) => Error(errors)
   }
 
   def map2[EE >: E, B, C](b: Validation[EE, B])(f: (A, B) => C): Validation[EE, C] = {
     (this, b) match {
       case (Success(a), Success(c)) => Success(f(a, c))
-      case (Error(a), Success(c)) => Error(a)
-      case (Success(a), Error(c)) => Error(c)
-      case (Error(a), Error(c)) => Error(c ++ a)
+      case (Error(a), Success(c))   => Error(a)
+      case (Success(a), Error(c))   => Error(c)
+      case (Error(a), Error(c))     => Error(c ++ a)
     }
   }
 }
@@ -203,5 +201,4 @@ object Validation {
   def traverse[E, A, B](a: List[A])(f: A => Validation[E, B]): Validation[E, List[B]] =
     a.foldRight(Success(Nil): Validation[E, List[B]])((a, b) => f(a).map2(b)(_ :: _))
 }
-
 

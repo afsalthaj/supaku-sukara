@@ -109,8 +109,6 @@ object DesignAspects {
     }
   }*/
 
-
-
   // Exercise 7.1
   // Whenever you want to combine two parallel computation (two boxes) we go for map2
   /* {{{ def map2[A, B, C] (a: Par[A], b: Par[B])(f: (A, B) => C) = {} }}}
@@ -121,7 +119,6 @@ object DesignAspects {
     that we want to evaluate the two arguments to
     map2 in parallel? Probably not. Consider this simple hypothetical example:
    */
-
 
 }
 

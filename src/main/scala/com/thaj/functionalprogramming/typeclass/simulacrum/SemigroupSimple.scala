@@ -11,7 +11,7 @@ trait SemigroupSimple[A] {
 
 object SemigroupSimple {
 
-  def generalAppend[A](a: A, b: A)(f:String => A) = f(s"$a$b")
+  def generalAppend[A](a: A, b: A)(f: String => A) = f(s"$a$b")
 
   implicit object StringSemigroup extends SemigroupSimple[String] {
     def append(a: String, b: String) = generalAppend(a, b)(identity)
@@ -24,14 +24,15 @@ object SemigroupSimple {
   trait Ops[A] {
     def typeClassInstance: SemigroupSimple[A]
     def self: A
-    def |+| (y: A): A = typeClassInstance.append(self, y)
+    def |+|(y: A): A = typeClassInstance.append(self, y)
   }
 
   Tags.Disjunction(true) |+| Tags.Disjunction(false)
   object ops {
     implicit def toSemigroupOps[A](target: A)(
-      implicit tc: SemigroupSimple[A]
-    ): Ops[A] = new Ops[A]{
+      implicit
+      tc: SemigroupSimple[A]
+    ): Ops[A] = new Ops[A] {
       def typeClassInstance: SemigroupSimple[A] = tc
       def self = target
     }

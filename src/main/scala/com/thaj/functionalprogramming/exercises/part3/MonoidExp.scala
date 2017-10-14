@@ -1,11 +1,11 @@
 package com.thaj.functionalprogramming.exercises.part3
 
-import com.thaj.functionalprogramming.example.exercises.{Branch, Leaf, Tree}
+import com.thaj.functionalprogramming.example.exercises.{ Branch, Leaf, Tree }
 import com.thaj.functionalprogramming.example.exercises.part2.Par.Par
-import com.thaj.functionalprogramming.example.exercises.part2.{Par}
-import com.thaj.functionalprogramming.exercises.part2.{Prop, Gen}
+import com.thaj.functionalprogramming.example.exercises.part2.{ Par }
+import com.thaj.functionalprogramming.exercises.part2.{ Prop, Gen }
 
-import scala.collection.immutable.Stream.{Empty, cons}
+import scala.collection.immutable.Stream.{ Empty, cons }
 
 /**
  * Created by afsalthaj on 25/02/17.
@@ -34,14 +34,13 @@ import scala.collection.immutable.Stream.{Empty, cons}
  *
  */
 
-
 object MonoidExp {
   trait Monoid[A] {
     def op(a1: A, a2: A): A
     def zero: A
   }
 
-  val stringMonoid= new Monoid[String] {
+  val stringMonoid = new Monoid[String] {
     def op(a1: String, a2: String) = a1 + a2
     val zero = ""
   }
@@ -60,7 +59,7 @@ object MonoidExp {
    * val booleanAnd: Monoid[Boolean]
    */
 
-  val intAddition = new Monoid[Int]{
+  val intAddition = new Monoid[Int] {
     def op(a1: Int, b1: Int): Int = a1 + b1
     val zero = 0
   }
@@ -87,12 +86,12 @@ object MonoidExp {
    */
 
   def optionMonoid[A](implicit m: Monoid[A]): Monoid[Option[A]] = new Monoid[Option[A]] {
-    def op(a1: Option[A], b1: Option[A]) = (a1, b1) match  {
+    def op(a1: Option[A], b1: Option[A]) = (a1, b1) match {
       case (Some(x), Some(y)) => Some(m.op(x, y))
-      case (Some(x), None) => Some(x)
-      case (None, Some(y)) => Some(y)
-      case _ => None
-    }   
+      case (Some(x), None)    => Some(x)
+      case (None, Some(y))    => Some(y)
+      case _                  => None
+    }
     val zero = None
   }
 
@@ -101,8 +100,8 @@ object MonoidExp {
   // is sometimes called an endofunction.[2] Write a monoid for endofunctions.
   // The Greek prefix endo- means within, in the sense that an endofunction’s codomain is within its domain.
 
-  def endoMonoid[A]: Monoid[A => A] = new Monoid[ A => A ]{
-    def op (a: A => A, b: A => A): A => A = a compose b
+  def endoMonoid[A]: Monoid[A => A] = new Monoid[A => A] {
+    def op(a: A => A, b: A => A): A => A = a compose b
     val zero = (a: A) => a
   }
 
@@ -112,10 +111,11 @@ object MonoidExp {
   // def monoidLaws[A](m: Monoid[A], gen: Gen[A]): Prop
 
   def monoidLaws[A](m: Monoid[A], gen: Gen[A]): Prop = {
-    val p: Gen[(A, A, A)] = gen.flatMap( b => gen.flatMap(c => gen.map(d => (b, c, d))))
+    val p: Gen[(A, A, A)] = gen.flatMap(b => gen.flatMap(c => gen.map(d => (b, c, d))))
 
-    Prop.forAll(p){case (x, y, z) =>
-      m.op(m.op(x,y), z) == m.op(x, m.op(y,z)) && m.op(x, m.zero) == x && m.op(m.zero, x) == x
+    Prop.forAll(p) {
+      case (x, y, z) =>
+        m.op(m.op(x, y), z) == m.op(x, m.op(y, z)) && m.op(x, m.zero) == x && m.op(m.zero, x) == x
     }
   }
 
@@ -148,7 +148,6 @@ object MonoidExp {
    * def foldMap[A,B](as: List[A], m: Monoid[B])(f: A => B): B
    */
 
-
   // Exercise 10.5
   def foldMap[A, B](as: List[A], m: Monoid[B])(f: A => B): B = {
     as.foldLeft(m.zero)((b: B, a: A) => m.op(b, f(a)))
@@ -167,7 +166,6 @@ object MonoidExp {
   def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B =
     foldMap(as, dual(endoMonoid[B]))(a => b => f(b, a))(z)
 
-
   /**
    * As an example, suppose we have a sequence a, b, c, d that we’d
    * like to reduce using some monoid. Folding to the right, the combination of a, b, c, and d would look like this:
@@ -183,29 +181,29 @@ object MonoidExp {
   // 4 Recall that IndexedSeq is the interface for immutable data structures supporting efficient random access.
   // It also has efficient splitAt and length methods.
 
-  def foldMapV[A,B](as: IndexedSeq[A], m: Monoid[B])(f: A => B): B = {
-     if(as.isEmpty)
-       m.zero
-       else if(as.size == 1)
-       f(as.head)
-     else {
-       val (l, r) = as.splitAt(as.size/2)
-       m.op(foldMapV(l, m)(f), foldMapV(r, m)(f))
-     }
+  def foldMapV[A, B](as: IndexedSeq[A], m: Monoid[B])(f: A => B): B = {
+    if (as.isEmpty)
+      m.zero
+    else if (as.size == 1)
+      f(as.head)
+    else {
+      val (l, r) = as.splitAt(as.size / 2)
+      m.op(foldMapV(l, m)(f), foldMapV(r, m)(f))
+    }
   }
-
 
   // Exercise 10.8
   // HARD: Lifting Monoid[A] to Monoid[Par[A]]
-  def par[A](m: Monoid[A]): Monoid[Par[A]] = new Monoid[Par[A]]{
+  def par[A](m: Monoid[A]): Monoid[Par[A]] = new Monoid[Par[A]] {
     def op(a: Par[A], b: Par[A]): Par[A] = Par.map2Fixed(a, b)(m.op)
     val zero: Par[A] = Par.unit(m.zero)
   }
 
-  def parFoldMap[A,B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] = {
+  def parFoldMap[A, B](v: IndexedSeq[A], m: Monoid[B])(f: A => B): Par[B] = {
     val parallelMonoid: Monoid[Par[B]] = par(m)
     val parOfListOfB: Par[List[B]] = Par.parMap(v.toList)(f)
-      Par.flatMapUsingJoin(parOfListOfB){ listOfB => {
+    Par.flatMapUsingJoin(parOfListOfB) { listOfB =>
+      {
         foldMapV(listOfB.toIndexedSeq, parallelMonoid)(b => Par.lazyUnit(b))
       }
     }
@@ -217,10 +215,10 @@ object MonoidExp {
   // The monoid follows the laws: m.op(m.op(x,y), z) == m.op(x, m.op(y,z)) && m.op(x, m.zero) == x && m.op(m.zero, x) == x
   val intMaxMonoid = new Monoid[(Option[Int], Boolean)] {
     def op(a: (Option[Int], Boolean), b: (Option[Int], Boolean)): (Option[Int], Boolean) = (a, b) match {
-      case ((s@Some(x), bool1), (None, bool2)) => (s, bool1 && bool2)
-      case ((None, bool1), (s@Some(x), bool2)) => (s, bool1 && bool2)
-      case ((s1@Some(x), bool1), (s2@Some(y), bool2)) => if (y > x) (s2, bool1 && bool2) else (None, false)
-      case ((None, bool1), (None, bool2)) => (None, bool1 && bool2)
+      case ((s @ Some(x), bool1), (None, bool2))          => (s, bool1 && bool2)
+      case ((None, bool1), (s @ Some(x), bool2))          => (s, bool1 && bool2)
+      case ((s1 @ Some(x), bool1), (s2 @ Some(y), bool2)) => if (y > x) (s2, bool1 && bool2) else (None, false)
+      case ((None, bool1), (None, bool2))                 => (None, bool1 && bool2)
     }
 
     val zero: (Option[Int], Boolean) = (None, true)
@@ -228,7 +226,7 @@ object MonoidExp {
 
   // this solution is significantly different from fpinscala, but it is tested for basic scenarios
   def isOrdered(a: IndexedSeq[Int]) = {
-     foldMap(a.toList, intMaxMonoid)(b => (Some(b), true))._2
+    foldMap(a.toList, intMaxMonoid)(b => (Some(b), true))._2
   }
 
   // Parallel parsing
@@ -242,9 +240,9 @@ object MonoidExp {
   val monoidWC: Monoid[WC] = new Monoid[WC] {
     def op(a: WC, b: WC): WC = (a, b) match {
       case (Stub(x), Stub(y))                   => Stub(x + y)
-      case (Stub(x), Part(i, j, k))             => Part(x+i, j, k)
-      case (Part(i, j, k), Stub(x))             => Part(i, j, k+x)
-      case (Part(i1, j1, k1), Part(i2, j2, k2)) => Part(i1, (j1 + j2) + (if((k1+i2).isEmpty) 0 else 1), k2)
+      case (Stub(x), Part(i, j, k))             => Part(x + i, j, k)
+      case (Part(i, j, k), Stub(x))             => Part(i, j, k + x)
+      case (Part(i1, j1, k1), Part(i2, j2, k2)) => Part(i1, (j1 + j2) + (if ((k1 + i2).isEmpty) 0 else 1), k2)
     }
 
     val zero: WC = Stub("")
@@ -256,12 +254,12 @@ object MonoidExp {
   // a bit tricky algorithm
   def addWC(a: String): Int = {
     def toWC(a: Char): WC =
-      if(a.isWhitespace) Part("", 0, "") else Stub(a.toString)
+      if (a.isWhitespace) Part("", 0, "") else Stub(a.toString)
 
-      foldMapV(a.toList.toIndexedSeq, monoidWC)(toWC) match {
-        case Stub(s) => s.length min 1
-        case Part(x, y, z) => y + x.length min 1 + z.length min 1
-      }
+    foldMapV(a.toList.toIndexedSeq, monoidWC)(toWC) match {
+      case Stub(s)       => s.length min 1
+      case Part(x, y, z) => y + x.length min 1 + z.length min 1
+    }
   }
 
   /**
@@ -271,9 +269,9 @@ object MonoidExp {
    * We can capture this commonality in a trait:
    */
   trait Foldable[F[_]] {
-    def foldRight[A,B](as: F[A])(z: B)(f: (A,B) => B): B
-    def foldLeft[A,B](as: F[A])(z: B)(f: (B,A) => B): B
-    def foldMap[A,B](as: F[A])(f: A => B)(mb: Monoid[B]): B
+    def foldRight[A, B](as: F[A])(z: B)(f: (A, B) => B): B
+    def foldLeft[A, B](as: F[A])(z: B)(f: (B, A) => B): B
+    def foldMap[A, B](as: F[A])(f: A => B)(mb: Monoid[B]): B
     def concatenate[A](as: F[A])(m: Monoid[A]): A =
       foldLeft(as)(m.zero)(m.op)
 
@@ -290,17 +288,17 @@ object MonoidExp {
    * of each other, but that might not be the most efficient implementation.
    * Some kind of learning experiments in this implementation
    */
-  object FoldableList extends Foldable[List]{
-    def foldRight[A,B](as: List[A])(z: B)(f: (A,B) => B): B = {
-      as match  {
-        case Nil => z
+  object FoldableList extends Foldable[List] {
+    def foldRight[A, B](as: List[A])(z: B)(f: (A, B) => B): B = {
+      as match {
+        case Nil     => z
         case x :: xs => f(x, foldRight(xs)(z)(f))
       }
     }
 
     def foldLeft[A, B](as: List[A])(z: B)(f: (B, A) => B): B = {
       as match {
-        case Nil => z
+        case Nil     => z
         case x :: xs => foldLeft(xs)(f(z, x))(f)
       }
     }
@@ -309,17 +307,17 @@ object MonoidExp {
       foldLeft(as)(mb.zero)((acc, a) => mb.op(acc, f(a)))
   }
 
-  object FoldableStream extends Foldable[Stream]{
-    def foldRight[A,B](as: Stream[A])(z: B)(f: (A,B) => B): B = {
-      as match  {
-        case Empty => z
+  object FoldableStream extends Foldable[Stream] {
+    def foldRight[A, B](as: Stream[A])(z: B)(f: (A, B) => B): B = {
+      as match {
+        case Empty      => z
         case cons(h, t) => f(h, foldRight(t)(z)(f))
       }
     }
 
     def foldLeft[A, B](as: Stream[A])(z: B)(f: (B, A) => B): B = {
       as match {
-        case Empty => z
+        case Empty      => z
         case cons(h, t) => foldLeft(t)(f(z, h))(f)
       }
     }
@@ -328,9 +326,9 @@ object MonoidExp {
       foldLeft(as)(mb.zero)((acc, a) => mb.op(acc, f(a)))
   }
 
-  object FoldableIndexedSeq extends Foldable[IndexedSeq]{
-    def foldRight[A,B](as: IndexedSeq[A])(z: B)(f: (A,B) => B): B = {
-     as.foldRight(z)(f)
+  object FoldableIndexedSeq extends Foldable[IndexedSeq] {
+    def foldRight[A, B](as: IndexedSeq[A])(z: B)(f: (A, B) => B): B = {
+      as.foldRight(z)(f)
     }
 
     def foldLeft[A, B](as: IndexedSeq[A])(z: B)(f: (B, A) => B): B = {
@@ -338,22 +336,22 @@ object MonoidExp {
     }
 
     def foldMap[A, B](as: IndexedSeq[A])(f: A => B)(mb: Monoid[B]): B =
-     as.foldLeft(mb.zero)((acc, a) => mb.op(acc, f(a)))
+      as.foldLeft(mb.zero)((acc, a) => mb.op(acc, f(a)))
   }
 
   // EXERCISE 10.13
   // Recall the binary Tree data type from chapter 3. Implement a Foldable instance for it.
   val foldableTree = new Foldable[Tree] {
     def foldRight[A, B](as: Tree[A])(z: B)(f: (A, B) => B): B = {
-      as match  {
-        case Leaf(x) => f(x, z)
+      as match {
+        case Leaf(x)      => f(x, z)
         case Branch(l, r) => foldRight(l)(foldRight(r)(z)(f))(f)
       }
     }
 
     def foldLeft[A, B](as: Tree[A])(z: B)(f: (B, A) => B): B = {
       as match {
-        case Leaf(x) => f(z, x)
+        case Leaf(x)      => f(z, x)
         case Branch(l, r) => foldLeft(r)(foldLeft(l)(z)(f))(f)
       }
     }
@@ -374,16 +372,16 @@ object MonoidExp {
   // EXERCISE 10.14
   val foldableOption = new Foldable[Option] {
     def foldRight[A, B](as: Option[A])(z: B)(f: (A, B) => B): B = {
-      as match  {
+      as match {
         case Some(x) => f(x, z)
-        case None => z
+        case None    => z
       }
     }
 
     def foldLeft[A, B](as: Option[A])(z: B)(f: (B, A) => B): B = {
       as match {
         case Some(x) => f(z, x)
-        case None => z
+        case None    => z
       }
     }
 
@@ -419,9 +417,9 @@ object MonoidExp {
    *
    * So if A and B are Monoid, then Tuple(A, B) can also form a Monoid
    */
-  def productMonoid[A,B](A : Monoid[A], B: Monoid[B]): Monoid[(A, B)] = {
+  def productMonoid[A, B](A: Monoid[A], B: Monoid[B]): Monoid[(A, B)] = {
     new Monoid[(A, B)] {
-      def op(x: (A, B), y: (A, B)): (A, B) =  A.op(x._1, y._1) -> B.op(x._2, y._2)
+      def op(x: (A, B), y: (A, B)): (A, B) = A.op(x._1, y._1) -> B.op(x._2, y._2)
       val zero: (A, B) = (A.zero, B.zero)
     }
   }
@@ -433,7 +431,7 @@ object MonoidExp {
    *
    * So, V is a monoid, then Map[K, V] can also form a monoid.
    */
-  def  mapMergeMonoid[K,V](v: Monoid[V]): Monoid[Map[K, V]] = new Monoid[Map[K, V]] {
+  def mapMergeMonoid[K, V](v: Monoid[V]): Monoid[Map[K, V]] = new Monoid[Map[K, V]] {
     val zero: Map[K, V] = Map[K, V]()
     def op(a: Map[K, V], b: Map[K, V]): Map[K, V] = {
       (a.keySet ++ b.keySet).foldLeft(zero)((acc, k) => {
@@ -450,16 +448,16 @@ object MonoidExp {
    * scala> val m3 = M.op(m1, m2)
    * m3: Map[String,Map[String,Int]] = Map(o1 -> Map(i1 -> 1, i2 -> 5))
    */
-   val M:  Monoid[Map[String, Map[String, Int]]] = mapMergeMonoid(mapMergeMonoid[String, Int](intAddition))
+  val M: Monoid[Map[String, Map[String, Int]]] = mapMergeMonoid(mapMergeMonoid[String, Int](intAddition))
 
-   // EXERCISE 10.17
-   // Write a monoid instance for functions whose results are monoids.
-   def functionMonoid[A,B](B: Monoid[B]): Monoid[A => B] = {
-     new Monoid[A => B] {
-       def op(f1: A => B, f2: A => B): A => B = (a: A) => B.op(f1(a), f2(a))
-       val zero: A => B = (a: A) => B.zero
-     }
-   }
+  // EXERCISE 10.17
+  // Write a monoid instance for functions whose results are monoids.
+  def functionMonoid[A, B](B: Monoid[B]): Monoid[A => B] = {
+    new Monoid[A => B] {
+      def op(f1: A => B, f2: A => B): A => B = (a: A) => B.op(f1(a), f2(a))
+      val zero: A => B = (a: A) => B.zero
+    }
+  }
 
   /**
    * EXERCISE 10.18
@@ -477,6 +475,6 @@ object MonoidExp {
   def getAverageParallel(list: List[Int]): Int = {
     val monoid = productMonoid(intAddition, intAddition)
     val (length, sum) = FoldableList.foldMap(list)(a => (1, a))(monoid)
-    sum/length
+    sum / length
   }
 }

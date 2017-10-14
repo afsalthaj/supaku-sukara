@@ -7,12 +7,12 @@ package com.thaj.functionalprogramming.shapeless.part1
  * Generic programming
  *
  *  def employeeCsv(e: Employee): List[String] =
-      List(e.name, e.number.toString, e.manager.toString)
-    def iceCreamCsv(c: IceCream): List[String] =
-      List(c.name, c.numCherries.toString, c.inCone.toString)
+ * List(e.name, e.number.toString, e.manager.toString)
+ * def iceCreamCsv(c: IceCream): List[String] =
+ * List(c.name, c.numCherries.toString, c.inCone.toString)
  * Generic programming is about overcoming differences like these.
  * Shapeless makes it convenient to convert specific types into generic ones that we can manipulate with common code.
-
+ *
  */
 object GenericProgramming {
 
@@ -23,7 +23,6 @@ object GenericProgramming {
     List(e.name, e.number.toString, e.manager.toString)
   def iceCreamCsv(c: IceCream): List[String] =
     List(c.name, c.numCherries.toString, c.inCone.toString)
-
 
   import shapeless._
   val genericEmployee = Generic[Employee].to(Employee("Dave", 123, false))
@@ -50,14 +49,15 @@ object ADT {
   final case class Rectangle(width: Double, height: Double) extends Shape
   final case class Circle(radius: Double) extends Shape
 
-  /** Alternate encodings:
+  /**
+   * Alternate encodings:
    * While this encoding is less readable than the case class encoding above,
    * it does have some of the same desirable properties.
    */
 
   type Rectangle2 = (Double, Double)
-  type Circle2    = Double
-  type Shape2     = Either[Rectangle2, Circle2]
+  type Circle2 = Double
+  type Shape2 = Either[Rectangle2, Circle2]
   val rect2: Shape2 = Left((3.0, 4.0))
   val circ2: Shape2 = Right(1.0)
 
@@ -96,9 +96,9 @@ object ADT {
    *
    */
 
-  import shapeless.{::, HNil}
+  import shapeless.{ ::, HNil }
 
-  val product: String :: Int :: Boolean :: HNil =   "Sunday" :: 1 :: false :: HNil
+  val product: String :: Int :: Boolean :: HNil = "Sunday" :: 1 :: false :: HNil
 
   val first = product.head
   // first: String = Sunday

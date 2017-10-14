@@ -1,3 +1,6 @@
+import com.typesafe.sbt.SbtScalariform.ScalariformKeys
+import scalariform.formatter.preferences._
+
 scalaVersion := "2.11.8"
 
 resolvers += Resolver.sonatypeRepo("releases")
@@ -11,8 +14,6 @@ libraryDependencies += "org.typelevel" %% "cats" % "0.9.0"
 libraryDependencies += "org.scalaz" %% "scalaz-core" % "7.1.1"
 
 libraryDependencies += "org.scalaz" %% "scalaz-effect" % "7.1.1"
-
-initialCommands in console := "import scalaz._, Scalaz._"
 
 libraryDependencies ++= Seq (
   "org.scalatest" %% "scalatest" % "3.0.0" % "test",
@@ -31,6 +32,12 @@ libraryDependencies += "com.github.nscala-time" %% "nscala-time" % "2.16.0"
 shellPrompt := { _ =>
   s"\033[1;36m\033[40m[fpscala-spark] ~\033[0m "
 }
+
+ScalariformKeys.preferences := ScalariformKeys.preferences.value
+  .setPreference(AlignSingleLineCaseStatements, true)
+  .setPreference(SpacesAroundMultiImports, true)
+  .setPreference(AlignArguments, true)
+  .setPreference(AlignParameters, true)
 
 lazy val describe = taskKey[Unit]("printing out project description")
 

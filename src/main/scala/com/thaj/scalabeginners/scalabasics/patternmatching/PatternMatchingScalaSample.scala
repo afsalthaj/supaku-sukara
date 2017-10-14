@@ -12,7 +12,7 @@ object PatternMatchingScala1 {
     for (sundry <- sundries) {
       sundry match {
         case i: Int => println("got an integer value")
-        case other => println("uff")
+        case other  => println("uff")
       }
 
     }
@@ -23,21 +23,21 @@ object PatternMatchingScala1 {
     for (l <- List(list1, willNotWork, empty)) {
 
       l match {
-        
+
         case List(_, 3, _, _) => println("four elements with second element 3")
-        case List(_*) => println("Any other list with 0 or more elements")
+        case List(_*)         => println("Any other list with 0 or more elements")
 
       }
     }
-    
-    val tupA = ("Good","Morning")
-    val tupB= ("Guten","Tag")
-    for(tup <-List(tupA,tupB)){
-      
+
+    val tupA = ("Good", "Morning")
+    val tupB = ("Guten", "Tag")
+    for (tup <- List(tupA, tupB)) {
+
       tup match {
         //guarding
-        case (thingOne,thingTwo) if thingOne == "Good" =>println("A two tuple starting with goood")
-        case (thingOne,thingTwo) => println("This tuple has 2 things")
+        case (thingOne, thingTwo) if thingOne == "Good" => println("A two tuple starting with goood")
+        case (thingOne, thingTwo)                       => println("This tuple has 2 things")
       }
     }
   }

@@ -6,8 +6,8 @@ import scalaz._, Scalaz._
 
 import com.thaj.functionalprogramming.example.jsonparsing.Config._
 /**
-  * Created by afsalthaj on 14/10/2016.
-  */
+ * Created by afsalthaj on 14/10/2016.
+ */
 
 // The project is to show an example of a real life scala code
 // Makes use of scalaz validations (you can see it as Validation defined in this project)
@@ -30,11 +30,11 @@ object FeatureType {
   case object Date extends FeatureType
 
   def fromString(x: String): String \/ FeatureType = x match {
-    case "Int" => Int.right[String]
+    case "Int"    => Int.right[String]
     case "Double" => Double.right[String]
-    case "Date" => Date.right[String]
+    case "Date"   => Date.right[String]
     case "String" => String.right[String]
-    case _ => s"unknown type $x".left[FeatureType]
+    case _        => s"unknown type $x".left[FeatureType]
   }
 }
 
@@ -44,10 +44,9 @@ object JsonParser {
   implicit def FeatureTypeDecodeJson: DecodeJson[FeatureType] =
     DecodeJson(c =>
       for {
-        valTypeStr  <- c.as[String]
+        valTypeStr <- c.as[String]
         featureType <- fromString(valTypeStr).fold(t => DecodeResult.fail(t, c.history), DecodeResult.ok)
-      } yield featureType
-    )
+      } yield featureType)
 
   implicit def ConfigDecodeJson: DecodeJson[(FeatureName, FeatureInfo)] =
     DecodeJson(

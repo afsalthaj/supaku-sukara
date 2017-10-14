@@ -1,8 +1,8 @@
 package com.thaj.scalabeginners.scalabasics.layoutlibrary
 
 /**
-  * Created by afsalthaj on 5/05/2017.
-  */
+ * Created by afsalthaj on 5/05/2017.
+ */
 abstract class Element {
   import Element._
   def contents: Array[String]
@@ -16,7 +16,7 @@ abstract class Element {
   def above(that: Element) = {
     val this1 = this stabiliseWidth that.width
     val that1 = that stabiliseWidth this.width
-    elem (this1.contents ++ that1.contents)
+    elem(this1.contents ++ that1.contents)
   }
 
   def beside(that: Element): Element = {
@@ -28,21 +28,21 @@ abstract class Element {
   }
 
   def stabiliseWidth(w: Int): Element = {
-     if (w <= width) this
-     else {
-       val left = Element.elem(' ', (w - width)/2 , height)
-       val right = Element.elem (' ', (w - width - left.width), height)
-       left beside this beside right
-     }
+    if (w <= width) this
+    else {
+      val left = Element.elem(' ', (w - width) / 2, height)
+      val right = Element.elem(' ', (w - width - left.width), height)
+      left beside this beside right
+    }
   }
 
   def stabiliseHeight(h: Int): Element = {
-     if (h <= height) this
-     else {
-       val top = elem(' ', width, (h - height)/2)
-       val bottom = elem(' ', width, h - height - top.height)
-       top above this above bottom
-     }
+    if (h <= height) this
+    else {
+      val top = elem(' ', width, (h - height) / 2)
+      val bottom = elem(' ', width, h - height - top.height)
+      top above this above bottom
+    }
   }
 
 }
@@ -55,8 +55,8 @@ object Element {
 
   class LineElement(s: String) extends Element {
     val contents = Array(s)
-    override val width : Int= s.length
-    override val height: Int  = 1
+    override val width: Int = s.length
+    override val height: Int = 1
   }
 
   def elem(array: Array[String]) = new ArrayElement(array)

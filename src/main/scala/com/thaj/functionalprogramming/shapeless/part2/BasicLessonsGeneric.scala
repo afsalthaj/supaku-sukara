@@ -6,13 +6,12 @@ import shapeless._
  * Created by afsalthaj on 22/03/17.
  */
 object BasicLessonsGeneric {
-// PRODUCTS
+  // PRODUCTS
   /**
    * Shapeless provides a type class called Generic that allows us to switch back and forth between a concrete ADT
    * and its generic representation. Some behind-the-scenes macro magic allows us to
    * summon instances of Generic without boilerplate:
    */
-
 
   case class IceCream(name: String, numCherries: Int, inCone: Boolean)
   val iceCreamGen = Generic[IceCream]
@@ -48,10 +47,9 @@ object BasicLessonsGeneric {
 
   val getMyTupleBack: (String, Int, Boolean) = tupleGen.from(tupleRepr)
 
-
   // CO-PRODUCTS
 
-  import shapeless.{Coproduct, :+:, CNil, Inl, Inr}
+  import shapeless.{ Coproduct, :+:, CNil, Inl, Inr }
   case class Red(x: String)
   case class Amber()
   case class Green()
@@ -79,7 +77,5 @@ object BasicLessonsGeneric {
    * In addi􏰀on to un- derstanding case classes and case objects, shapeless’ Generic type class also
    * understands sealed traits and abstract classes:
    */
-
-
 
 }

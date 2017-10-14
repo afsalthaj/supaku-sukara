@@ -15,14 +15,14 @@ object TypeAndDataConstructors {
 
   object List {
     def sum(a: List[Int]): Int = a match {
-      case Nil => 0
+      case Nil        => 0
       case Cons(h, t) => h + sum(t)
     }
 
     def product(a: List[Double]): Double = a match {
-      case Nil => 1.0
+      case Nil          => 1.0
       case Cons(0.0, _) => 0.0
-      case Cons(x, xs) => x * product(xs)
+      case Cons(x, xs)  => x * product(xs)
     }
 
     def apply[A](a: A*): List[A] =
@@ -33,15 +33,15 @@ object TypeAndDataConstructors {
 
     // Performance clearly depends on the number of elements, seems like we are creating new objects.
     def init[A](a: List[A]): List[A] = a match {
-      case Nil => Nil
+      case Nil                           => Nil
       case Cons(head1, Cons(head2, Nil)) => Cons(head1, Nil)
-      case Cons(head, tail) => Cons(head, init(tail))
+      case Cons(head, tail)              => Cons(head, init(tail))
     }
 
     // Well, I think I love exceptions too.. Mmm.. May be not... Ah this is crazy!
     // It is constant time performance
     def head[A](a: List[A]): A = a match {
-      case Nil => throw new Exception("head of empty list")
+      case Nil           => throw new Exception("head of empty list")
       case Cons(head, _) => head
     }
 
@@ -50,7 +50,7 @@ object TypeAndDataConstructors {
     // and List(2,3,4) share the same memory of data.
     // It is constant time performance
     def tail[A](a: List[A]): List[A] = a match {
-      case Nil => Nil
+      case Nil           => Nil
       case Cons(_, tail) => tail
     }
 
@@ -62,7 +62,7 @@ object TypeAndDataConstructors {
         if (inc >= n) a
         else
           a match {
-            case Nil => Nil
+            case Nil           => Nil
             case Cons(_, tail) => go(tail, inc + 1)
           }
       }
@@ -74,18 +74,17 @@ object TypeAndDataConstructors {
     // Seems like I am copying data :(
     def dropWhile[A](l: List[A], f: A => Boolean): List[A] = l match {
       case Cons(h, t1) if f(h) => dropWhile(t1, f)
-      case _ => l
+      case _                   => l
     }
 
     // It’s a little unfortunate that we need to state that the type of x is Int.
     // The first argument to dropWhile is a List[Int], so the function in the second argument must accept an Int.
     // Scala can infer this fact if we group dropWhile into two argument lists:
     def dropWhileClean[A](as: List[A])(f: A => Boolean): List[A] =
-    as match {
-      case Cons(h, t) if f(h) => dropWhileClean(t)(f)
-      case _ => as
-    }
-
+      as match {
+        case Cons(h, t) if f(h) => dropWhileClean(t)(f)
+        case _                  => as
+      }
 
     // appending without any copy operations
     // Note that this definition only copies values
@@ -95,10 +94,10 @@ object TypeAndDataConstructors {
     // function for two arrays, we’d be forced to copy all the elements in both arrays into the result.
     // In this case, the immutable linked list is much more efficient than an array!
     def append[A](a1: List[A], a2: List[A]): List[A] =
-    a1 match {
-      case Nil => a2
-      case Cons(h, t) => Cons(h, append(t, a2))
-    }
+      a1 match {
+        case Nil        => a2
+        case Cons(h, t) => Cons(h, append(t, a2))
+      }
 
     // Exercise 3.7
     // Can product, implemented using foldRight,
@@ -110,7 +109,7 @@ object TypeAndDataConstructors {
 
     // the magical foldRight, folding it from right to left; however, it results in stack overflow error
     def foldRight[A, B](list: List[A], init: B)(f: (A, B) => B): B = list match {
-      case Nil => init
+      case Nil         => init
       case Cons(x, xs) => f(x, foldRight(xs, init)(f))
     }
 
@@ -127,7 +126,7 @@ object TypeAndDataConstructors {
       @annotation.tailrec
       def go(innerList: List[A], acc: B): B =
         innerList match {
-          case Nil => acc
+          case Nil         => acc
           case Cons(x, xs) => go(xs, f(acc, x))
         }
 
@@ -139,7 +138,7 @@ object TypeAndDataConstructors {
     def sumForInt[A, B](list: List[Int]) = {
       def go(innerList: List[Int], acc: Int): Int = innerList match {
         case Cons(x, xs) => go(xs, acc + x)
-        case Nil => acc
+        case Nil         => acc
       }
 
       go(list, 0)
@@ -149,15 +148,15 @@ object TypeAndDataConstructors {
     def anythingForInt(list: List[Int], defaultValue: Int, someOperation: (Int, Int) => Int) = {
       def go(innerList: List[Int], acc: Int): Int = innerList match {
         case Cons(x, xs) => go(xs, someOperation(acc, x))
-        case Nil => acc
+        case Nil         => acc
       }
-      go (list, defaultValue)
+      go(list, defaultValue)
     }
 
     //3rd step
-    def anyOpOnAnything[A, B](list: List[A], defaultValue: B, f:(B, A) => B): B = {
+    def anyOpOnAnything[A, B](list: List[A], defaultValue: B, f: (B, A) => B): B = {
       def go(innerList: List[A], acc: B): B = innerList match {
-        case Cons(x, xs) => go (xs, f(acc, x))
+        case Cons(x, xs) => go(xs, f(acc, x))
         case Nil         => acc
       }
 
@@ -165,9 +164,9 @@ object TypeAndDataConstructors {
     }
 
     // 4th step - just renaming the above function as fold
-    def fold[A, B](list: List[A], defaultValue: B, f:(B, A) => B): B = {
+    def fold[A, B](list: List[A], defaultValue: B, f: (B, A) => B): B = {
       def go(innerList: List[A], acc: B): B = innerList match {
-        case Cons(x, xs) => go (xs, f(acc, x))
+        case Cons(x, xs) => go(xs, f(acc, x))
         case Nil         => acc
       }
 
@@ -178,7 +177,6 @@ object TypeAndDataConstructors {
     // Now you dont end up having a reversed list...starting from right folding towards left.
     def appendUsingFold[A](leftList: List[A], rightList: List[A]): List[A] =
       fold(leftList, rightList, (acc: List[A], eachElement: A) => Cons(eachElement, acc))
-
 
     // Exercises 3.11
     def sumFoldLeft(list: List[Int]): Int = foldLeft(list, 0)(_ + _)
@@ -192,7 +190,7 @@ object TypeAndDataConstructors {
 
     def append1(a: List[Int], b: List[Int]): List[Int] = {
       a match {
-        case Nil => b
+        case Nil         => b
         case Cons(x, xs) => Cons(x, append1(xs, b))
       }
     }
@@ -206,17 +204,17 @@ object TypeAndDataConstructors {
     def foldLeftViaFoldRightBetterWay[A, B](list: List[A], init: B)(f: (A, B) => B) =
       foldRight(reverseList(list), init)((a, b) => f(a, b))
 
-    def foldRightViaFoldLeft[A,B](as: List[A], z: B)(f: (A, B) => B): B =
-      foldLeft(reverseList(as), z)((a,b) => f(b, a))
+    def foldRightViaFoldLeft[A, B](as: List[A], z: B)(f: (A, B) => B): B =
+      foldLeft(reverseList(as), z)((a, b) => f(b, a))
 
     // Exercise 3.14
     // This is really good, that you need to think twice your foldright implementation is actually folding it right
     def appendWithFoldRight[A](list: List[A], list1: List[A]): List[A] =
-    foldRight(list, list1)((a: A, b: List[A]) => Cons(a, b))
+      foldRight(list, list1)((a: A, b: List[A]) => Cons(a, b))
 
     // This is really good, that you need to think twice that your foldLeft implementatio is actually folding it left
     def appendWithFoldLeft[A](list: List[A], list1: List[A]): List[A] =
-    foldLeft(reverseList(list), list1)((a: List[A], b: A) => Cons(b, a))
+      foldLeft(reverseList(list), list1)((a: List[A], b: A) => Cons(b, a))
 
     //Exercise 3.15
     // Hard: Write a function that concatenates a list of
@@ -226,7 +224,7 @@ object TypeAndDataConstructors {
       def go(innerList: List[List[A]], acc: List[A]): List[A] = innerList match {
         case Cons(x, tail) => x match {
           case Cons(h, t) => go(tail, appendWithFoldLeft(acc, Cons(h, t)))
-          case Nil => go(tail, acc)
+          case Nil        => go(tail, acc)
         }
         case Nil => acc
       }
@@ -238,13 +236,13 @@ object TypeAndDataConstructors {
     // Write a function that transforms a list of integers by adding
     // 1 to each element. (Reminder: this should be a pure function that returns a new List!)
     def add1ToEachElement(list: List[Int]): List[Int] =
-    foldRight(list, Nil: List[Int])((a, acc) => Cons(a + 1, acc))
+      foldRight(list, Nil: List[Int])((a, acc) => Cons(a + 1, acc))
 
     // Exercise 3.17
     // Write a function that turns each value in a List[Double] into a String.
     // You can use the expression d.toString to convert some d: Double to a String.
     def convertEachDoubleToString(list: List[Double]): List[String] =
-    foldRightViaFoldLeft (list, Nil: List[String])((a, acc) => Cons(a.toString, acc))
+      foldRightViaFoldLeft(list, Nil: List[String])((a, acc) => Cons(a.toString, acc))
 
     // Exercise 3.18
     def map[A, B](as: List[A])(f: A => B): List[B] = {
@@ -257,12 +255,12 @@ object TypeAndDataConstructors {
 
     def filter[A](as: List[A])(f: A => Boolean): List[A] = {
 
-      def go( innerList: List[A], acc: List[A]): List[A] =
-      innerList match {
-        case Nil => acc
-        case Cons(x, xs) if f(x) => go (xs, Cons(x, acc))
-        case Cons(x, xs) => go(xs, acc)
-      }
+      def go(innerList: List[A], acc: List[A]): List[A] =
+        innerList match {
+          case Nil                 => acc
+          case Cons(x, xs) if f(x) => go(xs, Cons(x, acc))
+          case Cons(x, xs)         => go(xs, acc)
+        }
 
       go(as, Nil)
     }

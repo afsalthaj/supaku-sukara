@@ -1,10 +1,10 @@
 package com.thaj.functionalprogramming.example.exercises
 
 /**
-  * Created by afsalthaj on 23/10/2016.
-  */
+ * Created by afsalthaj on 23/10/2016.
+ */
 
-import scala.{Stream => _}
+import scala.{ Stream => _ }
 
 sealed trait Stream[+A] {
   import Stream._
@@ -16,7 +16,7 @@ sealed trait Stream[+A] {
   def toList: List[A] = {
     def go(stream: Stream[A], acc: List[A]): List[A] = {
       stream match {
-        case Empty => acc
+        case Empty      => acc
         case Cons(h, t) => go(t(), h() :: acc)
       }
     }
@@ -28,20 +28,20 @@ sealed trait Stream[+A] {
   // first n elements of a Stream, and drop(n)
   // for skipping the first n elements of a Stream.
   def take(n: Int): Stream[A] = this match {
-    case Empty => Empty
-    case Cons(h, t) if n<=0 => Empty
-    case Cons(h, t) => Stream.cons(h(), t().take(n-1))
+    case Empty                => Empty
+    case Cons(h, t) if n <= 0 => Empty
+    case Cons(h, t)           => Stream.cons(h(), t().take(n - 1))
   }
 
   def drop(n: Int): Stream[A] = this match {
-    case Cons(h, t) if n > 0 => t().drop(n-1)
-    case _ => this
+    case Cons(h, t) if n > 0 => t().drop(n - 1)
+    case _                   => this
   }
 
   // Exercise 5.3
   def takeWhile(f: A => Boolean): Stream[A] = this match {
-    case Cons(h,t) if f(h()) => cons(h(), t().takeWhile(f))
-    case _ => empty
+    case Cons(h, t) if f(h()) => cons(h(), t().takeWhile(f))
+    case _                    => empty
   }
 
   // More generally speaking, laziness lets us separate the description of an
@@ -58,36 +58,36 @@ sealed trait Stream[+A] {
   // is never actually executed.
   def exists(p: A => Boolean): Boolean = this match {
     case Cons(h, t) => p(h()) || t().exists(p)
-    case Empty => false
+    case Empty      => false
   }
 
   // This is used in Property Based Testing Chapter
   def find(p: A => Boolean): Option[A] = this match {
     case Cons(h, t) => if (p(h())) Some(h()) else find(p)
-    case Empty => None
+    case Empty      => None
   }
 
   /**
-    * Fold Right function of list is shown here
-    * {{{
-    *  def foldRight[A, B](list: List[A], init: B)(f: (A, B) => B): B = list match {
-    *    case Nil => init
-    *    case Cons(x, xs) => f(x, foldRight(xs, init)(f))
-    *  }
-    * }}}
-    *
-    * Similar foldRight for stream is shown here.
-    * The function f takes its second argument by name and not value,
-    * and may choose not to evaluate it.
-    * If f doesn't evaluate its second argument, the recursion never occurs.
-    * Now you may think, what is the use of this function, assuming that you
-    * call foldRight with the assumption you will be parsing through the whole elements.
-    * But this is not the case, a typical example is re-implementing exists method using foldRight.
-    * exists function using the below method will ensure that method terminates early (faster) than
-    * the list foldRight.
-    */
+   * Fold Right function of list is shown here
+   * {{{
+   *  def foldRight[A, B](list: List[A], init: B)(f: (A, B) => B): B = list match {
+   *    case Nil => init
+   *    case Cons(x, xs) => f(x, foldRight(xs, init)(f))
+   *  }
+   * }}}
+   *
+   * Similar foldRight for stream is shown here.
+   * The function f takes its second argument by name and not value,
+   * and may choose not to evaluate it.
+   * If f doesn't evaluate its second argument, the recursion never occurs.
+   * Now you may think, what is the use of this function, assuming that you
+   * call foldRight with the assumption you will be parsing through the whole elements.
+   * But this is not the case, a typical example is re-implementing exists method using foldRight.
+   * exists function using the below method will ensure that method terminates early (faster) than
+   * the list foldRight.
+   */
   def foldRight[B](init: => B)(f: (A, => B) => B): B = this match {
-    case Empty => init
+    case Empty      => init
     case Cons(h, t) => f(h(), t().foldRight(init)(f))
   }
 
@@ -100,30 +100,30 @@ sealed trait Stream[+A] {
 
   //Exercise 5.5
   // takeWhile in terms of foldRigh
-  def takeWhile_1 (f: A => Boolean): Stream[A] = this.foldRight(Empty: Stream[A])((a, b) =>
-    if(f(a))
+  def takeWhile_1(f: A => Boolean): Stream[A] = this.foldRight(Empty: Stream[A])((a, b) =>
+    if (f(a))
       cons(a, b)
     else
-      empty
-  )
+      empty)
 
   // Exercise 5.8
-  /**Hard: Implement headOption using foldRight.
-    {{{
-    def headOption(a: Stream[A]): Option[A] = a match {
-      case Cons(h, t) => Some(h())
-      case Empty => None
-    }
-    }}}
-
-    {{{
-      def foldRight[B](init: => B)(f: (A, => B) => B): B = this match {
-       case Empty => init
-      case Cons(h, t) => f(h(), t().foldRight(init)(f))
-    }
-    But it seems, it traverses the whole elements in the stream to calculate the second
-    element of the function, which is irrelevant here. Thats not good either
-    */
+  /**
+   * Hard: Implement headOption using foldRight.
+   * {{{
+   * def headOption(a: Stream[A]): Option[A] = a match {
+   * case Cons(h, t) => Some(h())
+   * case Empty => None
+   * }
+   * }}}
+   *
+   * {{{
+   * def foldRight[B](init: => B)(f: (A, => B) => B): B = this match {
+   * case Empty => init
+   * case Cons(h, t) => f(h(), t().foldRight(init)(f))
+   * }
+   * But it seems, it traverses the whole elements in the stream to calculate the second
+   * element of the function, which is irrelevant here. Thats not good either
+   */
 
   def headOption_1: Option[A] = this.foldRight(None: Option[A])((a, _) => Some(a))
 
@@ -131,48 +131,48 @@ sealed trait Stream[+A] {
   // Exercise 5.7
   // Implement map, filter, append, and flatMap
   // using foldRight. The append method should be non-strict in its argument.
-   def map[B](f: A => B): Stream[B] = foldRight(Empty: Stream[B])((a, b) => cons(f(a), b))
-   def filter(f: A => Boolean): Stream[A] = foldRight(Empty: Stream[A])((a, b) => if(f(a)) cons(a, b) else b)
-   def flatMap[B](f: A => Stream[B]): Stream[B] = foldRight(Empty: Stream[B])((a, b) => f(a) append b)
+  def map[B](f: A => B): Stream[B] = foldRight(Empty: Stream[B])((a, b) => cons(f(a), b))
+  def filter(f: A => Boolean): Stream[A] = foldRight(Empty: Stream[A])((a, b) => if (f(a)) cons(a, b) else b)
+  def flatMap[B](f: A => Stream[B]): Stream[B] = foldRight(Empty: Stream[B])((a, b) => f(a) append b)
 
   // To assert a few things into your brain, have a look at the below function
-  def mapUnfold[B](f: A => B): Stream[B]= this match {
+  def mapUnfold[B](f: A => B): Stream[B] = this match {
     case Cons(h, t) => cons(f(h()), t().mapUnfold(f))
-    case Empty => Empty
+    case Empty      => Empty
   }
 
   // Important for Property Check library
   def zip[B, C](stream: Stream[B]): Stream[(A, B)] = {
-     Stream.unfold((this, stream)) {
-       case (Cons(a, b), Cons(c, d)) => Some(((a(),c() ), (b(), d())))
-       case _ => None
-     }
+    Stream.unfold((this, stream)) {
+      case (Cons(a, b), Cons(c, d)) => Some(((a(), c()), (b(), d())))
+      case _                        => None
+    }
   }
 
   /**
-    * Theory:
-    *  Example used for explanation: Stream(1,2,3,4).map(_ + 10).filter(_ % 2 == 0)
-    * The concept here is, be it any function which is part of the stream , `b` is never evaluated until
-    * it is needed. You can forget about rest of the complexities. You know how stream is implemented, especially
-    * using the smart constructor cons. It takes unevaluated A, and unevaluated B, and returns Cons(a, b) both being
-    * unevaluated. Hence it is a stream. Now assume that you are using map function.
-    *  What is happening with map. It is just a short description, or just a start of the stream which is
-    *  represented here. Nothing is computed here, since cons by name parameters. that is the lazy head and tail
-    *  are still lazy, and noone has called it yet. So you now are now applying a filter to it. The condition for filter
-    *  is f(a), and obviously lazy val is executed but only for the head, and you may get a filtered stream now.
-    *  Again, it tries to filter so that if(f(a)) is evaluated, and a being the second element now, and you get a filtered
-    *  stream. This means the operation between map and filter is inter-leaved. the computation alternates between generating a
-    *  single element of the output of map, and testing with filter to see if that element is
-    *  divisible by 2 (adding it to the output list if it is). Note that we don’t fully instantiate the
-    *  intermediate stream that results from the map. It’s exactly as if we had interleaved the logic using a
-    *  special-purpose loop. For this reason, people sometimes describe streams as “first-class loops”
-    *  whose logic can be combined using higher-order functions like map and filter.
-    *  Since intermediate streams aren’t instantiated, it’s easy to reuse existing combinators in novel ways without having to worry that we’re doing more processing of the stream than necessary. For example, we can reuse filter to define find, a method to return just the first element that matches if it exists. Even though filter transforms the whole stream, that transformation is done lazily, so find terminates as soon as a match is found:
-       {{{
-       def find(p: A => Boolean): Option[A] =
-        filter(p).headOption
-       }}}
-    */
+   * Theory:
+   *  Example used for explanation: Stream(1,2,3,4).map(_ + 10).filter(_ % 2 == 0)
+   * The concept here is, be it any function which is part of the stream , `b` is never evaluated until
+   * it is needed. You can forget about rest of the complexities. You know how stream is implemented, especially
+   * using the smart constructor cons. It takes unevaluated A, and unevaluated B, and returns Cons(a, b) both being
+   * unevaluated. Hence it is a stream. Now assume that you are using map function.
+   *  What is happening with map. It is just a short description, or just a start of the stream which is
+   *  represented here. Nothing is computed here, since cons by name parameters. that is the lazy head and tail
+   *  are still lazy, and noone has called it yet. So you now are now applying a filter to it. The condition for filter
+   *  is f(a), and obviously lazy val is executed but only for the head, and you may get a filtered stream now.
+   *  Again, it tries to filter so that if(f(a)) is evaluated, and a being the second element now, and you get a filtered
+   *  stream. This means the operation between map and filter is inter-leaved. the computation alternates between generating a
+   *  single element of the output of map, and testing with filter to see if that element is
+   *  divisible by 2 (adding it to the output list if it is). Note that we don’t fully instantiate the
+   *  intermediate stream that results from the map. It’s exactly as if we had interleaved the logic using a
+   *  special-purpose loop. For this reason, people sometimes describe streams as “first-class loops”
+   *  whose logic can be combined using higher-order functions like map and filter.
+   *  Since intermediate streams aren’t instantiated, it’s easy to reuse existing combinators in novel ways without having to worry that we’re doing more processing of the stream than necessary. For example, we can reuse filter to define find, a method to return just the first element that matches if it exists. Even though filter transforms the whole stream, that transformation is done lazily, so find terminates as soon as a match is found:
+   * {{{
+   * def find(p: A => Boolean): Option[A] =
+   * filter(p).headOption
+   * }}}
+   */
 }
 
 case object Empty extends Stream[Nothing]
@@ -180,7 +180,7 @@ case object Empty extends Stream[Nothing]
 // A non empty stream consist of a head and a tail, which are both non-strict.
 // Due to technical limitations, these are thunks that must be explicitly forced,
 // rather than by-name parameters.
-case class Cons[+A] (head: () => A, tail: () => Stream[A]) extends Stream[A]
+case class Cons[+A](head: () => A, tail: () => Stream[A]) extends Stream[A]
 
 object Stream {
   // smart Constructors
@@ -209,7 +209,7 @@ object Stream {
   }
 
   def headOption[A](a: Stream[A]): Option[A] = a match {
-    case Empty => None
+    case Empty      => None
     // Explicit forcing of the h thunk using h()
     // Note that we have to force h explicitly via h(), but other than that,
     // the code works the same way as it would for List. But this ability of Stream to
@@ -259,7 +259,7 @@ object Stream {
   def unfold[A, S](z: S)(f: S => Option[(A, S)]): Stream[A] =
     f(z) match {
       case Some((a, s)) => Stream.cons(a, unfold(s)(f))
-      case None => Empty
+      case None         => Empty
     }
 
   // Exercise 5.12

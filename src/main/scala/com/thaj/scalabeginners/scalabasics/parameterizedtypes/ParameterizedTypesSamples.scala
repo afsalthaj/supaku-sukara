@@ -1,7 +1,7 @@
 package com.scalabasics.parameterizedtypes
 
 /**
- *in java community it is generics and in scala community it is parameterized types. 
+ * in java community it is generics and in scala community it is parameterized types.
  */
 object ParameterizedTypesSamples {
 

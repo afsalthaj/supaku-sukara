@@ -17,8 +17,8 @@ object MatchingCaseClassSamples {
 
       person match {
         case Person("Alice", 25) => println("Hi Alice")
-        case Person("bob", 32) => println("Hi Bob")
-        case Person(name, age) => println("Who are you " + age + " year old person name " + name)
+        case Person("bob", 32)   => println("Hi Bob")
+        case Person(name, age)   => println("Who are you " + age + " year old person name " + name)
 
       }
     }
@@ -28,10 +28,10 @@ object MatchingCaseClassSamples {
     for (hi <- list) {
       hi match {
 
-        case n: Int => println("its an integer")
+        case n: Int    => println("its an integer")
         case s: String => println("its a string")
-        case l: Char => println("its a char")
-        case others => println("what is this")
+        case l: Char   => println("its a char")
+        case others    => println("what is this")
       }
     }
   }

@@ -29,6 +29,6 @@ object RealFunctionsToBeCalled {
 
 object CallFunctions {
   def main(args: Array[String]) {
-    println(RealFunctionsToBeCalled.sum(List(1,2))(RealFunctionsToBeCalled.sampleBasicMonoidImpl))
+    println(RealFunctionsToBeCalled.sum(List(1, 2))(RealFunctionsToBeCalled.sampleBasicMonoidImpl))
   }
 }
