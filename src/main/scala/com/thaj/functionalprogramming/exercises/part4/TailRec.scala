@@ -1,9 +1,9 @@
 package com.thaj.functionalprogramming.exercises.part4
 
 /**
-  * The property of IO monad is kind of generic, and we could
-  * rename it to TailRec
-  */
+ * The property of IO monad is kind of generic, and we could
+ * rename it to TailRec
+ */
 sealed trait TailRec[A] {
   import TailRec._
   def flatMap[B](f: A => TailRec[B]): TailRec[B] =

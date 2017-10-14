@@ -192,8 +192,7 @@ object IOWithoutOverFlow {
 
   // This works stackless. And it corrects a typo in red book
   def g = List.fill(10000)(f).foldLeft(f)((acc, f) =>
-    x => Suspend(() => ()).flatMap(_ => acc(x).flatMap(f))
-  )
+    x => Suspend(() => ()).flatMap(_ => acc(x).flatMap(f)))
 
   /**
    *  Note: we could write a little helper function to make this nicer:
