@@ -188,23 +188,12 @@ object IOWithoutOverFlow {
    */
 
   // A small correction in the red book, probably the author might have meant to use a FlatMap
-
-  def foldLeft(list: List[Int => IO[Int]], init: Int => IO[Int])(f: (Int => IO[Int], Int => IO[Int]) => Int => IO[Int]): Int => IO[Int] = {
-    @annotation.tailrec
-    def go(innerList: List[Int => IO[Int]], acc: Int => IO[Int]): Int => IO[Int] =
-      innerList match {
-        case Nil     => acc
-        case x :: xs => go(xs, f(acc, x))
-      }
-
-    go(list, init)
-  }
-
   def f: (Int) => IO[Int] = (x: Int) => Return(x + 2)
 
-  def g = foldLeft(List.fill(10000)(f), f)((acc, f) => {
+  // This works stackless. And it corrects a typo in red book
+  def g = List.fill(10000)(f).foldLeft(f)((acc, f) =>
     x => Suspend(() => ()).flatMap(_ => acc(x).flatMap(f))
-  })
+  )
 
   /**
    *  Note: we could write a little helper function to make this nicer:
@@ -213,23 +202,4 @@ object IOWithoutOverFlow {
    *   (a, b) => x => suspend { a(x).flatMap(b) }
    *   }
    */
-
-}
-
-/**
- * the property of IO monad is kind of generic, and we could
- * rename it to TailRec
- * @tparam A
- */
-sealed trait TailRec[A] {
-  import TailRec._
-  def flatMap[B](f: A => TailRec[B]): TailRec[B] =
-    FlatMap(this, f)
-  def map[B](f: A => B): TailRec[B] =
-    flatMap(f andThen (Return(_)))
-}
-object TailRec {
-  case class Return[A](a: A) extends TailRec[A]
-  case class Suspend[A](resume: () => A) extends TailRec[A]
-  case class FlatMap[A, B](sub: TailRec[A], k: A => TailRec[B]) extends TailRec[B]
 }
