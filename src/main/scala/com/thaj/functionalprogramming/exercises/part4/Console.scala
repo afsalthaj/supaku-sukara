@@ -1,6 +1,8 @@
 package com.thaj.functionalprogramming.exercises.part4
 
-import com.thaj.functionalprogramming.exercises.part4.FreeMonad.{ Free, Suspend, ~> }, FreeMonad._
+import com.thaj.functionalprogramming.exercises.part4.FreeMonad.{ Free, Suspend, ~> }
+import FreeMonad._
+import com.thaj.functionalprogramming.exercises.part4.PureInterpreter.ConsoleReader
 
 /**
  * Function0 is not just the simplest possible choice for the type parameter F, but also
@@ -11,6 +13,8 @@ import com.thaj.functionalprogramming.exercises.part4.FreeMonad.{ Free, Suspend,
  */
 sealed trait Console[A] {
   def toThunk: () => A
+  // Try to understand toReader after u read PureInterpreter
+  def toReader: ConsoleReader[A]
 }
 
 case object ReadLine extends Console[Option[String]] {
@@ -22,10 +26,16 @@ case object ReadLine extends Console[Option[String]] {
   }
 
   def toThunk: () => Option[String] = run _
+
+  // Try to understand toReader after u read PureInterpreter
+  def toReader = ConsoleReader[Option[String]](s => Some(s))
 }
 
 case class PrintLine(string: String) extends Console[Unit] {
-  override def toThunk: () => Unit = () => println(string)
+  def toThunk: () => Unit = () => println(string)
+
+  // Try to understand toReader after u read PureInterpreter
+  def toReader: ConsoleReader[Unit] = ConsoleReader(_ => ())
 }
 
 /**
