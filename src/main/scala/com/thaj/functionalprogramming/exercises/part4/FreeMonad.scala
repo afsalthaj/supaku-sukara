@@ -37,14 +37,12 @@ object FreeMonad {
    * 10
    * def freeMonad[F[_]]: Monad[({type f[a] = Free[F,a]})#f]
    */
-
   def freeMonad[F[_]]: Monad[({ type f[a] = Free[F, a] })#f] = {
     new Monad[({ type f[a] = Free[F, a] })#f] {
       override def flatMap[A, B](ma: Free[F, A])(f: (A) => Free[F, B]): Free[F, B] =
         FlatMap(ma, f)
 
       override def unit[A](a: => A): Free[F, A] = Return(a)
-
     }
   }
 
@@ -55,7 +53,6 @@ object FreeMonad {
    * Implement a specialized tail-recursive interpreter, runTrampoline, for running a
    * Free[Function0,A].
    */
-
   @annotation.tailrec
   def runTrampoline[A](a: Free[Function0, A]): A = a match {
     case Return(r)      => r
