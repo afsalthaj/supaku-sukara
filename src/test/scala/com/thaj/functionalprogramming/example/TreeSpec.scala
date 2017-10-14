@@ -2,7 +2,6 @@ package com.thaj.functionalprogramming.example
 
 import org.specs2.Specification
 
-
 class TreeSpec extends Specification {
 
   import com.thaj.functionalprogramming.example.exercises._, Tree._

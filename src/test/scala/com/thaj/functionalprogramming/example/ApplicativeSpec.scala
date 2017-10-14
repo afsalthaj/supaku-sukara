@@ -5,7 +5,6 @@ import org.specs2.Specification
 
 import scala.collection.immutable.Stream.Empty
 
-
 /**
  * Created by afsalthaj on 17/04/17.
  */

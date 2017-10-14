@@ -6,11 +6,11 @@ import com.thaj.functionalprogramming.example.typeclass.functor.Functor._
 import org.specs2.Specification
 
 /**
-  * Created by afsalthaj on 12/11/2016.
-  */
+ * Created by afsalthaj on 12/11/2016.
+ */
 object FunctorSpec extends Specification {
- def is =
-   s"""
+  def is =
+    s"""
      | test void $testListVoid
      | test map $testListMap
      | test listAs $testListAs
@@ -18,16 +18,16 @@ object FunctorSpec extends Specification {
    """.stripMargin
 
   val testListMap = {
-     val functor: Functor[List] = Functor[List]
-     assert( functor.map(List(1,2,3))(_ + 1) == List(2, 3, 4) )
+    val functor: Functor[List] = Functor[List]
+    assert(functor.map(List(1, 2, 3))(_ + 1) == List(2, 3, 4))
   }
 
   val testListVoid = {
-     assert(List(1,2,3).void == List((), (), ()))
+    assert(List(1, 2, 3).void == List((), (), ()))
   }
 
   val testListAs = {
-    assert(List(1,2,3).as(10) == List(10, 10, 10))
+    assert(List(1, 2, 3).as(10) == List(10, 10, 10))
   }
 
   val testCompose = {

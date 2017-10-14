@@ -32,8 +32,8 @@ class ParserSpec extends Specification {
 
     assert(getConfigFromJson(rawJson) == Success(Config(
       Map(
-        "ah..some..feature" -> FeatureInfo(FeatureType.Int,2),
-        "some other" -> FeatureInfo(FeatureType.String,3)
+        "ah..some..feature" -> FeatureInfo(FeatureType.Int, 2),
+        "some other" -> FeatureInfo(FeatureType.String, 3)
       )
     )))
   }
@@ -52,10 +52,10 @@ class ParserSpec extends Specification {
         | }]
       """.stripMargin
 
-    getConfigFromJson(rawJson) must_==   Success(Config(
+    getConfigFromJson(rawJson) must_== Success(Config(
       Map(
-        "ah..some..feature" -> FeatureInfo(FeatureType.Int,2),
-        "some other" -> FeatureInfo(FeatureType.String,4)
+        "ah..some..feature" -> FeatureInfo(FeatureType.Int, 2),
+        "some other" -> FeatureInfo(FeatureType.String, 4)
       )
     ))
   }

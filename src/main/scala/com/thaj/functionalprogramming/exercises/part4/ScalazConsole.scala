@@ -36,7 +36,6 @@ object ScalazConsole {
 
   val translator = new (ScalazConsole ~> Reader[String, ?]) {
     def apply[A](a: ScalazConsole[A]): Reader[String, A] = a.toReader
-
   }
 
   // Scalaz already has a monad instance for Reader, however, our free monad runner expect an instance for our in-house monad
