@@ -22,7 +22,6 @@ import scalaz.Equal
   def void[A](fa: F[A]): F[Unit] = as(fa)(())
 
   // Lambda is from kind projector compiler plugin.. you might see it as an error in some jetbrain IDE version.
-
   def compose[G[_]](implicit F: Functor[G]): Functor[Lambda[X => F[G[X]]]] = new Functor[Lambda[X => F[G[X]]]] {
     def map[A, B](fga: F[G[A]])(f: A => B): F[G[B]] =
       self.map(fga)(ga => F.map(ga)(f))

@@ -29,6 +29,13 @@ libraryDependencies ++= Seq (
 
 libraryDependencies += "com.github.nscala-time" %% "nscala-time" % "2.16.0"
 
+initialCommands :=
+  """
+    |import com.thaj.functionalprogramming.example.exercises.PureStatefulAPIGeneric._
+    |import State._
+    |
+  """.stripMargin
+
 shellPrompt := { _ =>
   s"\033[1;36m\033[40m[fpscala-spark] ~\033[0m "
 }

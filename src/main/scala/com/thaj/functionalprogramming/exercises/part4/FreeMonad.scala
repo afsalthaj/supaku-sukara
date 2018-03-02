@@ -32,7 +32,6 @@ object FreeMonad {
   case class FlatMap[F[_], A, B](s: Free[F, A], f: A => Free[F, B]) extends Free[F, B]
 
   /**
-   * Exercise 13.1
    * Free is a monad for any choice of F. Implement map and flatMap methods on the
    * Free trait, and give the Monad instance for Free[F,_].
    * 10
@@ -50,7 +49,6 @@ object FreeMonad {
   implicit def freeMonadInstance[F[_]] = freeMonad[F]
 
   /**
-   * EXERCISE 13.2
    * Implement a specialized tail-recursive interpreter, runTrampoline, for running a
    * Free[Function0,A].
    */

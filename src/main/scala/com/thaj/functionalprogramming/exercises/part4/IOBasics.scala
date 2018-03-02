@@ -56,4 +56,35 @@ object IOBasics {
     }
     //... on to 13.2.1
   }
+
+  /**
+   *
+   *   // A small correction in the red book, probably the author might have meant to use a FlatMap
+   * def f: (Int) => IO[Int] = (x: Int) => Return(x + 2)
+   *
+   * /**
+   *
+   *   val badF = (x: Int) => x
+   * // stackful
+   * def badG = List.fill(10000)(badF).foldLeft(badF)(_ compose _)
+   *
+   * */
+   *
+   * def tmpG = List.fill(10000)(f).foldLeft(f)((acc, f) => x => f(x).flatMap(acc))
+   *
+   * // This works stackless. And it corrects a typo in red book
+   * def g = List.fill(10000)(f).foldLeft(f)((acc, f) =>
+   * x => Suspend(() => ()).flatMap(_ => acc(x).flatMap(f)))
+   *
+   * /**
+   *  Note: we could write a little helper function to make this nicer:
+   *  def suspend[A](a: => IO[A]) = Suspend(() => ()).flatMap { _ => a }
+   *   val g = List.fill(100000)(f).foldLeft(f) {
+   *   (a, b) => x => suspend { a(x).flatMap(b) }
+   *   }
+   * */
+   *
+   *
+   *
+   */
 }

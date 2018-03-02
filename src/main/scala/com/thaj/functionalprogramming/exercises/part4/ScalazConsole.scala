@@ -6,12 +6,35 @@ import com.thaj.functionalprogramming.exercises.part4.FreeMonad.{ Free, Suspend,
 import scalaz.Reader
 import scalaz.syntax.std.option._
 
+import scalaz.syntax.monad._
+trait Logging[F]
+
+object Logging {
+  case class Info(msg: String) extends Logging
+  case class Debug(msg: String) extends Logging
+  case class Error(msg: String) extends Logging[Unit]
+
+  def info(msg: String) = Info(msg)
+
+  def urFun[F : scalaz.Monad](log: Logging ~> F) = {
+    for {
+      bla <- "bla".pure[F]
+      r <- log(info("bla is lifted"))
+      blabla <- "blabla".pure[F]
+      _ <- log()
+    } yield r
+  }
+
+  def info(msg: String): FreeMonad.Free[Logging, Unit] = Suspend(Info(msg))
+}
 /**
  * Scalaz Reader that we can use instead of defining a ConsoleReader[A]
  */
 trait ScalazConsole[A] {
   def toReader: Reader[String, A]
 }
+
+//boiler plates
 
 object ScalazConsole {
 
@@ -20,7 +43,7 @@ object ScalazConsole {
   }
 
   case class PrintLine(string: String) extends ScalazConsole[Unit] {
-    override def toReader: Reader[String, Unit] = Reader(_ => ())
+    override def toReader: Reader[String, Unit] = Reader(r => println(r))
   }
 
   def readLine[A]: Free[ScalazConsole, Option[String]] =

@@ -55,13 +55,13 @@ object IOOperations {
     result <- ReadLine.map(t => factorial(t.toInt))
   } yield result
 
-  // this ask for 10 numbers and print out the factorial and list down the IO
+  // this ask for 3 numbers and print out the factorial and list down the IO
   def factorialREPLIOFor3(implicit m: Monad[IO]): IO[List[Long]] = {
     m.replicateM(3, factorialIO)
   }
 
   // the one that can result in stack overflow
-  def factorialREPIOHeap(implicit m: Monad[IO]): IO[List[Unit]] =
+  def factorialREPIOStack(implicit m: Monad[IO]): IO[List[Unit]] =
     m.sequence((0 to 100000).map(t => PrintLine(factorialN(t).toString)).toList)
 
   def continuouslyDoReadLineAndFindFactorial(implicit m: Monad[IO]): IO[Unit] = for {
@@ -84,9 +84,8 @@ object ForEverCombinator {
     }
   }
 
-  // Must Read: defining p doesn't result in stack overflow error, however
+  // defining p doesn't result in stack overflow error, however
   // calling run will invoke the stack overflow
-  // In this chapter we will focus only on this
   // This method creates a new IO object whose run definition calls
   // run again before calling f. THis will keep building up nested run calls
   // on the stack and eventually overflow it. What can be done about this?
@@ -163,42 +162,19 @@ object IOWithoutOverFlow {
   case class Suspend[A](resume: () => A) extends IO[A]
   case class FlatMap[A, B](bs: IO[A], f: A => IO[B]) extends IO[B]
 
-  def PrintLine(msg: String): IO[Unit] = Suspend(() => Return(println(msg)))
+  def PrintLine(n: Int): Suspend[Unit] = Suspend(() => println(IOOperations.factorialN(n)))
 
   // the one that cannot result in stack overflow
   // another simpler example is also given below using forever combinator
-  def factorialREPIOWithoutStack(implicit m: Monad[IO]): IO[List[Unit]] =
-    m.sequence((0 to 100000).map(t => PrintLine(IOOperations.factorialN(t).toString)).toList)
+  def factorialREPIOWithoutStack(implicit m: Monad[IO]): IO[List[Unit]] = {
+    val x = (0 to 100000).map(PrintLine(_)).toList
+    m.sequence(x.toList)
+  }
 
   // a new printLine IO operation
-  def printLine(s: String): IO[Unit] = Suspend(() => Return(println(s)))
+  def printLine(s: String): IO[Unit] = Suspend(() => println(s))
 
   // another simple example was calling forever
   val p = ForEverCombinator.forever(printLine("still going on"))(IOMonad)
   // calling run on this p doesn't result in any stack overflow error.
-
-  /**
-   * TAKE AWAY: It might blow your head => by encapsulating the control flow
-   * using datastructures, we somehow avoided stack overflow error. How did this happen?
-   * Refer to page 239, second paragraph in Red book.
-   * http://blog.higher-order.com/assets/trampolines.pdf
-   *
-   * A function like run is sometimes called a trampoline and the overall technique
-   * of returning control to a single loop to eliminate the stack is called trampolining.a
-   */
-
-  // A small correction in the red book, probably the author might have meant to use a FlatMap
-  def f: (Int) => IO[Int] = (x: Int) => Return(x + 2)
-
-  // This works stackless. And it corrects a typo in red book
-  def g = List.fill(10000)(f).foldLeft(f)((acc, f) =>
-    x => Suspend(() => ()).flatMap(_ => acc(x).flatMap(f)))
-
-  /**
-   *  Note: we could write a little helper function to make this nicer:
-   *  def suspend[A](a: => IO[A]) = Suspend(() => ()).flatMap { _ => a }
-   *   val g = List.fill(100000)(f).foldLeft(f) {
-   *   (a, b) => x => suspend { a(x).flatMap(b) }
-   *   }
-   */
 }

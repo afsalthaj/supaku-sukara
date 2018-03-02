@@ -97,8 +97,16 @@ object PureStatefulAPIGeneric {
     // replaces it with the new state, and returns () instead of a meaningful value:
     def set[S](s: S): State[S, Unit] = State(_ => ((), s))
 
-  }
+    // an indexing function using state monad
+    def fun[A](list: List[A]) =
+      list.foldLeft(State.unit[Int, List[(Int, A)]](List[(Int, A)]()))((acc, a) =>
+        for {
+          xs <- acc
+          int <- get[Int]
+          _ <- set[Int](int + 1)
+        } yield (int, a) :: xs).run(0)._1.reverse
 
+  }
 }
 
 // Another straight forward implementation, that covers end to end

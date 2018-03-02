@@ -24,7 +24,7 @@ object MonadLearnings {
    */
 
   /**
-   *   A functor allows you to have a map function for free, althought that's not a compelling
+   *   A functor allows you to have a map function for free, although that's not a compelling
    *   reason for why this concept exist.
    */
   trait Functor[F[_]] {
@@ -94,7 +94,7 @@ object MonadLearnings {
    * Hope you remember map can be implemented in terms of flatMap and unit. Hence all monad instances
    * should implement a flatMap and unit. (That is the starting point - under
    *
-   * At this point, what you get out` of monad is just map2 and map function. You still don't know the big
+   * At this point, what you get out of monad is just map2 and map function. You still don't know the big
    * picture of Monad. However you have already gained a significant knowledge on Monad.
    */
 
@@ -151,7 +151,7 @@ object MonadLearnings {
     // EXERCISE 11.7
     // Implement the Kleisli composition function compose.
     def compose[A, B, C](f: A => F[B], g: B => F[C]): A => F[C] = (a: A) => {
-      flatMap(f(a))(bb => g(bb))
+      flatMap(f(a))(g)
     }
 
     //￼EXERCISE 11.8
@@ -208,7 +208,7 @@ object MonadLearnings {
         def flatMap[A, B](ma: F[G[A]])(f: (A) => F[G[B]]): F[G[B]] =
           F.map(F.join(F.map(ma)((g: G[A]) => T.traverse(g)(f)(F))))(a => G.join(a))
         override def unit[A](a: => A): F[G[A]] = F.unit(G.unit(a))
-      }
+    }
   }
 
   // To tie this back to a concrete data type, we can implement the Monad instance for Gen.
