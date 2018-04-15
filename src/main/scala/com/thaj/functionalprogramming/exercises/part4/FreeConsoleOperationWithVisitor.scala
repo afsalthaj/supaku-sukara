@@ -5,7 +5,7 @@ import com.thaj.functionalprogramming.exercises.part3.Reader
 import com.thaj.functionalprogramming.exercises.part4.FreeMonad.{ Free, Return, Suspend, ~> }
 
 // An adoption of what's written in Doobie
-object ScalazConsoleWithVisitorPattern { module =>
+object FreeConsoleOperationWithVisitor { module =>
   trait ScalazConsoleVisitor[A] {
     def visit[F[_]](visitor: ScalazConsoleVisitor.Visitor[F]): F[A]
   }
@@ -24,11 +24,11 @@ object ScalazConsoleWithVisitorPattern { module =>
     }
 
     case object ReadLine extends ScalazConsoleVisitor[String] {
-      def visit[F[_]](visitor: ScalazConsoleWithVisitorPattern.ScalazConsoleVisitor.Visitor[F]): F[String] = visitor.readLine
+      def visit[F[_]](visitor: FreeConsoleOperationWithVisitor.ScalazConsoleVisitor.Visitor[F]): F[String] = visitor.readLine
     }
 
     case class PrintLine(s: String) extends ScalazConsoleVisitor[Unit] {
-      def visit[F[_]](visitor: ScalazConsoleWithVisitorPattern.ScalazConsoleVisitor.Visitor[F]): F[Unit] = visitor.printLine(s)
+      def visit[F[_]](visitor: FreeConsoleOperationWithVisitor.ScalazConsoleVisitor.Visitor[F]): F[Unit] = visitor.printLine(s)
     }
   }
 
