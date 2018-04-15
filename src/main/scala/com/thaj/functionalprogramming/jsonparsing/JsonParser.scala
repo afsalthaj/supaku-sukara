@@ -54,8 +54,7 @@ object JsonParser {
         featureName <- (c --\ "featureName").as[FeatureName]
         freshness <- (c --\ "freshness").as[Freshness]
         valueType <- (c --\ "valueType").as[FeatureType]
-      } yield (featureName, FeatureInfo(valueType, freshness))
-    )
+      } yield (featureName, FeatureInfo(valueType, freshness)))
 
   def getConfigFromJson(jsonString: String): Validation[String, Config] = for {
     list <- Parse.decodeValidation[List[(FeatureName, FeatureInfo)]](jsonString)

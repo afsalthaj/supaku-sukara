@@ -208,7 +208,7 @@ object MonadLearnings {
         def flatMap[A, B](ma: F[G[A]])(f: (A) => F[G[B]]): F[G[B]] =
           F.map(F.join(F.map(ma)((g: G[A]) => T.traverse(g)(f)(F))))(a => G.join(a))
         override def unit[A](a: => A): F[G[A]] = F.unit(G.unit(a))
-    }
+      }
   }
 
   // To tie this back to a concrete data type, we can implement the Monad instance for Gen.

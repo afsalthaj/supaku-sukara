@@ -13,7 +13,7 @@ trait CertainFunctionsMonoid[A, B] {
   def commonFoldLeftDefValue: A
 
 }
-// object that implements the functions in the above trait.. these functions can be passed 
+// object that implements the functions in the above trait.. these functions can be passed
 object CertainFunctionsMonoidImpl extends CertainFunctionsMonoid[List[String], String] {
   def commonFoldLeftFunc(a: List[String], b: String): List[String] = b :: a
   def commonFoldLeftDefValue: List[String] = List()

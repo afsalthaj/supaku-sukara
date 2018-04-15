@@ -7,8 +7,7 @@ object SampleRegex {
   //different types of date patterns (.r function will convert the string to regex pattern (Regex))
   val datePatterns = List(
     "(20[0-9]{2})[/-:]([0-9]{2})[/-:]([0-9]{2}).*".r,
-    "([0-9]{2})[/-:]([0-9]{2})[/-:](20[0-9]{2}).*".r
-  )
+    "([0-9]{2})[/-:]([0-9]{2})[/-:](20[0-9]{2}).*".r)
 
   var countMatchStrings = 0
   //initializing Breaks so that break can be applied in for loop

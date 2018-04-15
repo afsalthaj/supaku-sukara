@@ -49,9 +49,9 @@ object RealFunctions {
 
 }
 
-  
-  
+
+
 /**In the above example, the traits SampleMonoidIntImpl1 and
- FoldLeftSampleLevel2 correspond to Haskell�s typeclass. Scalaz provides many typeclasses. 
+ FoldLeftSampleLevel2 correspond to Haskell�s typeclass. Scalaz provides many typeclasses.
   */
 */

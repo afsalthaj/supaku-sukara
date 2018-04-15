@@ -31,8 +31,7 @@ object SemigroupSimple {
   object ops {
     implicit def toSemigroupOps[A](target: A)(
       implicit
-      tc: SemigroupSimple[A]
-    ): Ops[A] = new Ops[A] {
+      tc: SemigroupSimple[A]): Ops[A] = new Ops[A] {
       def typeClassInstance: SemigroupSimple[A] = tc
       def self = target
     }

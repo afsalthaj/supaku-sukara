@@ -370,8 +370,7 @@ object Prop {
     p:         Prop,
     maxSize:   Int  = 100,
     testCases: Int  = 100,
-    rng:       RNG  = SimpleRng(System.currentTimeMillis)
-  ): Unit =
+    rng:       RNG  = SimpleRng(System.currentTimeMillis)): Unit =
     p.run(maxSize, testCases, rng) match {
       case Falsified(msg, n) =>
         println(s"! Falsified after $n passed tests:\n $msg")

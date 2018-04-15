@@ -171,12 +171,12 @@ object MutationWithState {
   // referentially transparent
   val x = 10
 
-  // Oh that's ugly. Now this is where we'l be in trouble trying to re-use the state DataStructure. 
+  // Oh that's ugly. Now this is where we'l be in trouble trying to re-use the state DataStructure.
   // Would the initial state really work? Probably Not. I think a dummy value
   // representing a state should be a dummy instantiation of a class that represents the state with no data in it (explained later)
   val dummyVariable: Nothing = "".asInstanceOf[Nothing]
 
-  // natural transformation kind of thing...Quantifying a type universally! 
+  // natural transformation kind of thing...Quantifying a type universally!
   trait Forall[P[_]] {
     def apply[A]: P[A]
   }
